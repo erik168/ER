@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Tab</title>
+
+<link rel="stylesheet" href="../css/ui-tab.css" type="text/css" media="screen" />
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.2.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/Tab.js"></script>
+<style>
+.panel {border:1px solid #cdcdcd;}
+</style>
+</head>
+<body>
+<h2>example:Tab</h2>
+<div ui="type:Tab;id:myTab"></div>
+<div id="panel1" class="panel">one</div>
+<div id="panel2" class="panel">two</div>
+<div id="panel3" class="panel">three</div>
+<script>
+var tabs = [
+	{title:'one', panel:'panel1'},
+	{title:'two', panel:'panel2'},
+	{title:'three', panel:'panel3'},
+	{title:'four'}
+];
+ui.util.init(document.body, {myTab:{tabs: tabs}});
+</script>
+</body>
+</html>

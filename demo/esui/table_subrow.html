@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>table subrow</title>
+
+<link rel="stylesheet" href="../css/ui-table.css" type="text/css" media="screen" />
+
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.js"></script>
+<script type="text/javascript" src="../../src/er.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAction.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAdapter.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/Table.js"></script>
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:tableTpl -->\n<h2>example:table subrow</h2><div ui="type:Table;id:myTable;datasource:*list;fields:*fields;subrow:1"></div>');
+    };
+
+    // 声明业务模块
+    var table = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'table.action'
+                }
+            ]
+        }
+    });
+
+    table.action = new er.Action({
+        VIEW: 'tableTpl',
+        
+        TABLE_FIELDS: [
+            {
+                field: 'id',
+                title: '编号',
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+				subEntry: 1,
+                width: 300,
+                content: function (item) {
+					return item.name
+				}
+            }
+        ],
+        
+        STATE_MAP: {
+            order: '',
+            orderBy: ''
+        },
+        
+        CONTEXT_INITER_MAP: {
+            name: function (callback) {
+                this.setContext('list', data);
+                this.setContext('fields', this.TABLE_FIELDS);
+                callback();
+            }
+        },
+        
+        onafterrender: function () {
+            ui.util.get('myTable').onsubrowopen = this.getSubrowOpenHandler();
+        },
+        
+        getSubrowOpenHandler: function () {
+            var me = this;
+            
+            return function (index, dataItem) {
+				this.getSubrow(index).innerHTML = 'i am '+ dataItem.name;
+            };
+        }
+    });
+    
+    var data = [
+        {id:1, name: 'erik'},
+        {id:2, name: 'pfkey'},
+        {id:3, name: 'caotelei'},
+        {id:4, name: 'ouyangxianwei'},
+        {id:5, name: 'fantao'},
+        {id:6, name: 'lizheng'}
+    ];
+    
+    window.onload = function () {
+        er.init();
+    };
+</script>
+</head>
+<body>
+<div id="Main"></div>
+</body>
+</html>

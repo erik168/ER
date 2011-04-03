@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>table</title>
+
+<link rel="stylesheet" href="../css/ui-table.css" type="text/css" media="screen" />
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.js"></script>
+<script type="text/javascript" src="../../src/er.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAction.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAdapter.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/Table.js"></script>
+<script>
+    // 配置历史记录html的地址
+    er.config.CONTROL_IFRAME_URL = '../../src/history.html';
+
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:tableTpl -->\n<h2>example:table</h2><div ui="type:Table;id:myTable;datasource:*list;fields:*fields"></div>');
+    };
+
+    // 声明业务模块
+    var table = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'table.action'
+                }
+            ]
+        }
+    });
+    
+    table.action = new er.Action({
+        VIEW: 'tableTpl',
+        
+        TABLE_FIELDS: [
+            {
+                title: '编号',
+                sortable: true,
+                stable: true,
+                width: 50,
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                title: '姓名',
+                sortable: true,
+                width: 300,
+                content: function (item) {
+                    return item.name;
+                }
+            }
+        ],
+        
+        CONTEXT_INITER_MAP: {
+            list: function (callback) {
+                this.setContext('list', data);
+                this.setContext('fields', this.TABLE_FIELDS);
+                callback();
+            }
+        }
+    });
+    
+    var data = [
+        {id:1, name: 'erik'},
+        {id:2, name: 'pfkey'},
+        {id:3, name: 'caotelei'},
+        {id:4, name: 'ouyangxianwei'},
+        {id:5, name: 'fantao'},
+        {id:6, name: 'lizheng'}
+    ];
+    
+    window.onload = function () {
+        er.init();
+    };
+</script>
+</head>
+<body>
+<div id="Main"></div>
+</body>
+</html>

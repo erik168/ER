@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>table sortable</title>
+
+<link rel="stylesheet" href="../css/ui-table.css" type="text/css" media="screen" />
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.js"></script>
+<script type="text/javascript" src="../../src/er.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAction.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAdapter.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/Table.js"></script>
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:tableTpl -->\n<h2>example:table sortable</h2><div ui="type:Table;id:myTable;datasource:*list;fields:*fields;sortable:1;order:*order;orderBy:*orderBy;"></div>');
+    };
+
+    // 声明业务模块
+    var table = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'table.action'
+                }
+            ]
+        }
+    });
+    
+    table.action = new er.Action({
+        VIEW: 'tableTpl',
+        
+        TABLE_FIELDS: [
+            {
+                field: 'id',
+                title: '编号',
+                sortable: true,
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+                sortable: true,
+                width: 300,
+				align: 'right',
+                content: 'name'
+            }
+        ],
+        
+        STATE_MAP: {
+            order: '',
+            orderBy: ''
+        },
+        
+        CONTEXT_INITER_MAP: {
+            name: function (callback) {
+                var order = this.getContext('order'),
+                    orderBy = this.getContext('orderBy');
+                    
+                if (order) {
+                    data.sort(function (a, b) {
+                        var compareResult;
+                        
+                        switch (orderBy) {
+                        case 'id':
+                            compareResult = a.id - b.id;
+                            break;
+                        case 'name':
+                            compareResult = a.name.localeCompare(b.name);
+                            break;
+                        }
+                        
+                        if (order == 'desc') {
+                            compareResult = -compareResult;
+                        }
+                        
+                        return compareResult;
+                    });    
+                }
+                
+                this.setContext('list', data);
+                this.setContext('fields', this.TABLE_FIELDS);
+                callback();
+            }
+        },
+        
+        onentercomplete: function () {
+            ui.util.get('myTable').onsort = this.getTableSorter();
+        },
+        
+        getTableSorter: function () {
+            var me = this;
+            
+            return function (field, order) {
+                me.setContext('order', order);
+                me.setContext('orderBy', field.field);
+				me.setContext('fieldTitle', field.title);
+                me.refresh();
+            };
+        }
+    });
+    
+    var data = [
+        {id:1, name: 'erik'},
+        {id:2, name: 'pfkey'},
+        {id:3, name: 'caotelei'},
+        {id:4, name: 'ouyangxianwei'},
+        {id:5, name: 'fantao'},
+        {id:6, name: 'lizheng'}
+    ];
+    
+    window.onload = function () {
+        er.init();
+    };
+</script>
+</head>
+<body>
+<div id="Main"></div>
+</body>
+</html>

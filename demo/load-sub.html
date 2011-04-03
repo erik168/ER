@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>hello</title>
+
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.core.js"></script>
+<script type="text/javascript" src="../src/er.js"></script>
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:hello -->\nhello <span>${name}</span>!');
+    };
+
+    // 声明业务模块
+    var hello = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'hello.action'
+                }
+            ]
+        }
+    });
+    
+    hello.action = new er.Action({
+        VIEW: 'hello',
+
+        CONTEXT_INITER_MAP: {
+            name: function (callback) {
+                this.setContext('name', this.arg.queryMap.name);
+                callback();
+            }
+        }
+    });
+    
+    window.onload = function () {
+        er.init();
+		er.controller.loadSub('Sub', 'hello.action', {queryMap:{name: 'sub'}});
+    };
+</script>
+</head>
+<body>
+<div id="Main"><div>init</div></div>
+<div id="Sub">sub</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+/*
+ * esui (ECOM Simple UI)
+ * Copyright 2010 Baidu Inc. All rights reserved.
+ * 
+ * path:    ui-dialog.css
+ * desc:    对话框控件样式
+ * author:  erik
+ * date:    $Date$
+ */
+
+.ui-dialog {
+    background:#fff;;
+    border:2px solid #394459;
+    position:absolute;
+    width:660px;
+    font-size:12px;
+    z-index:200;
+}
+
+.ui-dialog-head {
+    background:#394459;
+    height:28px;
+    color:#fff;
+    font-weight:bold;
+}
+
+.skin-dialog-dragable .ui-dialog-head-hover {
+	background:#394459 url('img/dragable.png') center 10px no-repeat;
+    cursor:move;
+}
+
+.ui-dialog-title {
+    padding-left:12px;
+    line-height:28px;
+    
+}
+
+.ui-dialog .skin-button-layerclose {top:7px;}
+
+.ui-dialog-body {
+    padding:10px 8px;
+}
+
+.ui-dialog-foot {
+    margin:0 8px 4px;
+}
+.ui-dialog-foot .ui-button {margin-right:6px;}
+
+.ui-dialog-icon {display:none;}

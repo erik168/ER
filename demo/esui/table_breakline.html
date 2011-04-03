@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>table breakline</title>
+
+<link rel="stylesheet" href="../css/ui-table.css" type="text/css" media="screen" />
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.js"></script>
+<script type="text/javascript" src="../../src/er.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAction.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAdapter.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/Table.js"></script>
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:tableTpl -->\n<h2>example:table breakline</h2><div style="width:140px;"><div ui="type:Table;id:myTable;datasource:*list;fields:*fields;dragable:1;"></div></div>');
+    };
+
+    // 声明业务模块
+    var table = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'table.action'
+                }
+            ]
+        }
+    });
+    
+    table.action = new er.Action({
+        VIEW: 'tableTpl',
+        
+        TABLE_FIELDS: [
+            {
+                field: 'id',
+                title: '编号',
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名（给点力啊）',
+                width: 40,
+				dragable: 1,
+				breakLine:1,
+				align: 'right',
+                content: 'name'
+            },
+            {
+                field: 'sex',
+                title: '性别',
+                width: 50,
+				dragable: 1,
+				align: 'left',
+                content: function (item) {
+					return ['女', '男'][item.sex || 0];
+				}
+            }
+        ],
+        
+        CONTEXT_INITER_MAP: {
+            name: function (callback) {
+                
+                this.setContext('list', data);
+                this.setContext('fields', this.TABLE_FIELDS);
+                callback();
+            }
+        }
+    });
+    
+    var data = [
+        {id:1, name: 'erik', sex: 1},
+        {id:2, name: '庞飞帅', sex: 0},
+        {id:3, name: '曹特磊', sex: 1},
+        {id:4, name: '欧阳先伟', sex: 1},
+        {id:5, name: '樊总', sex: 1},
+        {id:6, name: '铮哥', sex: 1}
+    ];
+    
+    window.onload = function () {
+        er.init();
+    };
+</script>
+</head>
+<body>
+<div id="Main"></div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Pager</title>
+
+<link rel="stylesheet" href="../css/ui-pager.css" type="text/css" media="screen" />
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.js"></script>
+<script type="text/javascript" src="../../src/er.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAction.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAdapter.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/Button.js"></script>
+<script type="text/javascript" src="../../src/esui/Pager.js"></script>
+
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:testTpl -->\n<div ui="type:Pager;id:myPager;total:100;"></div>');
+    };
+
+    // 声明业务模块
+    var test = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'test.action'
+                }
+            ]
+        }
+    });
+    
+    test.action = new er.Action({
+        VIEW: 'testTpl',
+		
+		onentercomplete: function () {
+			ui.util.get('myPager').onchange = this.pageJumpHandler;
+		},
+		
+		pageJumpHandler: function (page) {
+			return confirm('你要跳到 [第 ' + (page + 1) + ' 页] 吗？');
+		}
+    });
+    
+    window.onload = function () {
+        er.init();
+    };
+</script>
+</head>
+<body>
+<h2>example:Pager</h2>
+<div id="Main"></div>
+</body>
+</html>

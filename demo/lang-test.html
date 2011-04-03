@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>hello</title>
+
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.core.js"></script>
+<script type="text/javascript" src="../src/er.js"></script>
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:lang -->\nname:${name:lang}!<br>hello.sub.name:${hello.name:lang}!');
+    };
+
+    // 声明业务模块
+    var hello = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'hello.action'
+                }
+            ]
+        },
+
+		lang: {name: 'erik in hello.lang'}
+    });
+    
+    hello.action = new er.Action({
+        VIEW: 'lang',
+    });
+    
+    window.onload = function () {
+        er.init();
+    };
+	
+	er.config.DEFAULT_PACKAGE = 'package';
+
+	var lang = {name: 'erik in lang', hello: {name: 'erik in lang.hello'}};
+	//var package = {lang: {name: 'erik from package'}};
+	//package.hello = {sub:{lang:{name: 'erik in package.hello.sub.lang'}}};
+
+</script>
+</head>
+<body>
+<div id="Main"><div>init</div></div>
+</body>
+</html>

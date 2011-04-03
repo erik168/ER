@@ -1,0 +1,101 @@
+/*
+ * esui (ECOM Simple UI)
+ * Copyright 2010 Baidu Inc. All rights reserved.
+ * 
+ * path:    ui-pager.css
+ * desc:    按钮样式
+ * author:  erik, zhaolei, yanjunyi
+ * date:    2011/01/19
+ */
+
+/**
+ * 基础按钮样式
+ */
+.ui-pager {
+	overflow:auto;
+	zoom:1;
+}
+.ui-pager ul {
+	float:left;
+	height:18px;
+	overflow:hidden;
+	zoom:1;
+	margin:0;
+	padding:0;
+	border:1px solid #ccc;
+}
+
+.ui-pager li {
+	float:left;
+	list-style:none;
+    height:18px;
+    
+	overflow:hidden;
+	padding:0 5px;
+	color:#0033CC;
+    font:12px/16px Arial, Helvetica, sans-serif;
+    text-align:center;
+	cursor:pointer;
+}
+
+.ui-pager li span {
+    line-height:19px;
+    _line-height:17px;
+}
+
+.ui-pager-disabled {
+	color:#999;
+}
+.ui-pager .ui-pager-omit,
+.ui-pager .ui-pager-disabled,
+.ui-pager .ui-pager-selected {
+	color:#999;
+	cursor:default;
+}
+.ui-pager .ui-pager-selected {
+	color:#666;
+	font:bold 14px Arial, Helvetica, sans-serif;
+}
+
+.ui-pager .ui-pager-icon {
+	display:inline-block;
+	zoom:1;
+	width:0;
+	height:0;
+	overflow:hidden;
+	border:5px solid transparent;
+	*margin-top:3px;
+	*border:5px solid #fff;
+}
+.ui-pager .ui-pager-prev .ui-pager-icon {
+	margin-right:5px;
+	border-right:5px solid #666;
+	border-left:none;
+}
+.ui-pager .ui-pager-next .ui-pager-icon {
+	margin-left:5px;
+	border-left:5px solid #666;
+	border-right:none;
+}
+.ui-pager .ui-pager-next.ui-pager-disabled .ui-pager-icon {
+	border-left-color:#bbb;
+}
+.ui-pager .ui-pager-prev.ui-pager-disabled .ui-pager-icon {
+	border-right-color:#bbb;
+}
+
+
+/**
+ * 基础按钮样式状态
+ */
+.ui-pager .ui-pager-hover,
+.ui-pager .ui-pager-press, 
+.ui-pager .ui-pager-active {
+	background:#E4E9F9;
+}
+
+.ui-pager-hover .ui-pager-icon,
+.ui-pager-press .ui-pager-icon, 
+.ui-pager-active .ui-pager-icon {
+	border-color:#E4E9F9;
+}

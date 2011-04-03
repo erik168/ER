@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Tip</title>
+
+<link rel="stylesheet" href="../css/ui-tip.css" type="text/css" />
+<link rel="stylesheet" href="../css/ui-button.css" type="text/css" />
+
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.2.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/BaseInput.js"></script>
+<script type="text/javascript" src="../../src/esui/Button.js"></script>
+<script type="text/javascript" src="../../src/esui/Layer.js"></script>
+<script type="text/javascript" src="../../src/esui/Tip.js"></script>
+</head>
+<body>
+<h2>example:Tip</h2>
+
+<div ui="id:myTip;type:Tip" style="background:#eee;border:1px solid #ccc;width:30px;height:30px;"></div>
+<div ui="id:myTipHelp;type:Tip;skin:help"></div>
+<div ui="id:myTipInfo;type:Tip;skin:info;mode:click"></div>
+<div ui="id:myTipTR;type:Tip;skin:info" style="position:absolute;top:5px;right:5px;"></div>
+<div ui="id:myTipBR;type:Tip;skin:info" style="position:absolute;bottom:5px;right:5px;"></div>
+<div ui="id:myTipBL;type:Tip;skin:info" style="position:absolute;bottom:5px;left:5px;"></div>
+<div ui="id:myTipTRA;type:Tip;skin:info;arrow:1" style="position:absolute;top:20px;right:20px;"></div>
+<div ui="id:myTipBRA;type:Tip;skin:info;arrow:1" style="position:absolute;bottom:20px;right:20px;"></div>
+<div ui="id:myTipBLA;type:Tip;skin:info;arrow:1" style="position:absolute;bottom:20px;left:20px;"></div>
+<div ui="id:myTipTLA;type:Tip;skin:info;arrow:1" style="position:absolute;top:20px;left:20px;"></div>
+<div ui="id:myTipBLStatic;type:Tip;skin:info;arrow:bl" style="position:absolute;top:32px;left:32px;"></div>
+<div ui="id:myTipLTStatic;type:Tip;skin:info;arrow:lt" style="position:absolute;top:50px;left:50px;"></div>
+<div ui="id:myTipLBStatic;type:Tip;skin:info;arrow:lb" style="position:absolute;top:80px;left:80px;"></div>
+<div ui="id:myTipRTStatic;type:Tip;skin:info;arrow:rt" style="position:absolute;top:210px;left:410px;"></div>
+<div ui="id:myTipRBStatic;type:Tip;skin:info;arrow:rb;hideDelay:2000" style="position:absolute;top:240px;left:440px"></div>
+<div ui="id:myTipAuto;type:Tip;skin:info;arrow:rb;mode:auto;" style="position:absolute;top:290px;left:490px;"></div>
+<script>
+ui.util.init(document.body, {
+	myTip: {
+		title: 'myTip',
+		content: 'Hello world!'
+	},
+	myTipHelp: {
+		title: 'myTip2',
+		content: 'Hello world2!'
+	},
+	myTipInfo: {
+		title: 'myTip3',
+		content: 'Hello sea!'
+	},
+	myTipTR: {
+		title: 'myTip4',
+		content: 'Hello sea!'
+	},
+	myTipBR: {
+		title: 'myTip5',
+		content: 'Hello sea!'
+	},
+	myTipBL: {
+		title: 'myTip6',
+		content: 'Hello sea!'
+	},
+	myTipTRA: {
+		title: 'myTip7',
+		content: 'Hello sea!'
+	},
+	myTipBRA: {
+		title: 'myTip8',
+		content: 'Hello sea!'
+	},
+	myTipBLA: {
+		title: 'myTip9',
+		content: 'Hello sea!'
+	},
+	myTipTLA: {
+		title: 'myTip10',
+		content: 'Hello sea!'
+	},
+	myTipBLStatic: {
+		title: 'myTip11',
+		content: 'Hello sea!'
+	},
+	myTipLTStatic: {
+		title: 'myTip12',
+		content: 'Hello sea!'
+	},
+	myTipLBStatic: {
+		title: 'myTip13',
+		content: 'Hello sea!'
+	},
+	myTipRTStatic: {
+		title: 'myTip14',
+		content: 'Hello sea!'
+	},
+	myTipRBStatic: {
+		title: 'myTip15',
+		content: 'Hello sea!2000ms delay'
+	},
+	myTipAuto: {
+		title: 'myTipAuto',
+		content: 'Hello sea!'
+	}
+});
+
+</script>
+</body>
+</html>

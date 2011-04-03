@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>MultiCalendar</title>
+
+<link rel="stylesheet" href="../css/ui-month.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/ui-mcal.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/ui-button.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/ui-select.css" type="text/css" media="screen" />
+
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.js"></script>
+<script type="text/javascript" src="../../src/er.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAction.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAdapter.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/BaseInput.js"></script>
+<script type="text/javascript" src="../../src/esui/Button.js"></script>
+<script type="text/javascript" src="../../src/esui/Layer.js"></script>
+<script type="text/javascript" src="../../src/esui/MonthView.js"></script>
+<script type="text/javascript" src="../../src/esui/MultiCalendar.js"></script>
+<script type="text/javascript" src="../../src/esui/MiniMultiCalendar.js"></script>
+<script type="text/javascript" src="../../src/esui/Select.js"></script>
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:testTpl -->\n<div ui="type:MiniMultiCalendar;id:myMiniCal"></div><br><div ui="type:MultiCalendar;id:myCal"></div>');
+    };
+
+    // 声明业务模块
+    var test = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'test.action'
+                }
+            ]
+        }
+    });
+    
+    test.action = new er.Action({
+        VIEW: 'testTpl',
+        
+        onafterrender: function () {
+			ui.get('myCal').onchange = this.calChangeHandler;
+		},
+
+		calChangeHandler: function (value) {
+			alert( [
+				value.begin,
+				value.end
+			] );
+		}
+    });
+    
+    window.onload = function () {
+        er.init();
+    };
+</script>
+</head>
+<body>
+<h2>example:MultiCalendar</h2>
+<div id="Main"></div>
+</body>
+</html>

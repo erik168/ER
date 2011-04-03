@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<article xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+   
+<articleinfo>
+    <title>ER Change Log</title>
+    <author>
+        <firstname>erik</firstname>
+        <affiliation>
+            <address> <email>dongrui@baidu.com</email> </address>
+        </affiliation>
+    </author>
+</articleinfo> 
+
+<section>   
+    <title>1.2.0</title>
+
+    <orderedlist>
+		<listitem><para>提供内置的简易UI组件库：ESUI。</para></listitem>
+		<listitem><para>Action增强：允许getQueryByContext接口传入参数表。</para></listitem>
+		<listitem><para>修复firefox下query部分带中文自动转移导致的Action两次enter问题。</para></listitem>
+		<listitem><para>修复controller在调度action时currentLocation记录失败导致referer为空的问题。</para></listitem>
+	</orderedlist>
+</section>
+
+<section>   
+    <title>1.1.0</title>
+
+    <orderedlist>
+		<listitem><para>Action增强：多例化与运行时环境管理增强，增加事件机制，并提供Action扩展机制。</para></listitem>
+		<listitem><para>功能升级：IE下，使用动态创建iframe的方法替代静态页面保存历史记录。</para></listitem>
+		<listitem><para>增加Module的抽象。</para></listitem>
+		<listitem><para>template增强：支持lang以及其他类型变量解析与替换功能。</para></listitem>
+		<listitem><para>controller增强：增加loadSubByPath方法。</para></listitem>
+		<listitem><para>修复Action.extend后扩展时无法影响到先前扩展具有别名的Action的问题。</para></listitem>
+	</orderedlist>
+</section>
+</article>
