@@ -163,9 +163,10 @@ var er = function () {
              * @public
              */
             load: function () {
-                var list = getConfig('TEMPLATE_LIST'),
-                    len = list instanceof Array && list.length,
-                    i = 0;
+                var list    = getConfig('TEMPLATE_LIST'),
+                    len     = list instanceof Array && list.length,
+                    tplBuf  = [],
+                    i       = 0;
                     
                 if (len && !isLoaded) {
                     isLoaded = 1;
@@ -181,7 +182,7 @@ var er = function () {
                  * @param {Object} xhr
                  */
                 function successCallback(xhr) {
-                    er.template.parse(xhr.responseText);
+                    tplBuf.push( xhr.responseText );
                     loadedCallback();
                 }
                 
@@ -194,6 +195,7 @@ var er = function () {
                     i++;
                     
                     if (i >= len) {
+                        template_.parse( tplBuf.join('') );
                         initER();
                     } else {
                         loadTemplate();
@@ -417,6 +419,15 @@ var er = function () {
          * @param {string} loc location位置
          */
         function redirect(loc) {
+            // 非string或空string不做处理
+            if ( !loc || typeof loc != 'string' ) {
+                return;
+            }
+            
+            // 增加location带起始#号的容错性
+            // 可能有人直接读取location.hash，经过string处理后直接传入
+            loc = loc.replace(/^#/, '');
+
             // 未设置path时指向当前path
             if (/^~/.test(loc)) {
                 loc = currentPath + loc
