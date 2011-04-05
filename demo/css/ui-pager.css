@@ -1,5 +1,5 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui-pager.css
@@ -13,34 +13,35 @@
  */
 .ui-pager {
 	overflow:auto;
-	zoom:1;
+    float:left;
+    display:inline;
 }
 .ui-pager ul {
 	float:left;
-	height:18px;
+	display:inline;
 	overflow:hidden;
-	zoom:1;
 	margin:0;
 	padding:0;
 	border:1px solid #ccc;
+    height:auto;
 }
 
 .ui-pager li {
 	float:left;
+    display:inline-block;
+    *display:inline;
 	list-style:none;
-    height:18px;
-    
 	overflow:hidden;
 	padding:0 5px;
 	color:#0033CC;
-    font:12px/16px Arial, Helvetica, sans-serif;
+    font:normal 12px/16px Arial, Helvetica, sans-serif;
     text-align:center;
 	cursor:pointer;
+    height:auto;
 }
 
-.ui-pager li span {
-    line-height:19px;
-    _line-height:17px;
+.ui-pager .ui-pager-item {
+    line-height:20px;
 }
 
 .ui-pager-disabled {
@@ -54,33 +55,38 @@
 }
 .ui-pager .ui-pager-selected {
 	color:#666;
-	font:bold 14px Arial, Helvetica, sans-serif;
+	font:bold 14px/19px Arial, Helvetica, sans-serif;
 }
 
-.ui-pager .ui-pager-icon {
-	display:inline-block;
-	zoom:1;
+.ui-pager-icon {
 	width:0;
 	height:0;
 	overflow:hidden;
-	border:5px solid transparent;
 	*margin-top:3px;
-	*border:5px solid #fff;
+	border:5px solid #fff;
 }
-.ui-pager .ui-pager-prev .ui-pager-icon {
-	margin-right:5px;
+.ui-pager-prev, .ui-pager-next {
+    width:46px;
+}
+.ui-pager-prev span, .ui-pager-next span {line-height:20px;}
+.ui-pager-prev .ui-pager-icon {
+    float:left;
+	margin:4px 5px 0 0;
 	border-right:5px solid #666;
 	border-left:none;
 }
-.ui-pager .ui-pager-next .ui-pager-icon {
-	margin-left:5px;
+.ui-pager-next .ui-pager-icon {
+    float:right;
+	margin:4px 0 0 5px;
 	border-left:5px solid #666;
 	border-right:none;
 }
-.ui-pager .ui-pager-next.ui-pager-disabled .ui-pager-icon {
+.ui-pager-prev .ui-pager-pntext {float:right;width:36px;line-height:20px;}
+.ui-pager-next .ui-pager-pntext {float:left;width:36px;line-height:20px;}
+.ui-pager-next.ui-pager-disabled .ui-pager-icon {
 	border-left-color:#bbb;
 }
-.ui-pager .ui-pager-prev.ui-pager-disabled .ui-pager-icon {
+.ui-pager-prev.ui-pager-disabled .ui-pager-icon {
 	border-right-color:#bbb;
 }
 
@@ -97,5 +103,6 @@
 .ui-pager-hover .ui-pager-icon,
 .ui-pager-press .ui-pager-icon, 
 .ui-pager-active .ui-pager-icon {
-	border-color:#E4E9F9;
+	border-top-color:#E4E9F9;
+    border-bottom-color:#E4E9F9;
 }
