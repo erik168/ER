@@ -1,11 +1,11 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/Tip.js
  * desc:    提示控件
  * author:  linzhifeng, erik
- * date:    $Date: 2011-04-02 23:55:44 +0800 (六, 02  4 2011) $
+ * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
 
 /**

@@ -1,11 +1,11 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/SideBar.js
  * desc:    左侧导航控件
  * author:  zhaolei, erik, linzhifeng
- * date:    $Date: 2011-03-10 15:07:03 +0800 (四, 10  3 2011) $
+ * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
 
 /**

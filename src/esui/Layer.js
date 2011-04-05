@@ -1,11 +1,11 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/Layer.js
  * desc:    浮动面板层
  * author:  erik
- * date:    $Date: 2011-02-13 18:32:03 +0800 (日, 13  2 2011) $
+ * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
 
 

@@ -1,11 +1,11 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/FormTab.js
  * desc:    表单Tab控件
  * author:  zhaolei, erik
- * date:    $Date: 2011-02-23 17:46:42 +0800 (三, 23  2 2011) $
+ * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
 
 /**

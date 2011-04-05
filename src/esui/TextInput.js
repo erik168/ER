@@ -1,5 +1,5 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2011 Baidu Inc. All rights reserved.
  * 
  * path:    ui/TextInput.js

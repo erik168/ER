@@ -1,11 +1,11 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/Tab.js
  * desc:    Tab标签控件
  * author:  zhaolei, erik, wanghuijun
- * date:    $Date: 2011-03-29 21:45:32 +0800 (二, 29  3 2011) $
+ * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
 
 /**

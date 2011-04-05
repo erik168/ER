@@ -1,11 +1,11 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/Pager.js
  * desc:    分页控件
  * author:  zhaolei, erik, yanjunyi
- * date:    $Date: 2011-02-28 17:53:18 +0800 (一, 28  2 2011) $
+ * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
 
 /**
@@ -36,8 +36,8 @@ ui.Pager = function (options) {
 
 ui.Pager.SHOW_COUNT = 5;
 ui.Pager.OMIT_TEXT = '…';
-ui.Pager.NEXT_TEXT = '下一页<span class="ui-pager-icon"></span>';
-ui.Pager.PREV_TEXT =  '<span class="ui-pager-icon"></span>上一页';
+ui.Pager.NEXT_TEXT = '<span class="ui-pager-pntext">下一页</span><span class="ui-pager-icon"></span>';
+ui.Pager.PREV_TEXT =  '<span class="ui-pager-icon"></span><span class="ui-pager-pntext">上一页</span>';
 
 ui.Pager.prototype = {
 	/**
@@ -75,7 +75,7 @@ ui.Pager.prototype = {
 	/**
 	 * @ignore
 	 */
-    _tplItem: '<li onclick="{2}" onmouseover="{3}" onmouseout="{4}" class="{1}"><span>{0}</span></li>',
+    _tplItem: '<li onclick="{2}" onmouseover="{3}" onmouseout="{4}" class="{1}">{0}</li>',
     
     /**
      * 绘制页码区
@@ -141,7 +141,7 @@ ui.Pager.prototype = {
                                      me.__getStrCall('select', begin + i))
                       );
             } else {
-                html.push(me._getInfoHtml(1 + begin + i, me.__getClass('selected')));
+                html.push(me._getInfoHtml(1 + begin + i, itemClass + ' ' + me.__getClass('selected')));
             }
         }
         

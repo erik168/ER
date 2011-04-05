@@ -1,11 +1,11 @@
 /*
- * esui (ECOM Simple UI)
+ * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/Schedule.js
  * desc:    日程控件
  * author:  chenjincai, erik
- * date:    $Date: 2011-03-27 18:20:03 +0800 (日, 27  3 2011) $
+ * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
  
 /**
