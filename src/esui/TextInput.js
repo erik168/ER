@@ -41,6 +41,8 @@ ui.TextInput.prototype = {
      * @param {string} value
      */
 	setValue: function (value) { 
+        value = value || '';
+
         var main = this._main;
         var virClass = this.__getClass('virtual');
         var placeholder = this.placeholder;

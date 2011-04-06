@@ -805,7 +805,6 @@ ui.Table.prototype = {
             // 如果通过function制定title，则不绘制排序小图标
             if (typeof title == 'function') {
                 contentHtml = title.call(me);
-                sortIconHtml = '';
             } else {
                 contentHtml = title || '';
             }
