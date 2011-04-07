@@ -5,7 +5,7 @@
  * path:    ui/TextLine.js
  * desc:    带行号的文本输入框控件
  * author:  zhouyu, erik
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
+ * date:    $Date: 2011-04-07 21:55:55 +0800 (四, 07  4 2011) $
  */
 
 ui.TextLine = function (options) {
@@ -16,10 +16,16 @@ ui.TextLine = function (options) {
     this._controlMap = {};
     this._lineId = this.__getId('line');
     this._textId = this.__getId('text');
+
+    this.__initOption('height', null, 'HEIGHT');
+    this.__initOption('lineWidth', null, 'LINE_WIDTH');
 };
 
+ui.TextLine.LINE_WIDTH = 32;
+ui.TextLine.HEIGHT = 200;
+
 ui.TextLine.prototype = {
-    _tpl: '<div id="{0}" class="{2}">1</div><textarea ui="type:TextInput;id:{1}"></textarea>',
+    _tpl: '<div id="{0}" class="{2}" style="width:{4}px">1</div><textarea ui="type:TextInput;id:{1}" style="left:{3}px"></textarea>',
     
     /**
      * 渲染控件
@@ -112,11 +118,12 @@ ui.TextLine.prototype = {
         var main = me._main;
         var lineId = me._lineId;
         var textId = me._textId;
+        var lineWidth = this.lineWidth;
 
         var propMap = {};
         propMap[textId] = {
-            width: me.width - 24,
-            height: me.height - 1,
+            width: me.width - lineWidth,
+            height: me.height,
             value: me.value
         };
 
@@ -124,7 +131,9 @@ ui.TextLine.prototype = {
                             me._tpl, 
                             lineId, 
                             textId,
-                            me.__getClass('line')
+                            me.__getClass('line'),
+                            lineWidth,
+                            lineWidth + 16
                         );
         me._controlMap.text = ui.util.init(main, propMap)[textId];
         me._lineEl = baidu.g(lineId);

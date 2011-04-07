@@ -16,10 +16,10 @@
     border:1px solid #a8adb6;
     height:22px;
     *height:16px;
-    box-sizing:border-box;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
     -ms-box-sizing:border-box;
+    box-sizing:border-box;
     background-image:-webkit-gradient(linear, 0 0, 0 2, from(#ececec), to(#fff));
     background-image:-moz-linear-gradient(top, #ececec, #fff 2px, #fff);
 }

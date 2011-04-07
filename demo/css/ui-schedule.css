@@ -99,3 +99,16 @@
     border:1px solid #390;
     color:#fff;
 }
+
+.ui-schedule-disabled .ui-schedule-time {
+    color:#888;
+    background:#E6E6E6;
+    border:1px solid #E6E6E6;
+    cursor:default;
+}
+
+.ui-schedule-disabled .ui-schedule-time-selected {
+    background:#390;
+    border:1px solid #390;
+    color:#fff;
+}

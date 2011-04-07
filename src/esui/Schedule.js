@@ -5,7 +5,7 @@
  * path:    ui/Schedule.js
  * desc:    日程控件
  * author:  chenjincai, erik
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
+ * date:    $Date: 2011-04-07 13:33:35 +0800 (四, 07  4 2011) $
  */
  
 /**
@@ -43,7 +43,7 @@ ui.Schedule.prototype = {
                     + '<div class="{4}"></div>'
                     + '<div class="{5}">{9}</div>'
                 + '</div>'
-                + '<div class="{6}">{10}</div>'
+                + '<div class="{6}" id="{10}">{11}</div>'
             + '</div>'
         + '<div class="{1}" id="{7}"></div>',
     
@@ -73,6 +73,32 @@ ui.Schedule.prototype = {
         }
         this.value = value;
     },
+    
+    /**
+     * 将控件设置为不可用
+     * 
+     * @public
+     */
+    disable: function ( disabled ) {
+        var stateName = 'disabled';
+        var shortcut;
+        var bodyHead;
+
+        if ( disabled ) {
+            this.setState( stateName );
+        } else {
+            this.removeState( stateName );
+        }
+
+        disabled = this.getState( stateName );
+        shortcut = baidu.g( this.__getId('shortcut') );
+        bodyHead = baidu.g( this.__getId('BodyHead') );
+        bodyHead.style.display = shortcut.style.display = disabled ? 'none' : '';
+        
+        for (i = 0; i < 7; i++) {
+            baidu.g( this.__getId('lineState' + i) ).disabled = disabled;
+        }
+    },
 
     /**
      * 渲染控件
@@ -100,12 +126,14 @@ ui.Schedule.prototype = {
                     this.__getId('body'),
                     this.helpSelected,
                     this.help,
+                    this.__getId('shortcut'),
                     this._getShortcutHtml()
                 );
             this._initBody();
         }
 
         this.isRender = 1;
+        this.disable( this.disabled );
         this._refreshView();
     },
     
@@ -267,6 +295,10 @@ ui.Schedule.prototype = {
      * @param {HTMLElement} dom 时间的dom元素
      */
     _timeClick: function (dom) {
+        if ( this.getState('disabled') ) {
+            return;
+        }
+        
         var day = parseInt(dom.getAttribute('day'), 10),
             time = parseInt(dom.getAttribute('time'), 10),
             isSelected = !baidu.dom.hasClass(
@@ -337,6 +369,7 @@ ui.Schedule.prototype = {
      */
     _refreshView: function () {
         var me = this;
+        var disabled = me.getState('disabled');
         var value = me.value;
         var lineValue, lineActive, lineCb;
         var headStates = [];
