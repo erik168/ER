@@ -44,6 +44,7 @@ ui.Table = function (options) {
     this.__initOption('subEntryOpenTip', null, 'SUBENTRY_OPEN_TIP');
     this.__initOption('subEntryCloseTip', null, 'SUBENTRY_CLOSE_TIP');
     this.__initOption('subEntryWidth', null, 'SUBENTRY_WIDTH');
+    this.__initOption('breakLine', null, 'BREAK_LINE');
     
     // 诡异的webkit
     // 表格的单元格不需要考虑边框宽度，直接加齐就行
@@ -66,6 +67,7 @@ ui.Table.ROW_WIDTH_OFFSET = -1;
 ui.Table.SUBENTRY_OPEN_TIP = '点击展开';
 ui.Table.SUBENTRY_CLOSE_TIP = '点击收起';
 ui.Table.SUBENTRY_WIDTH = 18;
+ui.Table.BREAK_LINE = 0;
 
 ui.Table.prototype = {
     /**
@@ -885,7 +887,7 @@ ui.Table.prototype = {
         }
         
         this._sortReady = 1;
-        baidu.addClass(cell.firstChild, this.__getClass('hcell-hover'));
+        baidu.addClass(cell, this.__getClass('hcell-hover'));
     },
     
     /**
@@ -896,7 +898,7 @@ ui.Table.prototype = {
      */
     _titleOutHandler: function (cell) {
         this._sortReady = 0;
-        baidu.removeClass(cell.firstChild, this.__getClass('hcell-hover'));
+        baidu.removeClass(cell, this.__getClass('hcell-hover'));
     },
     
     onsort: new Function(),
