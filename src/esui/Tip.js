@@ -1,11 +1,11 @@
 /*
- * ESUI (Enterprise Simple UI)
+ * esui (ECOM Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    ui/Tip.js
  * desc:    提示控件
  * author:  linzhifeng, erik
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
+ * date:    $Date: 2011-04-11 17:44:36 +0800 (一, 11  4 2011) $
  */
 
 /**
@@ -214,8 +214,10 @@ ui.Tip = function() {
             mainTop     = pos.top,
             mainWidth   = entrance.offsetWidth,
             mainHeight  = entrance.offsetHeight,
-            bodyWidth   = baidu.page.getWidth(),
-            bodyHeight  = baidu.page.getHeight(),
+            viewWidth   = baidu.page.getViewWidth(),
+            viewHeight  = baidu.page.getViewHeight(),
+            scrollLeft  = baidu.page.getScrollLeft(),
+            scrollTop   = baidu.page.getScrollTop(),
             layerMain   = _layer.getMain(),
             closeMain   = ui.get(CLOSE_ID).getMain(),
             layerWidth  = layerMain.offsetWidth,
@@ -303,7 +305,7 @@ ui.Tip = function() {
         if (!temp) {
             layerTop = mainTop + mainHeight + offsetY;
             arrow && (arrow = 't');
-            if (layerTop + layerHeight > bodyHeight) {
+            if (layerTop + layerHeight > viewHeight + scrollTop) {
                 if ((temp = mainTop - offsetY - layerHeight) > 0) {
                     layerTop = temp;
                     arrow && (arrow = 'b');
@@ -312,7 +314,7 @@ ui.Tip = function() {
 
             layerLeft = mainLeft + mainWidth + offsetX;
             arrow && (arrow += 'l');
-            if (layerLeft + layerWidth > bodyWidth) {
+            if (layerLeft + layerWidth > viewWidth + scrollLeft) {
                 if ((temp = mainLeft - offsetX - layerWidth) > 0) {
                     layerLeft = temp;
                     arrow && (arrow = arrow.substr(0,1) + 'r');
