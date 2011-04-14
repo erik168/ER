@@ -1,5 +1,5 @@
 /*
- * ESUI (Enterprise Simple UI)
+ * esui (ECOM Simple UI)
  * Copyright 2011 Baidu Inc. All rights reserved.
  * 
  * path:    ui/TextInput.js
@@ -14,35 +14,34 @@
  * @param {Object} options 控件初始化参数
  */
 ui.TextInput = function (options) {
-	this.__initOptions(options);
+    this.__initOptions(options);
 
     this.value = this.value || '';
 };
 
 ui.TextInput.prototype = {
-	/**
-	 * 获取文本输入框的值
-	 * 
-	 * @public
-	 * @return {string}
-	 */
-	getValue: function () {
+    /**
+     * 获取文本输入框的值
+     * 
+     * @public
+     * @return {string}
+     */
+    getValue: function () {
         var value = this._main.value;
         if ( this._placing ) {
             return '';
         }
-		return value;
-	},
-	
+        return value;
+    },
+    
     /**
      * 设置文本输入框的值
      * 
      * @public
      * @param {string} value
      */
-	setValue: function (value) { 
+    setValue: function (value) { 
         value = value || '';
-
         var main = this._main;
         var virClass = this.__getClass('virtual');
         var placeholder = this.placeholder;
@@ -144,13 +143,35 @@ ui.TextInput.prototype = {
         me.disable( !!me.disabled );
 
         // 绘制宽高
-        me.width && (main.style.width = me.width + 'px');
-        me.height && (main.style.height = me.height + 'px');
+        me.setWidth( me.width );
+        me.setHeight( me.height );
 
         // 刷新输入框的value
         me.setValue(me.value);
     },
     
+    /**
+     * 设置控件的高度
+     *
+     * @public
+     * @param {number} height 高度
+     */
+    setHeight: function ( height ) {
+        this.height = height;
+        height && (this._main.style.height = height + 'px');
+    },
+    
+    /**
+     * 设置控件的宽度
+     *
+     * @public
+     * @param {number} width 宽度
+     */
+    setWidth: function ( width ) {
+        this.width = width;
+        width && (this._main.style.width = width + 'px');
+    },
+
     /**
      * 添加控件oninput事件的监听器
      * 
