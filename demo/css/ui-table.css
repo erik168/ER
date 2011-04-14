@@ -131,6 +131,12 @@
     text-align:center;
 }
 
+.ui-table-cell-break .ui-table-cell-text,
+.ui-table-cell-break .ui-table-hcell-text{
+    word-wrap:break-word;
+    word-break:break-all;
+    height:auto;
+}
 
 /* 可排序列的表头样式Hover */
 .ui-table-hcell-hover {
@@ -172,14 +178,7 @@
     background:#FDE8C4;
 }
 
-.ui-table-cell-break .ui-table-cell-text,
-.ui-table-cell-break .ui-table-hcell-text{
-    line-height:28px;
-    padding:0 5px;
-    word-wrap:break-word;
-    word-break:break-all;
-    height:auto;
-}
+
 
 /* 定义拖拽鼠标指针 */
 .ui-table .ui-table-startdrag,
