@@ -5,7 +5,7 @@
  * path:    ui/TextLine.js
  * desc:    带行号的文本输入框控件
  * author:  zhouyu, erik
- * date:    $Date: 2011-04-07 21:55:55 +0800 (四, 07  4 2011) $
+ * date:    $Date: 2011-04-14 23:08:02 +0800 (四, 14  4 2011) $
  */
 
 ui.TextLine = function (options) {
@@ -50,7 +50,37 @@ ui.TextLine.prototype = {
         }
         
         if ( me._isRender ) {
-            me._controlMap.text.setValue(me.value);
+            me.setValue(me.value);
+        }
+    },
+    
+    /**
+     * 设置控件的高度
+     *
+     * @public
+     * @param {number} height 高度
+     */
+    setHeight: function ( height ) {
+        this.height = height;
+        
+        if ( height ) {
+            this._lineEl.style.height = this._main.style.height = height + 'px';
+            this._controlMap.text.setHeight( height );
+        }
+    },
+
+    /**
+     * 设置控件的宽度
+     *
+     * @public
+     * @param {number} width 宽度
+     */
+    setWidth: function ( width ) {
+        this.width = width;
+        
+        if ( width ) {
+            this._main.style.width = width + 'px';
+            this._controlMap.text.setWidth( width - this.lineWidth );
         }
     },
     
@@ -105,6 +135,7 @@ ui.TextLine.prototype = {
         var me = this;
         return function(){
             me._refreshLine();
+            (typeof me.onchange == 'function') && me.onchange();
         };
     },
     
@@ -153,7 +184,6 @@ ui.TextLine.prototype = {
                     .getValue()
                     .split("\n")
                     .length;
-
         if (num != me.number) {
             me.number = num;
             for (i = 1; i < num + 1; i++) {
@@ -210,6 +240,7 @@ ui.TextLine.prototype = {
     setValue: function (value) {
         var text = this._controlMap.text;
         text.setValue(value);
+        this._refreshLine();
     },
     
     /**
