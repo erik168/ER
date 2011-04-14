@@ -15,6 +15,7 @@
     line-height:20px;
     font-size:12px;
     cursor:pointer;
+    background:#fff;
     background-image:-webkit-gradient(linear, 0 0, 0 1, from(#ececec), to(#fff));
     background-image:-moz-linear-gradient(top, #ececec, #fff 1px, #fff);
 }
