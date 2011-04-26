@@ -20,7 +20,7 @@ ui.Calendar = function (options) {
     this._type = 'cal';
 
     // 初始化显示日期的年月
-    this.now = this.now || ui.config.now || new Date();
+    this.now = this.now || ui.config.NOW || new Date();
     var now = this.now;
     now = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
