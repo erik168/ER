@@ -20,7 +20,7 @@ ui.MultiCalendar = function (options) {
     this._controlMap = {};
 
     // 初始化当前日期
-    this.now = this.now || ui.config.now || new Date();
+    this.now = this.now || ui.config.NOW || new Date();
     var now = this.now;
 
     // 初始化当前选中日期
@@ -178,6 +178,7 @@ ui.MultiCalendar.prototype = {
             if (me.onchange(value, valueText) !== false) {
                 me.value = value;
                 me._repaintMain(valueText);
+                me._controlMap.shortcut.select(value);
                 me.hideLayer();
             }
         };
@@ -217,7 +218,6 @@ ui.MultiCalendar.prototype = {
             }
 
             me.tempValue[type] = date;
-            me._controlMap['shortcut'].select(me.tempValue);
             baidu.g(me.__getId(type + 'title')).innerHTML = baidu.date.format(date, me.dateFormat);
         };
     },
@@ -418,6 +418,7 @@ ui.MultiCalendar.prototype = {
         uiProp[endM]    = {datasource:this._getMonthOptions(endYear),value:endMonth};
         uiProp[beginY]  = {datasource:yearDs,value:beginYear};
         uiProp[endY]    = {datasource:yearDs,value:endYear};
+        uiProp[shortcut]= {options: this.shortcutOptions, value: this.value};
 
         // 初始化控件
         controlMap  = ui.util.init(layer._main, uiProp);
@@ -476,7 +477,7 @@ ui.MultiCalendar.prototype = {
         var me = this;
 
         return function (value, name) {
-            if ( me.onchange( value, name ) !== false) {
+            if ( me.onchange( value, name ) !== false ) {
                 me.value = value;
                 me._repaintMain(name);
                 me.hideLayer();
@@ -691,19 +692,20 @@ ui.MultiCalendar.prototype = {
      * @private
      */
     _repaintLayer: function () {  
-        this._controlMap['shortcut'].select(this.value);
+        //this._controlMap['shortcut'].select(this.value);
         this._repaintSide('begin');
         this._repaintSide('end');
     },
 
     /**
-     * 获取当前选中日期区间的显示字符
+     * 获取当前日期区间的显示字符
      * 
      * @public
+     * @param {Object} opt_value 日期区间
      * @return {string}
      */
-    getValueText: function (value) {
-        value = value || this.getValue();
+    getValueText: function ( opt_value ) {
+        var value = opt_value || this.getValue();
         var begin = value.begin,
             end   = value.end,
             format    = this.dateFormat,
@@ -711,7 +713,7 @@ ui.MultiCalendar.prototype = {
             shortcut = this._controlMap['shortcut'];
             
         if (begin && end) {
-            return (shortcut && shortcut.getName()) 
+            return (shortcut && shortcut.getName( opt_value ? value : null )) 
                         || formatter(begin, format) 
                             + " 至 " 
                             + formatter(end, format);

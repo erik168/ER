@@ -5,7 +5,7 @@
  * path:    ui/MiniMultiCalendar.js
  * desc:    小型多日期选择器
  * author:  zhaolei, erik
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
+ * date:    $Date: 2011-04-26 12:31:50 +0800 (二, 26  4 2011) $
  */
 
 /**
@@ -19,8 +19,8 @@ ui.MiniMultiCalendar = function (options) {
     // 类型声明，用于生成控件子dom的id和class
     this._type = 'mmcal';
     
-    this.now = this.now || ui.config.now || new Date();
-    this.options = this.options || ui.MiniMultiCalendar.ITEMS;
+    this.now = this.now || ui.config.NOW || new Date();
+    this.__initOption('options', null, 'OPTIONS');
     
     // 初始化当前日期
     this.value = this.value || {
@@ -45,14 +45,15 @@ ui.MiniMultiCalendar.prototype = {
      * @return {boolean}
      */
     _isSameDate: function (date1, date2) {
-		if (date2 != "" && date1 != "") {
-			if (date1.getFullYear() == date2.getFullYear()
-                && date1.getMonth() == date2.getMonth()
-                && date1.getDate() == date2.getDate()
+		if ( date2 != "" && date1 != "" ) {
+			if ( date1.getFullYear() == date2.getFullYear()
+                 && date1.getMonth() == date2.getMonth()
+                 && date1.getDate() == date2.getDate()
             ) {
 				return true;
 			}
 		}
+
         return false;
     },
     
@@ -104,25 +105,37 @@ ui.MiniMultiCalendar.prototype = {
             idPrefix = me.__getId('option'),
             i, 
             opValue, 
-            opName,
             option,
             clazz, callStr,
             html = [];
 
        	me._currentName = '';
-        for (i = 0; i < len; i++) {
+        if ( ui._hasValue( me._selectedIndex ) ) {
+            me._currentName = opList[ me._selectedIndex ].name;
+        } else {
+            for ( i = 0; i < len; i++ ) {
+                option = opList[ i ];
+                opValue = option.getValue.call( me );
+
+                if (me._isSameDate( value.begin, opValue.begin )
+                    && me._isSameDate( value.end, opValue.end )
+                ) {
+                    me._selectedIndex = i;
+                    me._currentName = option.name;
+                    break;
+                }
+            }
+        }
+        
+        for ( i = 0; i < len; i++ ) {
             option = opList[i];
             opValue = option.getValue.call(me);
-            opName = option.name;
             clazz = me.__getClass('option');
-            callStr = ' onclick="' + me.__getStrCall("_selectIndex", i) + '"';
+            callStr = ' onclick="' + me.__getStrCall("_selectByIndex", i) + '"';
             
-            if (me._isSameDate(value.begin, opValue.begin)
-                && me._isSameDate(value.end, opValue.end)
-            ) {
+            if ( i == me._selectedIndex ) {
                 clazz = clazz + ' ' + me.__getClass('option-selected');
                 callStr = '';
-                me._currentName = opName;
             }
             
             html.push(
@@ -145,19 +158,20 @@ ui.MiniMultiCalendar.prototype = {
      * @private
      * @param {number} index 
      */
-    _selectIndex: function (index) {
-		var me = this,
-            opList = me.options, 
+    _selectByIndex: function (index) {
+		var opList = this.options, 
+            item,
             value;
 
         if (index < 0 || index >= opList.length) {
             return;
         }
         
-        value = opList[index].getValue.call(this);
+        item = opList[index];
+        value = item.getValue.call(this);
         
-        if (me.onchange(value, opList[index].name, index) !== false) {
-            me.select(value);
+        if ( this.onchange(value, item.name, index) !== false ) {
+            this.selectByIndex(index);
         }
     },
     
@@ -168,17 +182,56 @@ ui.MiniMultiCalendar.prototype = {
      * @param {Object} value 日期区间对象
      */
     select: function (value) {
+        this._selectedIndex = null;
         this.value = value;
         this.render();
     },
     
     /**
-     * 获取当前快捷方式的名称
+     * 按快捷项index选取日期区间
      * 
      * @public
+     * @param {number} index 快捷项index
+     */
+    selectByIndex: function (index) {
+        var opList = this.options, 
+            item = opList[index];
+
+        if (index < 0 || index >= opList.length) {
+            return;
+        }
+
+        this._selectedIndex = index;
+        this.value = item.getValue.call(this);
+        this.render();
+    },
+    
+    /**
+     * 获取快捷方式的名称
+     * 
+     * @public
+     * @param {Object} opt_value 日期区间值
      * @return {string}
      */
-    getName: function () {
+    getName: function ( opt_value ) {
+        if ( opt_value ) {
+            var items = this.options;
+            var i, item, value;
+            var len = items.length;
+
+            for ( i = 0; i < len; i++ ) {
+                item = items[ i ];
+                value = item.getValue.call( this );
+                if ( this._isSameDate( value.begin, opt_value.begin )
+                     && this._isSameDate( value.end, opt_value.end )
+                ) {
+                    return item.name;
+                }
+            }
+
+            return '';
+        }
+
         return this._currentName;
     }
 };
@@ -186,7 +239,7 @@ ui.MiniMultiCalendar.prototype = {
 /**
  * 日期区间选项列表配置
  */
-ui.MiniMultiCalendar.ITEMS = [
+ui.MiniMultiCalendar.OPTIONS = [
     {
         name: '昨天',
         value: 0,
