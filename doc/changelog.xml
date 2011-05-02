@@ -13,6 +13,24 @@
 </articleinfo> 
 
 <section>   
+    <title>1.2.1</title>
+
+    <orderedlist>
+		<listitem><para>增强er.locator.redirect在传入location带有前缀#号的容错。</para></listitem>
+        <listitem><para>优化template自动加载的解析。</para></listitem>
+		<listitem><para>修复er.init时location为默认index的情况下Action不工作的问题。</para></listitem>
+		<listitem><para>Action增强：refresh方法增加额外的queryMap参数支持。</para></listitem>
+		<listitem><para>ESUI - Calendar：修复在IE下背景颜色穿透的问题。</para></listitem>
+		<listitem><para>ESUI - MultiCalendar：优化复日期选择控件shortcut区间重复匹配时多项active的交互。</para></listitem>
+		<listitem><para>ESUI - TextLine：增加onchange事件支持，增加行号区域宽度定制支持，修复setValue时行号区域不更新的bug。</para></listitem>
+		<listitem><para>ESUI - TextInput：修复setValue值为null时填入值为字符串null的问题，修复TextInput控件placeholder在获焦时内容未清空的问题，修复输入内容为placeholder时getValue为空的问题。</para></listitem>
+		<listitem><para>ESUI - Table：添加breakLine的全局配置支持，修复editable列在开启breakLine时的鼠标移入抖动问题，修复table控件标题配置为function时sort标记失效的问题。</para></listitem>
+		<listitem><para>ESUI - Tip：添加关闭按钮显示的配置与提示箭头配置功能，修复在超出可视区域自动方向判断的bug。</para></listitem>
+	</orderedlist>
+</section>
+
+
+<section>   
     <title>1.2.0</title>
 
     <orderedlist>
