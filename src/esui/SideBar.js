@@ -5,7 +5,6 @@
  * path:    ui/SideBar.js
  * desc:    左侧导航控件
  * author:  zhaolei, erik, linzhifeng
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
 
 /**
@@ -18,21 +17,27 @@ ui.SideBar = function (options) {
 
     this._controlMap = {};
 
-    this.headHeight = this.headHeight || 37;
-    this.marginTop = this.marginTop || 10;
-    this.marginLeft = this.marginLeft || 10;
-    this.marginBottom = this.marginBottom || 10;
+    this.headHeight     = this.headHeight || 37;
+    this.marginTop      = this.marginTop || 10;
+    this.marginLeft     = this.marginLeft || 10;
+    this.marginBottom   = this.marginBottom || 10;
 
-    //this._autoHide = this.isHide;
+    this.__initOption('autoDelay', null, 'AUTO_DELAY');
+    this.__initOption('mode', null, 'MODE');
+
     this._autoTimer = 0;
-    this._motioning = false;
+    
+    // TODO: 永久取消js实现的sidebar动画效果
+    // this._motioning = false;
 };
 
+ui.SideBar.AUTO_DELAY = 200;    //自动隐藏和自动显示的延迟
+ui.SideBar.MODE = 'fixed';      //初始化状态
+
 ui.SideBar.prototype = {
-    motionStep      : 20,        //动态步伐
-    motionInterval  : 20,        //动态间隔
-    mode            : 'fixed',   //初始化状态
-    autoDelay       : 200,       //自动隐藏和自动显示的延迟
+    // TODO: 永久取消js实现的sidebar动画效果
+    // motionStep      : 20,        //动态步伐
+    // motionInterval  : 20,        //动态间隔
     
     /**
      * 初始化控制按钮
@@ -95,6 +100,7 @@ ui.SideBar.prototype = {
         return function () {
             me._setMode('autohide');
             me.onmodechange(me.mode);
+            me._hide();
         };
     },
     
@@ -106,8 +112,11 @@ ui.SideBar.prototype = {
      */
     _setMode: function (mode) {
         mode = mode.toLowerCase();
-        var autoHideMain = this._getAutoHideMain();
-        var fixedMain = this._getFixedMain()
+        var autoHideMain    = this._getAutoHideMain();
+        var fixedMain       = this._getFixedMain();
+        var neighbor        = this._getNeighbor();
+        var neighborHideClass = this.__getClass('neighbor-hide');
+
         if (mode == 'fixed') {
             baidu.hide(fixedMain);
             baidu.show(autoHideMain);
@@ -117,6 +126,16 @@ ui.SideBar.prototype = {
         }
 
         this.mode = mode;
+        
+        // 更新neighbor视图
+        if ( this._isAutoHide() ) {
+            baidu.addClass( neighbor, neighborHideClass );
+        } else {
+            baidu.removeClass( neighbor, neighborHideClass );
+            this._hideMat();
+        }
+
+        this._repaintNeighbor();
     },
     
     /**
@@ -213,9 +232,10 @@ ui.SideBar.prototype = {
             // 给邻居元素添加控制样式的class
             baidu.addClass(me._getNeighbor(), me.__getClass('neighbor'));
             
-            // 初始化控制按钮，内容区域和minibar
+            // 初始化控制按钮，内容区域，mat和minibar
             me._initCtrlBtn();
             me._initContent();
+            me._renderMat();
             me._renderMiniBar();
             
             // 挂载resize和scorll的listener
@@ -233,14 +253,26 @@ ui.SideBar.prototype = {
             me._resetHeight(); 
             
             // 初始化显示状态
-            if (me._isAutoHide()) {
-                me._hide(1);
+            if ( me._isAutoHide() ) {
+                me._hide();
             }
 
             me._isRender = 1;
         }
     },
     
+    /**
+     * 绘制mat区域
+     * 
+     * @private
+     */
+    _renderMat: function () {
+        var mat = document.createElement( 'div' );
+        mat.id = this.__getId( 'mat' );
+        mat.className = this.__getClass( 'mat' );
+        document.body.appendChild( mat );
+    },
+
     /**
      * 刷新控件的显示
      *
@@ -275,11 +307,11 @@ ui.SideBar.prototype = {
     _getMainOutHandler: function () {
         var me = this;
 
-        return function(event){
-            if (me._isAutoHide() && !me._motioning){
+        return function ( event ) {
+            if ( me._isAutoHide() ) {
                 event = event || window.event;
                 var tar = event.relatedTarget || event.toElement;
-                if (!baidu.dom.contains(me._main,tar)){
+                if (!baidu.dom.contains(me._main, tar)) {
                     me._autoHideBar();                        
                 }                                        
             }
@@ -316,25 +348,9 @@ ui.SideBar.prototype = {
         me._miniBar = div;
         
         // 挂载行为
-        div.onclick = me._getMiniClickHandler();
         div.onmouseover = me._getMiniOverHandler();
         div.onmouseout = me._getMiniOutHandler();
-            
         document.body.appendChild(div);
-    },
-    
-    /**
-     * 获取minibar鼠标移出的handler
-     *
-     * @private
-     * @return {Function}
-     */
-    _getMiniOutHandler: function () {
-        var me = this;
-        return function () {
-            baidu.removeClass(this, me.__getClass('minibar-hover'));
-            clearTimeout(me._autoTimer);
-        };
     },
     
     /**
@@ -351,29 +367,22 @@ ui.SideBar.prototype = {
                 me._autoTimer = setTimeout(
                     function () {
                         me._hideMiniBar();
-                    }, me.autoDelay);                                    
+                    }, me.autoDelay);
             }
         };
     },
-
+    
     /**
-     * 获取minibar点击的handler
+     * 获取minibar鼠标移出的handler
      *
      * @private
      * @return {Function}
      */
-    _getMiniClickHandler: function () {
+    _getMiniOutHandler: function () {
         var me = this;
         return function () {
             baidu.removeClass(this, me.__getClass('minibar-hover'));
-            if (!me._motioning){
-                clearTimeout(me._autoTimer);
-                me._hideMiniBar();
-            }
-
-            var mode = 'fixed';
-            me._setMode(mode);  
-            me.onmodechange(mode);
+            clearTimeout(me._autoTimer);
         };
     },
 
@@ -403,7 +412,11 @@ ui.SideBar.prototype = {
         this.bodyHeight = bodyHeight;
         this.height = height;
 
-        me._main.style.height = me._miniBar.style.height = height + 'px';
+        me._getMat().style.height = height + me.marginTop * 2 + 'px';
+        me._main.style.height = 
+        me._miniBar.style.height = 
+            height + 'px';
+
         me._bodyEl && (me._bodyEl.style.height = bodyHeight + 'px');
 
         this.onresize();
@@ -435,13 +448,14 @@ ui.SideBar.prototype = {
             marginTop = me.marginTop,
             scrollTop = baidu.page.getScrollTop(),
             main = me._main,
+            mat = me._getMat(),
             mini = me._miniBar,
             top = me.top,
             mainTop, miniTop, 
             mainPos = 'absolute',
             miniPos = 'absolute';
         
-       // 2x2的判断，真恶心
+        // 2x2的判断，真恶心
         if (baidu.ie && baidu.ie < 7) {
             if (scrollTop > top - marginTop) {
                 mainTop = miniTop = scrollTop - top + me.top;
@@ -459,8 +473,9 @@ ui.SideBar.prototype = {
             }
         }
         
+        mat.style.top = mainTop - me.marginTop + 'px';
         main.style.top = mainTop + 'px';
-        main.style.position = mainPos;
+        mat.style.position = main.style.position = mainPos;
         mini.style.top = miniTop + 'px';
         mini.style.position = miniPos;
         setTimeout(function(){
@@ -483,6 +498,15 @@ ui.SideBar.prototype = {
     },
     
     /**
+     * 隐藏mat区域
+     * 
+     * @private
+     */
+    _hideMat: function () {
+        this._getMat().style.left = '-10000px';
+    },
+
+    /**
      * 显示侧边导航
      * 
      * @private
@@ -500,14 +524,21 @@ ui.SideBar.prototype = {
          * @inner
          */
         function finished() {
-            me._main.style.left = endLeft + 'px';            
-            me._motioning = false;
+            me._getMat().style.left = 0;
+            me._main.style.left = endLeft + 'px'; 
+            // TODO: 永久取消js实现的sidebar动画效果
+            // me._motioning = false;
             
             if (me._isAutoHide()){
                 me._autoHideBar();                
             }
         }
         
+        finished();
+        return;
+        
+        // TODO: 永久取消js实现的sidebar动画效果
+        /*
         me._motioning = true;        
         interval = setInterval(
             function () {
@@ -523,6 +554,7 @@ ui.SideBar.prototype = {
                 me._main.style.left = startLeft + pos + 'px';
             }, 
             me.motionInterval);  
+        */
     },
         
     /**
@@ -530,7 +562,7 @@ ui.SideBar.prototype = {
      *
      * @private
      */
-    _hide: function (noMotion) {
+    _hide: function () {
         var me = this,
             step = 0,
             endLeft = -220,
@@ -538,27 +570,23 @@ ui.SideBar.prototype = {
             minus = endLeft - startLeft,
             interval;
         
-        if (noMotion) {
-            finished(noMotion);
-            return;
-        }
+        finished();
+        return;
 
-        me._motioning = true;
-        
-        /**
-         * 完成隐藏侧边导航的动作
-         * @inner
-         */
         function finished(noMotion) {
+            me._getMat().style.left = '-10000px';
             me._main.style.left = endLeft + 'px';
-            baidu.addClass(me._getNeighbor(), me.__getClass('neighbor-hide'));
-            me._repaintNeighbor();
+            //baidu.addClass(me._getNeighbor(), me.__getClass('neighbor-hide'));
+            //me._repaintNeighbor();
             
-            me._motioning = false;
+            // TODO: 永久取消js实现的sidebar动画效果
+            // me._motioning = false;
             me._showMiniBar(noMotion);
         };
         
-        
+        // TODO: 永久取消js实现的sidebar动画效果
+        /*
+        me._motioning = true;
         interval = setInterval(
             function () {
                 step ++;
@@ -573,6 +601,7 @@ ui.SideBar.prototype = {
                 me._main.style.left = startLeft + pos + 'px';
             }, 
             me.motionInterval);        
+        */
     },    
     
     /**
@@ -583,7 +612,7 @@ ui.SideBar.prototype = {
     _autoHideBar : function(){
         var me = this;
         clearTimeout(me._autoTimer);
-        me._autoTimer = setTimeout(function(){
+        me._autoTimer = setTimeout(function () {
             var mPos = baidu.page.getMousePosition(),
                 navPos = baidu.dom.getPosition(me._main);
 
@@ -621,9 +650,16 @@ ui.SideBar.prototype = {
          */
         function finish() {
             me._miniBar.style.left = endLeft + 'px';
-            me._motioning = false;
+
+            // TODO: 永久取消js实现的sidebar动画效果
+            // me._motioning = false;
         }
         
+        finish();
+        return;
+        
+        // TODO: 永久取消js实现的sidebar动画效果
+        /*
         me._motioning = true;
         interval = setInterval(
             function () {
@@ -639,7 +675,7 @@ ui.SideBar.prototype = {
                 me._miniBar.style.left = startLeft + pos + 'px';
             }, 
             me.motionInterval);
-        
+        */
     },
     
     /**
@@ -655,29 +691,34 @@ ui.SideBar.prototype = {
             startLeft = 0,
             minus = endLeft - startLeft,
             interval;  
-        
-        me._motioning = true;
-        
+
         /**
          * 完成隐藏minibar的动作
          * @inner
          */
         function finished() {
             me._miniBar.style.left = endLeft + 'px';
-            baidu.removeClass(me._getNeighbor(), me.__getClass('neighbor-hide'));         
-            me._repaintNeighbor();
+            //baidu.removeClass(me._getNeighbor(), me.__getClass('neighbor-hide'));         
+            //me._repaintNeighbor();
             
-            me._motioning = false;
+            // TODO: 永久取消js实现的sidebar动画效果
+            // me._motioning = false;
             me._show();
         }
+
+        finished();
+        return;
         
+        // TODO: 永久取消js实现的sidebar动画效果
+        /*
+        me._motioning = true;
         interval = setInterval(
             function () {
                 step ++;
                 
                 if (step >= me.motionStep) {
                     clearInterval(interval);
-                    finished();
+                    finish();
                     return;
                 }
                 
@@ -685,6 +726,7 @@ ui.SideBar.prototype = {
                 me._miniBar.style.left = startLeft + pos + 'px';
             }, 
             me.motionInterval);       
+        */
     },
 
     /**
@@ -719,36 +761,50 @@ ui.SideBar.prototype = {
     },
     
     /**
+     * 获取mat元素
+     * 
+     * @private
+     * @return {HTMLElement}
+     */
+    _getMat: function () {
+        return baidu.g( this.__getId('mat') );
+    },
+
+    /**
      * 释放控件
      * 
      * @private
      */
     dispose: function () {
         var me = this;
+        var mat = me._getMat();
             
         baidu.un(window, 'resize' ,me.heightReseter);
         baidu.un(window, 'scroll', me.topReseter);
         document.body.removeChild(me._miniBar);
+        document.body.removeChild(mat);
 
         // 释放dom引用
         me._headEl = null;
         me._bodyEl = null;
         me._miniBar = null;
 
-                
         ui.Base.dispose.call(me);
-    },
-
+    }
+    
+    // TODO: 永久取消js实现的sidebar动画效果
+    // ,
     /**
      * 动画函数
      * 
      * @private
      * @param {number} step 步数
      * @return {number} 完成百分比
-     */
+     
     _tween : function(step) {
         return Math.pow(step/this.motionStep, 2);
     }
+    */
 };
 
 ui.Base.derive(ui.SideBar);
