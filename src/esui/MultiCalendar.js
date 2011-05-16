@@ -65,7 +65,7 @@ ui.MultiCalendar.prototype = {
      * 主显示区域的模板
      * @private
      */
-    _tplMain: '<span id="{0}" class="{1}">{2}</span><div class="{3}" arrow="1"></div>',
+    _tplMain: '<span id="{3}" class="{4}" style="display:none"></span><span id="{0}" class="{1}"></span><div class="{2}" arrow="1"></div>',
 
     /**
      * 浮动层html模板
@@ -159,8 +159,7 @@ ui.MultiCalendar.prototype = {
             var begin = getValue('begin'),
                 end = getValue('end'),
                 dvalue = end - begin, 
-                value,
-                valueText;
+                value;
 
             if (dvalue > 0) {
                 value = {
@@ -174,11 +173,10 @@ ui.MultiCalendar.prototype = {
                 };
             }
             
-            valueText = me.getValueText(value);
-            if (me.onchange(value, valueText) !== false) {
+            if (me.onchange(value) !== false) {
                 me.value = value;
-                me._repaintMain(valueText);
                 me._controlMap.shortcut.select(value);
+                me._repaintMain();
                 me.hideLayer();
             }
         };
@@ -247,8 +245,13 @@ ui.MultiCalendar.prototype = {
      * 
      * @private
      */
-    _repaintMain: function (text) {
-        baidu.g(this.__getId('text')).innerHTML = text || this.getValueText();
+    _repaintMain: function ( value ) {
+        var scText = this.getShortcutText( value );
+        var scEl = baidu.g(this.__getId('shortcuttext'));
+
+        baidu.g(this.__getId('text')).innerHTML = this.getValueText( value );
+        scText && (scEl.innerHTML = scText);
+        scEl.style.display = scText ? '' : 'none';
     },
     
     /**
@@ -299,13 +302,15 @@ ui.MultiCalendar.prototype = {
      */
     _getMainHtml: function () {
         var me = this,
-            show = 'text';
+            show = 'text',
+            showsc = 'shortcuttext';
 
         return ui._format(me._tplMain,
                     me.__getId(show),
                     me.__getClass(show),
-                    me.getValueText(),
-                    me.__getClass('arrow'));
+                    me.__getClass('arrow'),
+                    me.__getId(showsc),
+                    me.__getClass(showsc));
     },
 
     /**
@@ -476,10 +481,10 @@ ui.MultiCalendar.prototype = {
     _getShortcutChangeHandler: function () {
         var me = this;
 
-        return function (value, name) {
-            if ( me.onchange( value, name ) !== false ) {
+        return function (value) {
+            if ( me.onchange( value ) !== false ) {
                 me.value = value;
-                me._repaintMain(name);
+                me._repaintMain( value );
                 me.hideLayer();
             }
         };
@@ -713,15 +718,34 @@ ui.MultiCalendar.prototype = {
             shortcut = this._controlMap['shortcut'];
             
         if (begin && end) {
-            return (shortcut && shortcut.getName( opt_value ? value : null )) 
-                        || formatter(begin, format) 
-                            + " 至 " 
-                            + formatter(end, format);
+            return formatter(begin, format) 
+                    + " 至 " 
+                    + formatter(end, format);
         }
         
         return '';
     },
     
+    /**
+     * 获取当前日期区间的快捷显示字符
+     * 
+     * @public
+     * @param {Object} opt_value 日期区间
+     * @return {string}
+     */
+    getShortcutText: function ( opt_value ) {
+        var value = opt_value || this.getValue();
+        var shortcut = this._controlMap.shortcut;
+        var begin = value.begin;
+        var end   = value.end;
+
+        if (begin && end) {
+            return shortcut.getName( opt_value ? value : null );
+        }
+        
+        return '';
+    },
+
     /**
      * 获取当前选取的日期
      * 

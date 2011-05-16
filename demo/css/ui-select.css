@@ -10,7 +10,6 @@
 
 .ui-select {
     height:20px;
-    text-indent:3px;
     font-size:12px;
     background:#fff;
     border:1px solid #a8adb6;
@@ -35,6 +34,7 @@
 .ui-select-disabled {background:#f6f6f6;}
 .ui-select-text {
     padding:0 2px;
+    text-indent:3px;
     text-align:left;
     color:#333;
     cursor:pointer;

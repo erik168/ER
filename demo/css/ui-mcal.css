@@ -16,7 +16,7 @@
     -o-border-radius:3px;
     -moz-border-radius:3px;
     -ms-border-radius:3px;
-    width:200px;
+    width:270px;
     height:28px;
     line-height:28px;
     font-size:12px;
@@ -45,7 +45,12 @@
     float:left;
     font-weight:bold;
 }
-
+.ui-mcal-shortcuttext {
+    padding-left:4px;
+    float:left;
+    font-weight:bold;
+    margin-right:10px;
+}
 .ui-mcal-layer {
     padding:8px;
     border:1px solid #a8adb6;
