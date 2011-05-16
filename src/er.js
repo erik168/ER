@@ -327,9 +327,9 @@ var er = function () {
      *      qchar   = char | "&" | "="
      */
     locator_ = function () {
-        var currentPath     = '',
-            currentQuery    = '',
-            currentLocation = '',
+        var currentPath    ,
+            currentQuery   ,
+            currentLocation,
             IFRAME_CONTENT  = "<html><head></head><body>"
                 + "<script type=\"text/javascript\">"
                 + "var path = \"#{0}\";"
@@ -371,9 +371,10 @@ var er = function () {
                 i, 
                 len;
             
-            if ( baidu.ie ) {
+            if ( baidu.ie && baidu.ie < 8 ) {
+                location.hash = loc;
+                
                 historyInput = baidu.g( getConfig( 'CONTROL_INPUT_ID' ) );
-
                 if ( historyInput ) {
                     if ( !/(~|&)_ietag=([a-z0-9]+)(&|$)/.test( loc ) ) {
                         if ( loc.indexOf('~') > 0 ) {
@@ -412,7 +413,6 @@ var er = function () {
             currentPath = path;
             currentQuery = query;
             currentLocation = loc;
-            location.hash = loc;
 
             return true;
         }
@@ -424,14 +424,19 @@ var er = function () {
          * @param {string} loc location位置
          */
         function redirect( loc ) {
-            // 空string和非string不做处理
-            if ( !loc || typeof loc != 'string' ) {
+            // 非string不做处理
+            if ( typeof loc != 'string' ) {
                 return;
             }
-            
+           
             // 增加location带起始#号的容错性
             // 可能有人直接读取location.hash，经过string处理后直接传入
             loc = loc.replace( /^#/, '' );
+ 
+            // 空string当成DEFAULT_INDEX处理
+            if ( loc.length == 0 ) {
+                loc = getConfig( 'DEFAULT_INDEX' ); 
+            }
 
             // 未设置path时指向当前path
             if ( /^~/.test( loc ) ) {
@@ -441,7 +446,7 @@ var er = function () {
             // 如果locacion中包含encodeURI过的字符
             // firefox会自动decode，造成传入的loc和getLocation结果不同
             // 所以需要提前写入，获取真实的hash值
-            if ( baidu.browser.firefox ) {
+            if ( baidu.browser.firefox && /%[0-9A-F]/i.test( loc ) ) {
                 location.hash = loc;
                 loc = getLocation();
             }  
@@ -458,7 +463,7 @@ var er = function () {
             
             // ie下使用中间iframe作为中转控制
             // 其他浏览器直接调用控制器方法
-            if ( baidu.ie ) {
+            if ( baidu.ie && baidu.ie < 8 ) {
                 ieForword( currentPath, currentQuery, loc );
             } else {
                 controller_.forward( currentPath, currentQuery, loc );
@@ -576,22 +581,17 @@ var er = function () {
          * 初始化locator
          */
         function init() {
-            // 初始化默认的index
-            if ( !getLocation() ) {
-                location.hash = getConfig( 'DEFAULT_INDEX' );
-            }
-
             /**
-             * @private
+             * @inner
              */
             function changeListener() {
                 var loc = getLocation();
-                if ( loc != currentLocation ) {
-                    locator_.redirect(loc);
+                if ( loc !== currentLocation ) {
+                    locator_.redirect( loc );
                 }
             }
             
-            if ( baidu.ie ) {
+            if ( baidu.ie && baidu.ie < 8 ) {
                 ieIframeRecorderInit();
                 ieInputRecorderInit();
             }
