@@ -13,6 +13,7 @@
  *          baidu.object.clone, 
  *          baidu.ie, 
  *          baidu.browser.firefox
+ *          baidu.string.encodeHTML
  */
 
 var er = function () {
@@ -38,6 +39,17 @@ var er = function () {
         var masterContainer = {},
             targetContainer = {},
             targetCache = {},
+
+            // 过滤器
+            filterContainer = {
+                'html': function ( source ) {
+                    return baidu.string.encodeHTML( source );
+                },
+                
+                'url': function ( source ) {
+                    return encodeURIComponent( source );
+                }
+            },
             isLoaded;
 
         /**
@@ -45,22 +57,30 @@ var er = function () {
          * 
          * @inner
          * @param {string} varName 变量名
+         * @param {string} filterName 过滤器名
          * @param {string} privateContextId 私用context环境的id
          * @return {string}
          */
-        function parseVariable( varName, privateContextId ) {
+        function parseVariable( varName, filterName, privateContextId ) {
             var match = varName.match( /:([a-z]+)$/ );
+            var value = '';
 
             if ( match && match.length > 1 ) {
-                return parseVariableByType( varName.replace(/:[a-z]+$/i, ''), match[1] );
+                value = parseVariableByType( varName.replace(/:[a-z]+$/i, ''), match[1] );
             } else {
                 var variable = context_.get( varName, privateContextId );
                 if ( hasValue( variable ) ) {
-                    return variable;
+                    value = variable;
                 }
             }
             
-            return '';
+            // 过滤处理
+            if ( filterName ) {
+                filterName = filterContainer[ filterName.substr( 1 ) ];
+                filterName && ( value = filterName( value ) );
+            }
+
+            return value;
         }
         
         /**
@@ -408,6 +428,17 @@ var er = function () {
         // 返回暴露的方法
         return {
             /**
+             * 添加过滤器
+             * 
+             * @public
+             * @param {string} type 过滤器类型
+             * @param {Function} filter 过滤器
+             */
+            addFilter: function ( type, filter ) {
+                filterContainer[ type ] = filter;
+            },
+
+            /**
              * 获取指定模板target的HTML片段
              * 
              * @public
@@ -435,9 +466,9 @@ var er = function () {
             merge: function ( output, tplName, opt_privateContextId ) {
                 if ( output ) {
                     output.innerHTML = template_.get( tplName ).replace(
-                        /\$\{([.:a-z0-9_]+)\}/ig,
+                        /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
                         function ( $0, $1 ) {
-                            return parseVariable( $1, opt_privateContextId );
+                            return parseVariable( $1, $2, opt_privateContextId );
                         });
                 }
             },
