@@ -173,10 +173,10 @@ ui.MultiCalendar.prototype = {
                 };
             }
             
-            if (me.onchange(value) !== false) {
+            if ( me.onchange( value, me.getShortcutText( value ) ) !== false ) {
                 me.value = value;
                 me._controlMap.shortcut.select(value);
-                me._repaintMain();
+                me._repaintMain( value );
                 me.hideLayer();
             }
         };
@@ -245,8 +245,8 @@ ui.MultiCalendar.prototype = {
      * 
      * @private
      */
-    _repaintMain: function ( value ) {
-        var scText = this.getShortcutText( value );
+    _repaintMain: function ( value, shortcutText ) {
+        var scText = shortcutText || this.getShortcutText( value );
         var scEl = baidu.g(this.__getId('shortcuttext'));
 
         baidu.g(this.__getId('text')).innerHTML = this.getValueText( value );
@@ -481,10 +481,10 @@ ui.MultiCalendar.prototype = {
     _getShortcutChangeHandler: function () {
         var me = this;
 
-        return function (value) {
-            if ( me.onchange( value ) !== false ) {
+        return function ( value, shortcutText ) {
+            if ( me.onchange( value, shortcutText ) !== false ) {
                 me.value = value;
-                me._repaintMain( value );
+                me._repaintMain( value, shortcutText );
                 me.hideLayer();
             }
         };
@@ -765,8 +765,8 @@ ui.MultiCalendar.prototype = {
     setValue: function (date) {
         if (date && date.begin && date.end) {
             this.value = date;
-            this._controlMap.shortcut.setValue(date);
-            this._repaintMain();
+            this._controlMap.shortcut.setValue( date );
+            this._repaintMain( date );
         }
     },
     
