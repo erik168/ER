@@ -3,7 +3,7 @@
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
  * path:    er/extends/UIAction.js
- * desc:    action扩展，提供UI组件相关功能
+ * desc:    Action扩展，提供UI组件相关功能
  * author:  erik
  */
 
