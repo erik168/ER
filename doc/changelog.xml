@@ -13,6 +13,17 @@
 </articleinfo> 
 
 <section>   
+    <title>1.2.2</title>
+
+    <orderedlist>
+		<listitem><para>修复locator在IE8/9下历史记录保存的bug。</para></listitem>
+		<listitem><para>ESUI - MultiCalendar：优化日期区间选择控件的日期显示方式和交互。</para></listitem>
+		<listitem><para>ESUI - Select：修复text-indent造成的布局误差。</para></listitem>
+		<listitem><para>ESUI - SideBar：优化侧边栏展开和关闭的交互方式，并取消动态效果。</para></listitem>
+	</orderedlist>
+</section>
+
+<section>   
     <title>1.2.1</title>
 
     <orderedlist>
