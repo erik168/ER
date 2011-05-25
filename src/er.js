@@ -14,6 +14,7 @@
  *          baidu.ie, 
  *          baidu.browser.firefox
  *          baidu.string.encodeHTML
+ *          baidu.sio.callByBrowser
  */
 
 var er = function () {
@@ -467,7 +468,7 @@ var er = function () {
                 if ( output ) {
                     output.innerHTML = template_.get( tplName ).replace(
                         /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
-                        function ( $0, $1 ) {
+                        function ( $0, $1, $2 ) {
                             return parseVariable( $1, $2, opt_privateContextId );
                         });
                 }
@@ -479,7 +480,7 @@ var er = function () {
              * @public
              */
             load: function () {
-                var list    = getConfig('TEMPLATE_LIST'),
+                var list    = getConfig( 'TEMPLATE_LIST' ),
                     len     = list instanceof Array && list.length,
                     tplBuf  = [],
                     i       = 0;
@@ -601,7 +602,7 @@ var er = function () {
                             loc += '~';
                         }
                         
-                        loc += '_ietag=' + random();
+                        loc += '_ietag=' + getUID();
                     }
 
                     historyList = baidu.json.parse( historyInput.value );
@@ -620,7 +621,7 @@ var er = function () {
                             loc:loc
                         });
                     } else {
-                        randomMap_[ RegExp.$2 ] = 1;
+                        uIdMap_[ RegExp.$2 ] = 1;
                     }
 
                     historyInput.value = baidu.json.stringify( historyList );
@@ -840,7 +841,7 @@ var er = function () {
             for ( i = 0, len = historyList.length; i < len; i++ ) {
                 item = historyList[ i ];
                 if ( /_ietag=([a-z0-9]+)(&|$)/.test( item.loc ) ) {
-                    randomMap_[ RegExp.$1 ] = 1;
+                    uIdMap_[ RegExp.$1 ] = 1;
                 }
             }
 
@@ -952,7 +953,10 @@ var er = function () {
                     domId    : getConfig( 'MAIN_ELEMENT_ID' )
                 },
                 actionConfig,
-                actionAuth;  
+                actionAuth,
+                actionName,
+                actionPath,
+                action;  
             
             // path未发生变化时，不卸载和重新加载
             if ( path == currentPath ) {
@@ -970,11 +974,12 @@ var er = function () {
                     throw new Error('ER: the path "' + path + '" cannot bind to action.');
                     return;
                 }
+                actionName = actionConfig.action;
                 actionAuth = actionConfig.authority;
                 
                 // 权限判断
                 if ( actionAuth && !permission_.isAllow( actionAuth ) ) {
-                    locator_.redirect( actionConfig.noAuthLocation || getConfig('DEFAULT_INDEX') );
+                    locator_.redirect( actionConfig.noAuthLocation || getConfig( 'DEFAULT_INDEX' ) );
                     return;
                 }
                 
@@ -982,11 +987,28 @@ var er = function () {
                 currentPath = path; 
                 
                 // 加载action
-                mainActionContext = loadAction( findAction( actionConfig.action ), arg );
+                action = findAction( actionName );
+                actionPath = getActionPath( actionName );
+                if ( action || !actionPath ) {
+                    _loadAction( action, arg );
+                } else if ( actionPath ) {
+                    baidu.sio.callByBrowser( actionPath, function () {
+                        _loadAction( findAction( actionName ), arg );
+                    });
+                }
             }
 
             // 记录当前的locator    
-            currentLocation = loc;   
+            currentLocation = loc; 
+            
+            /**
+             * 加载action
+             *
+             * @inner
+             */
+            function _loadAction( action, arg ) {
+                mainActionContext = loadAction( action, arg );
+            }
         }
         
         /**
@@ -1004,12 +1026,13 @@ var er = function () {
          * 加载action
          * 
          * @private
-         * @param {Object} action action对象
-         * @param {Object} arg 加载action的参数
+         * @param {Object} action        action对象
+         * @param {Object} arg           加载action的参数
+         * @param {string} opt_privateId 私有环境id
          */
-        function loadAction( action, arg ) {
+        function loadAction( action, arg, opt_privateId ) {
             if ( action && action.prototype.__action__ ) {
-                var actionContextId = random(),
+                var actionContextId = getUID(),
                     actionContext;
                 
                 
@@ -1031,6 +1054,10 @@ var er = function () {
          * @private
          */
         function unloadAction( context ) {
+            if ( typeof context == 'string' ) {
+                context = contextContainer[ context ];
+            }
+
             if ( !context ) {
                 return;
             }
@@ -1113,20 +1140,32 @@ var er = function () {
                 return null; 
             }
 
-            var action = actionName,
-                arg = {type: 'sub', domId: domId};
+            var action,
+                actionPath  = getActionPath( actionName ),
+                arg         = {type: 'sub', domId: domId},
+                privateId;
             
-            if ( typeof action == 'string'
-                 || (typeof action == 'object' && action.action)
-            ) {
-                action = findAction( action );
+            // 查找action
+            if ( typeof actionName == 'string' ) {
+                action = findAction( actionName );
             }
             
+            // 初始化arg参数
             if ( opt_argMap ) {
                 baidu.extend( arg, opt_argMap );
             }
-                
-            return loadAction(action, arg);
+            
+            // 加载action，action不存在时自动加载
+            if ( action || !actionPath ) {
+                return loadAction( action, arg );
+            } else {
+                privateId = getUID();
+                baidu.sio.callByBrowser( actionPath, function () {
+                    loadAction( findAction( actionName ), arg, privateId );
+                });
+
+                return privateId;
+            }
         }
 
         /**
@@ -1144,21 +1183,25 @@ var er = function () {
                 return null;
             }
 
-            return loadSub( domId, actionConfig, opt_argMap );
+            return loadSub( domId, actionConfig.action, opt_argMap );
         }
         
         /**
          * 触发Action的事件
          *
-         * @protected
-         * @param {string} type 事件名
-         * @param {Any} eventArg 事件对象
-         * @param {string} opt_contextId action的contextid
+         * @public
+         * @param {string}        type              事件名
+         * @param {Any}           eventArg          事件对象
+         * @param {string|Object} opt_actionRuntime action的runtime id或对象
          */
-        function fireActionEvent( type, eventArg, opt_contextId ) {
+        function fireActionEvent( type, eventArg, opt_actionRuntime ) {
             var actionCtx;
-            if ( opt_contextId ) {
-                actionCtx = contextContainer[ opt_contextId ];
+
+            if ( opt_actionRuntime ) {
+                actionCtx = opt_actionRuntime;
+                if ( typeof actionCtx == 'string' ) {
+                    actionCtx = contextContainer[ actionCtx ];
+                }
             } else {
                 actionCtx = mainActionContext;
             }
@@ -1183,6 +1226,7 @@ var er = function () {
             loadSub                 : loadSub,
             loadSubByPath           : loadSubByPath,
             unloadSub               : unloadAction,
+            fireEvent               : fireActionEvent,
             fireMain                : function (type, eventArg) {fireActionEvent(type, eventArg);}
         };
     }();
@@ -1548,7 +1592,7 @@ var er = function () {
                 }
             }
             
-            buffer.push( '_r=' + random() );
+            buffer.push( '_r=' + getUID() );
             locator_.redirect( '~' + buffer.join('&') );
         },
 
@@ -1879,7 +1923,10 @@ var er = function () {
                 CONTROL_IFRAME_ID   : 'ERHistroyRecordIframe',
                 CONTROL_INPUT_ID    : 'ERHistoryRecordInput',
                 DEFAULT_INDEX       : '/',
-                MAIN_ELEMENT_ID     : 'Main'
+                MAIN_ELEMENT_ID     : 'Main',
+                ACTION_ROOT         : '/asset/js',
+                ACTION_PATH         : {},
+                ACTION_AUTOLOAD     : 0,
             },
             value = cfg[ name ];
         
@@ -1891,6 +1938,46 @@ var er = function () {
     }
     
     /**
+     * 获取ACTION的路径
+     * 
+     * @inner
+     * @param {string} ACTION ACTION的名称
+     * @return {string}
+     */
+    function getActionPath( actionName ) {
+        var rootPath        = getConfig( 'ACTION_ROOT' );
+        var actionPath      = getConfig( 'ACTION_PATH' );
+        var autoLoadMode    = getConfig( 'ACTION_AUTOLOAD' );
+        var path = rootPath + (/\/$/.test(rootPath) ? '' : '/');
+        var relatePath;
+
+        if ( autoLoadMode ) {
+            relatePath = actionPath[ actionName ]; // 查找配置项
+            
+            // 根据默认规则生成path
+            if ( !relatePath ) {
+
+                switch ( autoLoadMode.toLowerCase() ) {
+                case 'action':  // action粒度规则
+                    path += actionName.replace( /\./g, '/' ) + '.js';
+                    break;
+                default:        // module粒度规则
+                    actionName = actionName.split('.');
+                    actionName.pop();
+                    path += actionName.join('/') + '.js';
+                    break;
+                }
+            } else {
+                path += relatePath;
+            }
+
+            return path;
+        }
+
+        return '';
+    }
+
+    /**
      * 判断变量是否有值。null或undefined时返回false
      * 
      * @param {Any} variable
@@ -1900,7 +1987,7 @@ var er = function () {
         return !(variable === null || typeof variable == 'undefined');
     }
     
-    var randomMap_ = {};
+    var uIdMap_ = {};
     
     /**
      * 获取不重复的随机串
@@ -1908,7 +1995,7 @@ var er = function () {
      * @param {number} 随机串长度
      * @return {string}
      */
-    function random( len ) {
+    function getUID( len ) {
         len = len || 10;
         
         var chars    = "qwertyuiopasdfghjklzxcvbnm1234567890",
@@ -1920,11 +2007,11 @@ var er = function () {
             rand += chars.charAt( Math.floor( Math.random() * charsLen ) );
         }
         
-        if ( randomMap_[ rand ] ) {
-            return random( len );
+        if ( uIdMap_[ rand ] ) {
+            return getUID( len );
         }
         
-        randomMap_[ rand ] = 1;
+        uIdMap_[ rand ] = 1;
         return rand;
     }
     
