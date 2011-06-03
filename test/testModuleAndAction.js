@@ -3,6 +3,9 @@ var myModule = new er.Module({
         action: [{
             path    : '/hello',
             action  : 'myModule.hello'
+        },{
+            path    : '/',
+            action  : 'myModule.hello'
         }]
     }
 });
