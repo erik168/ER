@@ -566,7 +566,20 @@ var er = function () {
          * @return {string}
          */
         function getLocation() {
-            var hash = location.hash;
+            var hash;
+
+            // firefox下location.hash会自动decode
+            // 体现在：
+            //   视觉上相当于decodeURI，
+            //   但是读取location.hash的值相当于decodeURIComponent
+            // 所以需要从location.href里取出hash值
+            if ( baidu.browser.firefox ) {
+                hash = location.href.match(/#(.*)$/);
+                hash && (hash = hash[ 1 ]);
+            } else {
+                hash = location.hash;
+            }
+
             if ( hash ) {
                 return hash.replace( /^#/, '' );
             }
@@ -629,7 +642,9 @@ var er = function () {
             }
             
             // 存储当前信息
-            if ( currentLocation != loc ) {
+            // opera下，相同的hash重复写入会在历史堆栈中重复记录
+            // 所以需要getLocation来判断
+            if ( currentLocation != loc && getLocation() != loc ) {
                 location.hash = loc;
             }
 
@@ -665,14 +680,6 @@ var er = function () {
             if ( /^~/.test( loc ) ) {
                 loc = currentPath + loc
             }
-            
-            // 如果locacion中包含encodeURI过的字符
-            // firefox会自动decode，造成传入的loc和getLocation结果不同
-            // 所以需要提前写入，获取真实的hash值
-            if ( baidu.browser.firefox && /%[0-9A-F]/i.test( loc ) ) {
-                location.hash = loc;
-                loc = getLocation();
-            }  
 
             // 与当前location相同时不进行转向
             updateLocation( loc );
@@ -773,19 +780,18 @@ var er = function () {
                 len         = paramStrs.length,
                 item,
                 value;
-    
+
             while ( len-- ) {
-                item = paramStrs[ len ].split( '=' );
-                value = item[ 1 ];
-                
-                // firefox在读取hash时，会自动把encode的uri片段进行decode
-                if ( !baidu.browser.firefox ) {
-                    value = decodeURIComponent( value );
+                item = paramStrs[ len ];
+                if ( !item ) {
+                    continue;
                 }
                 
+                item = item.split( '=' );
+                value = decodeURIComponent( item[ 1 ] );
                 params[ item[ 0 ] ] = value;
             }
-            
+
             return params;
         }
         
