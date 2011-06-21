@@ -18,9 +18,10 @@ test("autoload", function() {
     stop();
 
     setTimeout(function () {
-        start();
+        
         same( baidu.g( 'Main' ).innerHTML, 'hello auto', "主区域被填充auto的内容" );
         same( location.hash, '#/auto', "设置的location被反映到地址栏中" );
+        start();
     }, 1000);
 });
 
