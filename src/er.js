@@ -182,7 +182,7 @@ var er = function () {
                             // 解析contentplaceholder
                             case 'contentplaceholder':
                                 if ( opt_target ) {
-                                    temp = opt_target.contentMap[ segment.id ];
+                                    temp = opt_target.contentMap[ segment.id ].content.join('');
                                 }
                                 break;
                             }
@@ -549,15 +549,15 @@ var er = function () {
         var currentPath    ,
             currentQuery   ,
             currentLocation,
-            IFRAME_CONTENT  = "<html><head></head><body>"
+            IFRAME_CONTENT  = "<html><head></head><body><input type=\"text\" id=\"save\">"
                 + "<script type=\"text/javascript\">"
                 + "var path = \"#{0}\";"
                 + "var query = #{1};"
                 + "var loc = \"#{2}\";"
+                + "document.getElementById('save').value = loc;"
                 + "parent.er.locator._updateHash(loc);"
                 + "parent.er.controller.forward(path, query, loc);"
-                + "window.onload = function () {document.getElementById('save').value = loc;};"
-                + "</script><input type=\"text\" id=\"save\"></body></html>";
+                + "</script></body></html>";
         
         /**
          * 获取location信息
@@ -591,7 +591,7 @@ var er = function () {
                 len;
             
             if ( baidu.ie && baidu.ie < 8 ) {
-                location.hash = loc;
+                //location.hash = loc;
                 
                 historyInput = baidu.g( getConfig( 'CONTROL_INPUT_ID' ) );
                 if ( historyInput ) {
@@ -629,6 +629,10 @@ var er = function () {
             }
             
             // 存储当前信息
+            if ( currentLocation != loc ) {
+                location.hash = loc;
+            }
+
             currentPath = path;
             currentQuery = query;
             currentLocation = loc;
@@ -680,6 +684,13 @@ var er = function () {
             // 触发onredirect事件
             locator_.onredirect();
             
+            // 权限判断以及转向
+            var loc302 = er.controller.authJudge( currentPath );
+            if ( loc302 ) {
+                er.locator.redirect( loc302 );
+                return;
+            }
+
             // ie下使用中间iframe作为中转控制
             // 其他浏览器直接调用控制器方法
             if ( baidu.ie && baidu.ie < 8 ) {
@@ -927,6 +938,23 @@ var er = function () {
             _isEnable = 1;
     
         
+        function authJudge( path ) {
+            var actionConfig = getActionConfigByPath( path );
+            if ( !actionConfig ) {
+                throw new Error('ER: the path "' + path + '" cannot bind to action.');
+                return;
+            }
+            
+            var actionAuth = actionConfig.authority;
+            
+            // 权限判断
+            if ( actionAuth && !permission_.isAllow( actionAuth ) ) {
+                return actionConfig.noAuthLocation || getConfig( 'DEFAULT_INDEX' );
+            }
+
+            return null;
+        }
+
         /**
          * 跳转视图
          * 
@@ -939,7 +967,7 @@ var er = function () {
             if ( !_isEnable ) { 
                 return; 
             }
-
+            
             // location相同时不做forward
             if ( loc == currentLocation ) {
                 return;
@@ -953,7 +981,6 @@ var er = function () {
                     domId    : getConfig( 'MAIN_ELEMENT_ID' )
                 },
                 actionConfig,
-                actionAuth,
                 actionName,
                 actionPath,
                 action;  
@@ -974,19 +1001,12 @@ var er = function () {
                     throw new Error('ER: the path "' + path + '" cannot bind to action.');
                     return;
                 }
-                actionName = actionConfig.action;
-                actionAuth = actionConfig.authority;
-                
-                // 权限判断
-                if ( actionAuth && !permission_.isAllow( actionAuth ) ) {
-                    locator_.redirect( actionConfig.noAuthLocation || getConfig( 'DEFAULT_INDEX' ) );
-                    return;
-                }
                 
                 // 记录当前的path
                 currentPath = path; 
                 
                 // 加载action
+                actionName = actionConfig.action;
                 action = findAction( actionName );
                 actionPath = getActionPath( actionName );
                 if ( action || !actionPath ) {
@@ -1220,6 +1240,7 @@ var er = function () {
         }
 
         return {
+            authJudge               : authJudge,
             forward                 : forward,
             init                    : init,
             _enable                 : enable,
@@ -1926,7 +1947,7 @@ var er = function () {
                 MAIN_ELEMENT_ID     : 'Main',
                 ACTION_ROOT         : '/asset/js',
                 ACTION_PATH         : {},
-                ACTION_AUTOLOAD     : 0,
+                ACTION_AUTOLOAD     : 0
             },
             value = cfg[ name ];
         
@@ -1953,11 +1974,10 @@ var er = function () {
 
         if ( autoLoadMode ) {
             relatePath = actionPath[ actionName ]; // 查找配置项
-            
+
             // 根据默认规则生成path
             if ( !relatePath ) {
-
-                switch ( autoLoadMode.toLowerCase() ) {
+                switch ( String(autoLoadMode).toLowerCase() ) {
                 case 'action':  // action粒度规则
                     path += actionName.replace( /\./g, '/' ) + '.js';
                     break;
