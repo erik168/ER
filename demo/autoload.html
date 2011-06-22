@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>hello</title>
+
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-base-1.3.9.js"></script>
+<script type="text/javascript" src="../src/er.js"></script>
+<script>
+	er.config.ACTION_ROOT = '.';
+	er.config.ACTION_AUTOLOAD = '1';
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:hello -->\nhello <span>${name}</span>!');
+    };
+    
+
+    window.onload = function () {
+        er.init();
+    };
+
+	var hello = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'hello.action'
+                }
+            ]
+        }
+    });
+</script>
+</head>
+<body>
+<a href="#/~name=world">default</a> | <a href="#/~name=erik">erik</a> | <a href="#/~name=er">er</a> | <a href="index.html">index</a>
+<div id="Main"><div>init</div></div>
+</body>
+</html>

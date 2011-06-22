@@ -4,7 +4,7 @@
  * 
  * path:    er.js
  * desc:    er(ecom ria)是一个用于支撑富ajax应用的框架
- * author:  erik
+ * author:  erik, mytharcher
  * depend:  baidu.json.parse, 
  *          baidu.json.stringify, 
  *          baidu.g, 
@@ -13,6 +13,8 @@
  *          baidu.object.clone, 
  *          baidu.ie, 
  *          baidu.browser.firefox
+ *          baidu.string.encodeHTML
+ *          baidu.sio.callByBrowser
  */
 
 var er = function () {
@@ -35,36 +37,57 @@ var er = function () {
      * 简易的模板解析器
      */
     template_ = function () {
-        var container = {},
+        var masterContainer = {},
+            targetContainer = {},
+            targetCache = {},
+
+            // 过滤器
+            filterContainer = {
+                'html': function ( source ) {
+                    return baidu.string.encodeHTML( source );
+                },
+                
+                'url': function ( source ) {
+                    return encodeURIComponent( source );
+                }
+            },
             isLoaded;
 
         /**
          * 解析模板变量的值
          * 
-         * @private
+         * @inner
          * @param {string} varName 变量名
+         * @param {string} filterName 过滤器名
          * @param {string} privateContextId 私用context环境的id
          * @return {string}
          */
-        function parseVariable( varName, privateContextId ) {
+        function parseVariable( varName, filterName, privateContextId ) {
             var match = varName.match( /:([a-z]+)$/ );
+            var value = '';
 
             if ( match && match.length > 1 ) {
-                return parseVariableByType( varName.replace(/:[a-z]+$/i, ''), match[1] );
+                value = parseVariableByType( varName.replace(/:[a-z]+$/i, ''), match[1] );
             } else {
                 var variable = context_.get( varName, privateContextId );
                 if ( hasValue( variable ) ) {
-                    return variable;
+                    value = variable;
                 }
             }
             
-            return '';
+            // 过滤处理
+            if ( filterName ) {
+                filterName = filterContainer[ filterName.substr( 1 ) ];
+                filterName && ( value = filterName( value ) );
+            }
+
+            return value;
         }
         
         /**
          * 解析带有类型的模板变量的值
          * 
-         * @private
+         * @inner
          * @param {string} varName 变量名
          * @param {string} type 变量类型，暂时为lang|config
          * @return {string}
@@ -127,18 +150,311 @@ var er = function () {
             return '';
         }
         
+        /**
+         * 获取节点对应的内容
+         *
+         * @inner
+         * @param {Object} node 节点对象
+         * @param {Object} target target节点对象，用于contentplaceholder替换
+         * @return {string}
+         */
+        function getContent( node, opt_target ) {
+            if ( node && typeof node == 'object' ) { 
+                var list = node.content.slice(0);
+                var len  = list instanceof Array && list.length;
+                var segment;
+                var temp;
+
+                if ( len ) {
+                    while ( len-- ) {
+                        segment = list[ len ];
+                        
+                        // 解析非文本节点
+                        if ( typeof segment == 'object' ) {
+                            temp = '';
+
+                            switch ( segment.type ) {
+                            // 解析import
+                            case 'import':
+                                temp = getTargetContent( segment.id );
+                                break;
+
+                            // 解析contentplaceholder
+                            case 'contentplaceholder':
+                                if ( opt_target ) {
+                                    temp = opt_target.contentMap[ segment.id ].content.join('');
+                                }
+                                break;
+                            }
+
+                            list[ len ] = temp;
+                        }
+                    }
+                }
+
+                return list.join( '' );
+            }
+
+            return '';
+        }
+        
+        /**
+         * 获取target的内容
+         *
+         * @inner
+         * @param {string} name target的名称
+         * @return {string}
+         */
+        function getTargetContent( name ) {
+            var targetStr = targetCache[ name ];
+            var target;
+            var len;
+            var segment;
+            var master;
+
+            if ( targetStr ) {
+                return targetStr;
+            }
+
+            target = targetContainer[ name ];
+            if ( target ) {
+                if ( target.master ) { 
+                    // target具有母版，以母版内容为解析源
+                    master = masterContainer[ target.master ];
+                    targetStr = getContent( master, target );
+                } else { 
+                    // target不具有母版，则直接解析
+                    targetStr = getContent( target );
+                }
+                
+                targetCache[ name ] = targetStr; // 缓存target内容结果
+                return targetStr;
+            }
+
+            return '';
+        }
+
+        /**
+         * 解析模板
+         * 
+         * @inner
+         * @param {string} source 模板源
+         */
+        function parse( source ) {
+            if ( typeof source != 'string' ) {
+                return;
+            }
+            
+            /**
+             * 解析节点，如果是有含义的注释节点返回object
+             *
+             * @inner
+             * @param {string} src 源字符串
+             * @return {Object|string}
+             */
+            function parseNode( src ) {
+                // 注释节点规则
+                var rule = /^<!--\s*(\/)?(target|master|content|import|contentplaceholder)\s*(:\s*([a-z0-9_]+))?\s*(?:\(([^\)]+)\))?\s*-->$/i
+                
+                // 属性规则
+                var propRule = /^\s*([0-9a-z_]+)\s*=\s*([0-9a-z_]+)\s*$/i;
+                
+                var node;
+                var id;
+                var propList;
+                var propStr;
+                var i, len;
+                
+                
+                if ( rule.test( src ) ) {
+                    node = {};
+                    node.type = RegExp.$2.toLowerCase();
+                    
+                    if ( RegExp.$1 ) { 
+                        // 结束标签不解析内容
+                        node.endTag = 1;
+                    } else {
+                        // 解析 ":id" 形式的id属性
+                        id = RegExp.$4;
+                        id && (node.id = id);
+                        
+                        // 解析 "(name=value,name2=value2)" 形式的其他属性
+                        propStr = RegExp.$5;
+                        if ( propStr ) {
+                            propList = propStr.split(',');
+                            for ( i = 0, len = propList.length; i < len; i++ ) {
+                                if ( propRule.test( propList[ i ] ) ) {
+                                    node[ RegExp.$1.toLowerCase() ] = RegExp.$2;
+                                }
+                            }
+                        }
+                    }
+
+                    return node;
+                }
+                
+                // 无特殊含义字符串直接返回
+                return src;
+            } 
+
+            var COMMENT_BEGIN = '<!--';
+            var COMMENT_END = '-->';
+            
+            var len;
+
+            var currentNode;        // 二次解析阶段的当前节点，可能为target或master
+            var currentContent;     // 二次解析阶段的当前content节点
+
+            var i;
+            var str;
+            var strLen;
+            var node;
+
+            // 一次解析阶段的结果字符串流，数组每项是text片段或comment片段
+            var strStream = [];    
+            
+            // 一次解析阶段的结果指针，用于优化push的性能
+            var strStreamPoint = 0; 
+            
+            // 对source以 <!-- 进行split
+            var blocks = source.split( COMMENT_BEGIN );
+            if ( blocks[0] === '' ) {
+                blocks.shift();
+            }
+            len = blocks.length;
+            
+            // 开始第一阶段解析，生成strStream
+            for ( i = 0; i < len; i++ ) {
+                // 对 <!-- 进行split的结果
+                // 进行 --> split
+                // 如果split数组长度为2
+                // 则0项为注释内容，1项为正常html内容
+                str = blocks[ i ].split( COMMENT_END );
+                strLen = str.length;
+
+                if ( strLen == 2 || i > 0 ) {
+                    if ( strLen == 2 ) {
+                        strStream[ strStreamPoint++ ] = COMMENT_BEGIN + str[ 0 ] + COMMENT_END;
+                        strStream[ strStreamPoint++ ] = str[ 1 ];
+                    } else {
+                        strStream[ strStreamPoint++ ] = str[ 0 ];
+                    }
+                }
+            }
+            
+            // 开始第二阶段解析
+            // 将master和target分别存入container
+            for ( i = 0; i < strStreamPoint; i++ ) {
+                str = strStream[ i ];
+                node = parseNode( str );
+
+                switch ( typeof node ) {
+                // 当parseNode结果为object时，针对node进行解析
+                case 'object':
+                    switch ( node.type ) {
+                    case 'master':
+                        currentNode = null;
+                        currentContent = null;
+                        if ( !node.endTag && node.id ) {
+                            node.content = [];
+                            currentNode = node;
+                            masterContainer[ node.id ] = node;
+                        }
+
+                        break;
+
+                    case 'target':
+                        currentNode = null;
+                        currentContent = null;
+                        if ( !node.endTag && node.id ) {
+                            node.content = [];
+                            if ( node.master ) {
+                                node.contentMap = {};
+                            }
+                            currentNode = node;
+                            targetContainer[ node.id ] = node;
+                        }
+
+                        break;
+
+                    case 'import':
+                        if ( currentNode ) {
+                            currentNode.content.push( node );
+                        }
+
+                        break;
+
+                    case 'content':
+                        currentContent = null;
+
+                        if ( 
+                            !node.endTag 
+                            && currentNode 
+                            && currentNode.type == 'target' 
+                        ) {
+                            currentNode.content.push( node );
+                            if ( node.id ) {
+                                currentNode.contentMap[ node.id ] = node;
+                            }
+                            
+                            node.content = [];
+                            currentContent = node;
+                        }
+                        break;
+
+                    case 'contentplaceholder':
+                        if ( currentNode && currentNode.type == 'master' ) {
+                            currentNode.content.push( node );
+                        }
+
+                        break;
+                    }
+
+                    break;
+                
+                // 如果parseNode返回仍然为string
+                // 将其填入当前正在解析的content或master或target中
+                case 'string':
+                    if ( currentContent ) {
+                        currentContent.content.push( str );
+                    } else if ( currentNode ) {
+                        currentNode.content.push( str );
+                    }
+
+                    break;
+                }
+            }
+        }
+
         // 返回暴露的方法
         return {
+            /**
+             * 添加过滤器
+             * 
+             * @public
+             * @param {string} type 过滤器类型
+             * @param {Function} filter 过滤器
+             */
+            addFilter: function ( type, filter ) {
+                filterContainer[ type ] = filter;
+            },
+
             /**
              * 获取指定模板target的HTML片段
              * 
              * @public
-             * @param {string} target
+             * @param {string} name
              * @return {string}
              */
-            get: function ( target ) {
-                return container[ target ] || '';
-            },
+            get: getTargetContent,
+            
+            /**
+             * 解析模板
+             * 
+             * @public
+             * @param {string} source 模板源
+             */
+            parse: parse,
             
             /**
              * 合并模板与数据
@@ -151,9 +467,9 @@ var er = function () {
             merge: function ( output, tplName, opt_privateContextId ) {
                 if ( output ) {
                     output.innerHTML = template_.get( tplName ).replace(
-                        /\$\{([.:a-z0-9_]+)\}/ig,
-                        function ( $0, $1 ) {
-                            return parseVariable( $1, opt_privateContextId );
+                        /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
+                        function ( $0, $1, $2 ) {
+                            return parseVariable( $1, $2, opt_privateContextId );
                         });
                 }
             },
@@ -164,7 +480,7 @@ var er = function () {
              * @public
              */
             load: function () {
-                var list    = getConfig('TEMPLATE_LIST'),
+                var list    = getConfig( 'TEMPLATE_LIST' ),
                     len     = list instanceof Array && list.length,
                     tplBuf  = [],
                     i       = 0;
@@ -215,103 +531,6 @@ var er = function () {
                         'onfailure': loadedCallback
                     });
                 }
-            },
-            
-            /**
-             * 解析模板
-             * 
-             * @public
-             * @param {string} source 模板源
-             */
-            parse: function ( source ) {
-                var lines       = source.split( /\r?\n/ ),
-                    linesLen    = lines.length,
-                    linesIndex  = 0,
-                    targetStartRule = /<!--\s*target:\s*([a-zA-Z0-9]+)\s*-->/, 
-                    targetEndRule   = /<!--\s*\/target\s*-->/,                  
-                    importRule      = /<!--\s*import:\s*([a-zA-Z0-9]+)\s*-->/,
-                    key,
-                    line,
-                    segment,
-                    current = [],
-                    currentName, tempName,
-                    currentContainer = {};
-                    
-                // 逐行读取解析target
-                for ( ; linesIndex < linesLen; linesIndex++ ) {
-                    line = lines[ linesIndex ];
-                    
-                    if ( line.length <= 0 ) {
-                        continue;
-                    }
-                    
-                    if ( targetStartRule.test( line ) ) {
-                        // 开始target的读取
-                        tempName = RegExp.$1;
-                        segment = line.split( targetStartRule );
-                        addLine( segment[0] );
-                        addTpl();
-                        current = [];
-                        currentName = tempName;
-                        addLine( segment[ 2 ] );
-                    } else if ( targetEndRule.test( line ) ) {
-                        // 结束target的读取
-                        segment = line.split( targetEndRule );
-                        addLine( segment[ 0 ] );
-                        addTpl();
-                        
-                    } else {
-                        addLine( line );
-                    }
-                }
-                addTpl();
-                
-                // 解析import
-                for ( key in currentContainer ) {
-                    container[ key ] = parseImport( currentContainer[ key ] );
-                }
-                
-                /**
-                 * 解析import
-                 * 
-                 * @inner
-                 * @param {string} source
-                 */
-                function parseImport( source ) {
-                    if ( importRule.test( source ) ) {
-                        return parseImport(source.replace(importRule, 
-                            function ( $0, $1 ) {
-                                return currentContainer[ $1 ] || container[ $1 ] || '';
-                            }
-                        ));
-                    }
-                    
-                    return source;
-                }
-                
-                /**
-                 * 向临时容器里添加行
-                 * 
-                 * @inner
-                 * @param {Object} str
-                 */
-                function addLine( str ) {
-                    if ( str && currentName ) {
-                        current.push( str );
-                    }
-                }
-                
-                /**
-                 * 将当前读出字符添加到模板变量
-                 * 
-                 * @inner
-                 */
-                function addTpl() {
-                    if ( currentName ) {
-                        currentContainer[ currentName ] = current.join('\n');
-                    }
-                    currentName = null;
-                }
             }
         };
     }();
@@ -330,15 +549,15 @@ var er = function () {
         var currentPath    ,
             currentQuery   ,
             currentLocation,
-            IFRAME_CONTENT  = "<html><head></head><body>"
+            IFRAME_CONTENT  = "<html><head></head><body><input type=\"text\" id=\"save\">"
                 + "<script type=\"text/javascript\">"
                 + "var path = \"#{0}\";"
                 + "var query = #{1};"
                 + "var loc = \"#{2}\";"
+                + "document.getElementById('save').value = loc;"
                 + "parent.er.locator._updateHash(loc);"
                 + "parent.er.controller.forward(path, query, loc);"
-                + "window.onload = function () {document.getElementById('save').value = loc;};"
-                + "</script><input type=\"text\" id=\"save\"></body></html>";
+                + "</script></body></html>";
         
         /**
          * 获取location信息
@@ -347,7 +566,20 @@ var er = function () {
          * @return {string}
          */
         function getLocation() {
-            var hash = location.hash;
+            var hash;
+
+            // firefox下location.hash会自动decode
+            // 体现在：
+            //   视觉上相当于decodeURI，
+            //   但是读取location.hash的值相当于decodeURIComponent
+            // 所以需要从location.href里取出hash值
+            if ( baidu.browser.firefox ) {
+                hash = location.href.match(/#(.*)$/);
+                hash && (hash = hash[ 1 ]);
+            } else {
+                hash = location.hash;
+            }
+
             if ( hash ) {
                 return hash.replace( /^#/, '' );
             }
@@ -372,7 +604,7 @@ var er = function () {
                 len;
             
             if ( baidu.ie && baidu.ie < 8 ) {
-                location.hash = loc;
+                //location.hash = loc;
                 
                 historyInput = baidu.g( getConfig( 'CONTROL_INPUT_ID' ) );
                 if ( historyInput ) {
@@ -383,7 +615,7 @@ var er = function () {
                             loc += '~';
                         }
                         
-                        loc += '_ietag=' + random();
+                        loc += '_ietag=' + getUID();
                     }
 
                     historyList = baidu.json.parse( historyInput.value );
@@ -402,7 +634,7 @@ var er = function () {
                             loc:loc
                         });
                     } else {
-                        randomMap_[ RegExp.$2 ] = 1;
+                        uIdMap_[ RegExp.$2 ] = 1;
                     }
 
                     historyInput.value = baidu.json.stringify( historyList );
@@ -410,6 +642,12 @@ var er = function () {
             }
             
             // 存储当前信息
+            // opera下，相同的hash重复写入会在历史堆栈中重复记录
+            // 所以需要getLocation来判断
+            if ( currentLocation != loc && getLocation() != loc ) {
+                location.hash = loc;
+            }
+
             currentPath = path;
             currentQuery = query;
             currentLocation = loc;
@@ -442,14 +680,6 @@ var er = function () {
             if ( /^~/.test( loc ) ) {
                 loc = currentPath + loc
             }
-            
-            // 如果locacion中包含encodeURI过的字符
-            // firefox会自动decode，造成传入的loc和getLocation结果不同
-            // 所以需要提前写入，获取真实的hash值
-            if ( baidu.browser.firefox && /%[0-9A-F]/i.test( loc ) ) {
-                location.hash = loc;
-                loc = getLocation();
-            }  
 
             // 与当前location相同时不进行转向
             updateLocation( loc );
@@ -461,6 +691,13 @@ var er = function () {
             // 触发onredirect事件
             locator_.onredirect();
             
+            // 权限判断以及转向
+            var loc302 = er.controller.authJudge( currentPath );
+            if ( loc302 ) {
+                er.locator.redirect( loc302 );
+                return;
+            }
+
             // ie下使用中间iframe作为中转控制
             // 其他浏览器直接调用控制器方法
             if ( baidu.ie && baidu.ie < 8 ) {
@@ -543,19 +780,18 @@ var er = function () {
                 len         = paramStrs.length,
                 item,
                 value;
-    
+
             while ( len-- ) {
-                item = paramStrs[ len ].split( '=' );
-                value = item[ 1 ];
-                
-                // firefox在读取hash时，会自动把encode的uri片段进行decode
-                if ( !baidu.browser.firefox ) {
-                    value = decodeURIComponent( value );
+                item = paramStrs[ len ];
+                if ( !item ) {
+                    continue;
                 }
                 
+                item = item.split( '=' );
+                value = decodeURIComponent( item[ 1 ] );
                 params[ item[ 0 ] ] = value;
             }
-            
+
             return params;
         }
         
@@ -622,7 +858,7 @@ var er = function () {
             for ( i = 0, len = historyList.length; i < len; i++ ) {
                 item = historyList[ i ];
                 if ( /_ietag=([a-z0-9]+)(&|$)/.test( item.loc ) ) {
-                    randomMap_[ RegExp.$1 ] = 1;
+                    uIdMap_[ RegExp.$1 ] = 1;
                 }
             }
 
@@ -708,6 +944,23 @@ var er = function () {
             _isEnable = 1;
     
         
+        function authJudge( path ) {
+            var actionConfig = getActionConfigByPath( path );
+            if ( !actionConfig ) {
+                throw new Error('ER: the path "' + path + '" cannot bind to action.');
+                return;
+            }
+            
+            var actionAuth = actionConfig.authority;
+            
+            // 权限判断
+            if ( actionAuth && !permission_.isAllow( actionAuth ) ) {
+                return actionConfig.noAuthLocation || getConfig( 'DEFAULT_INDEX' );
+            }
+
+            return null;
+        }
+
         /**
          * 跳转视图
          * 
@@ -720,7 +973,7 @@ var er = function () {
             if ( !_isEnable ) { 
                 return; 
             }
-
+            
             // location相同时不做forward
             if ( loc == currentLocation ) {
                 return;
@@ -734,7 +987,9 @@ var er = function () {
                     domId    : getConfig( 'MAIN_ELEMENT_ID' )
                 },
                 actionConfig,
-                actionAuth;  
+                actionName,
+                actionPath,
+                action;  
             
             // path未发生变化时，不卸载和重新加载
             if ( path == currentPath ) {
@@ -752,23 +1007,34 @@ var er = function () {
                     throw new Error('ER: the path "' + path + '" cannot bind to action.');
                     return;
                 }
-                actionAuth = actionConfig.authority;
-                
-                // 权限判断
-                if ( actionAuth && !permission_.isAllow( actionAuth ) ) {
-                    locator_.redirect( actionConfig.noAuthLocation || getConfig('DEFAULT_INDEX') );
-                    return;
-                }
                 
                 // 记录当前的path
                 currentPath = path; 
                 
                 // 加载action
-                mainActionContext = loadAction( findAction( actionConfig.action ), arg );
+                actionName = actionConfig.action;
+                action = findAction( actionName );
+                actionPath = getActionPath( actionName );
+                if ( action || !actionPath ) {
+                    _loadAction( action, arg );
+                } else if ( actionPath ) {
+                    baidu.sio.callByBrowser( actionPath, function () {
+                        _loadAction( findAction( actionName ), arg );
+                    });
+                }
             }
 
             // 记录当前的locator    
-            currentLocation = loc;   
+            currentLocation = loc; 
+            
+            /**
+             * 加载action
+             *
+             * @inner
+             */
+            function _loadAction( action, arg ) {
+                mainActionContext = loadAction( action, arg );
+            }
         }
         
         /**
@@ -786,12 +1052,13 @@ var er = function () {
          * 加载action
          * 
          * @private
-         * @param {Object} action action对象
-         * @param {Object} arg 加载action的参数
+         * @param {Object} action        action对象
+         * @param {Object} arg           加载action的参数
+         * @param {string} opt_privateId 私有环境id
          */
-        function loadAction( action, arg ) {
+        function loadAction( action, arg, opt_privateId ) {
             if ( action && action.prototype.__action__ ) {
-                var actionContextId = random(),
+                var actionContextId = getUID(),
                     actionContext;
                 
                 
@@ -813,6 +1080,10 @@ var er = function () {
          * @private
          */
         function unloadAction( context ) {
+            if ( typeof context == 'string' ) {
+                context = contextContainer[ context ];
+            }
+
             if ( !context ) {
                 return;
             }
@@ -895,20 +1166,32 @@ var er = function () {
                 return null; 
             }
 
-            var action = actionName,
-                arg = {type: 'sub', domId: domId};
+            var action,
+                actionPath  = getActionPath( actionName ),
+                arg         = {type: 'sub', domId: domId},
+                privateId;
             
-            if ( typeof action == 'string'
-                 || (typeof action == 'object' && action.action)
-            ) {
-                action = findAction( action );
+            // 查找action
+            if ( typeof actionName == 'string' ) {
+                action = findAction( actionName );
             }
             
+            // 初始化arg参数
             if ( opt_argMap ) {
                 baidu.extend( arg, opt_argMap );
             }
-                
-            return loadAction(action, arg);
+            
+            // 加载action，action不存在时自动加载
+            if ( action || !actionPath ) {
+                return loadAction( action, arg );
+            } else {
+                privateId = getUID();
+                baidu.sio.callByBrowser( actionPath, function () {
+                    loadAction( findAction( actionName ), arg, privateId );
+                });
+
+                return privateId;
+            }
         }
 
         /**
@@ -926,21 +1209,25 @@ var er = function () {
                 return null;
             }
 
-            return loadSub( domId, actionConfig, opt_argMap );
+            return loadSub( domId, actionConfig.action, opt_argMap );
         }
         
         /**
          * 触发Action的事件
          *
-         * @protected
-         * @param {string} type 事件名
-         * @param {Any} eventArg 事件对象
-         * @param {string} opt_contextId action的contextid
+         * @public
+         * @param {string}        type              事件名
+         * @param {Any}           eventArg          事件对象
+         * @param {string|Object} opt_actionRuntime action的runtime id或对象
          */
-        function fireActionEvent( type, eventArg, opt_contextId ) {
+        function fireActionEvent( type, eventArg, opt_actionRuntime ) {
             var actionCtx;
-            if ( opt_contextId ) {
-                actionCtx = contextContainer[ opt_contextId ];
+
+            if ( opt_actionRuntime ) {
+                actionCtx = opt_actionRuntime;
+                if ( typeof actionCtx == 'string' ) {
+                    actionCtx = contextContainer[ actionCtx ];
+                }
             } else {
                 actionCtx = mainActionContext;
             }
@@ -959,12 +1246,14 @@ var er = function () {
         }
 
         return {
+            authJudge               : authJudge,
             forward                 : forward,
             init                    : init,
             _enable                 : enable,
             loadSub                 : loadSub,
             loadSubByPath           : loadSubByPath,
             unloadSub               : unloadAction,
+            fireEvent               : fireActionEvent,
             fireMain                : function (type, eventArg) {fireActionEvent(type, eventArg);}
         };
     }();
@@ -1330,7 +1619,7 @@ var er = function () {
                 }
             }
             
-            buffer.push( '_r=' + random() );
+            buffer.push( '_r=' + getUID() );
             locator_.redirect( '~' + buffer.join('&') );
         },
 
@@ -1661,7 +1950,10 @@ var er = function () {
                 CONTROL_IFRAME_ID   : 'ERHistroyRecordIframe',
                 CONTROL_INPUT_ID    : 'ERHistoryRecordInput',
                 DEFAULT_INDEX       : '/',
-                MAIN_ELEMENT_ID     : 'Main'
+                MAIN_ELEMENT_ID     : 'Main',
+                ACTION_ROOT         : '/asset/js',
+                ACTION_PATH         : {},
+                ACTION_AUTOLOAD     : 0
             },
             value = cfg[ name ];
         
@@ -1673,6 +1965,45 @@ var er = function () {
     }
     
     /**
+     * 获取ACTION的路径
+     * 
+     * @inner
+     * @param {string} ACTION ACTION的名称
+     * @return {string}
+     */
+    function getActionPath( actionName ) {
+        var rootPath        = getConfig( 'ACTION_ROOT' );
+        var actionPath      = getConfig( 'ACTION_PATH' );
+        var autoLoadMode    = getConfig( 'ACTION_AUTOLOAD' );
+        var path = rootPath + (/\/$/.test(rootPath) ? '' : '/');
+        var relatePath;
+
+        if ( autoLoadMode ) {
+            relatePath = actionPath[ actionName ]; // 查找配置项
+
+            // 根据默认规则生成path
+            if ( !relatePath ) {
+                switch ( String(autoLoadMode).toLowerCase() ) {
+                case 'action':  // action粒度规则
+                    path += actionName.replace( /\./g, '/' ) + '.js';
+                    break;
+                default:        // module粒度规则
+                    actionName = actionName.split('.');
+                    actionName.pop();
+                    path += actionName.join('/') + '.js';
+                    break;
+                }
+            } else {
+                path += relatePath;
+            }
+
+            return path;
+        }
+
+        return '';
+    }
+
+    /**
      * 判断变量是否有值。null或undefined时返回false
      * 
      * @param {Any} variable
@@ -1682,7 +2013,7 @@ var er = function () {
         return !(variable === null || typeof variable == 'undefined');
     }
     
-    var randomMap_ = {};
+    var uIdMap_ = {};
     
     /**
      * 获取不重复的随机串
@@ -1690,7 +2021,7 @@ var er = function () {
      * @param {number} 随机串长度
      * @return {string}
      */
-    function random( len ) {
+    function getUID( len ) {
         len = len || 10;
         
         var chars    = "qwertyuiopasdfghjklzxcvbnm1234567890",
@@ -1702,11 +2033,11 @@ var er = function () {
             rand += chars.charAt( Math.floor( Math.random() * charsLen ) );
         }
         
-        if ( randomMap_[ rand ] ) {
-            return random( len );
+        if ( uIdMap_[ rand ] ) {
+            return getUID( len );
         }
         
-        randomMap_[ rand ] = 1;
+        uIdMap_[ rand ] = 1;
         return rand;
     }
     
