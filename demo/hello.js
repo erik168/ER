@@ -1,3 +1,5 @@
+
+
 hello.action = new er.Action({
     VIEW: 'hello',
 

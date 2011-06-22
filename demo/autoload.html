@@ -8,15 +8,18 @@
 <script type="text/javascript" src="../src/er.js"></script>
 <script>
 	er.config.ACTION_ROOT = '.';
-	er.config.ACTION_AUTOLOAD = 'module';
-
+	er.config.ACTION_AUTOLOAD = '1';
     // 加载和解析模板
     er.oninit = function () {
         er.template.parse('<!-- target:hello -->\nhello <span>${name}</span>!');
     };
+    
 
-    // 声明业务模块
-    var hello = new er.Module({
+    window.onload = function () {
+        er.init();
+    };
+
+	var hello = new er.Module({
         config: {
             'action': [
                 {
@@ -26,10 +29,6 @@
             ]
         }
     });
-
-    window.onload = function () {
-        er.init();
-    };
 </script>
 </head>
 <body>
