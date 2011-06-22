@@ -12,32 +12,46 @@
     </author>
 </articleinfo> 
 
+
+<section>   
+    <title>1.3.0</title>
+
+    <orderedlist>
+        <listitem><para>Action：增加Action自动加载的支持。</para></listitem>
+        <listitem><para>Template：增加母版(master)功能的支持。</para></listitem>
+        <listitem><para>Template：增加变量替换过滤器的支持( ${value|html} )，并提供html和url两种过滤器。</para></listitem>
+        <listitem><para>修复Firefox下location的query中包含"&"符号的解析截断问题。</para></listitem>
+        <listitem><para>修复IE下权限验证失败自动转向时，浏览器崩溃的问题。</para></listitem>
+        <listitem><para>修复opera下历史记录重复，影响前进后退的问题。</para></listitem>
+    </orderedlist>
+</section>
+
 <section>   
     <title>1.2.2</title>
 
     <orderedlist>
-		<listitem><para>修复locator在IE8/9下历史记录保存的bug。</para></listitem>
-		<listitem><para>ESUI - MultiCalendar：优化日期区间选择控件的日期显示方式和交互。</para></listitem>
-		<listitem><para>ESUI - Select：修复text-indent造成的布局误差。</para></listitem>
-		<listitem><para>ESUI - SideBar：优化侧边栏展开和关闭的交互方式，并取消动态效果。</para></listitem>
-	</orderedlist>
+        <listitem><para>修复locator在IE8/9下历史记录保存的bug。</para></listitem>
+        <listitem><para>ESUI - MultiCalendar：优化日期区间选择控件的日期显示方式和交互。</para></listitem>
+        <listitem><para>ESUI - Select：修复text-indent造成的布局误差。</para></listitem>
+        <listitem><para>ESUI - SideBar：优化侧边栏展开和关闭的交互方式，并取消动态效果。</para></listitem>
+    </orderedlist>
 </section>
 
 <section>   
     <title>1.2.1</title>
 
     <orderedlist>
-		<listitem><para>增强er.locator.redirect在传入location带有前缀#号的容错。</para></listitem>
+        <listitem><para>增强er.locator.redirect在传入location带有前缀#号的容错。</para></listitem>
         <listitem><para>优化template自动加载的解析。</para></listitem>
-		<listitem><para>修复er.init时location为默认index的情况下Action不工作的问题。</para></listitem>
-		<listitem><para>Action增强：refresh方法增加额外的queryMap参数支持。</para></listitem>
-		<listitem><para>ESUI - Calendar：修复在IE下背景颜色穿透的问题。</para></listitem>
-		<listitem><para>ESUI - MultiCalendar：优化复日期选择控件shortcut区间重复匹配时多项active的交互。</para></listitem>
-		<listitem><para>ESUI - TextLine：增加onchange事件支持，增加行号区域宽度定制支持，修复setValue时行号区域不更新的bug。</para></listitem>
-		<listitem><para>ESUI - TextInput：修复setValue值为null时填入值为字符串null的问题，修复TextInput控件placeholder在获焦时内容未清空的问题，修复输入内容为placeholder时getValue为空的问题。</para></listitem>
-		<listitem><para>ESUI - Table：添加breakLine的全局配置支持，修复editable列在开启breakLine时的鼠标移入抖动问题，修复table控件标题配置为function时sort标记失效的问题。</para></listitem>
-		<listitem><para>ESUI - Tip：添加关闭按钮显示的配置与提示箭头配置功能，修复在超出可视区域自动方向判断的bug。</para></listitem>
-	</orderedlist>
+        <listitem><para>修复er.init时location为默认index的情况下Action不工作的问题。</para></listitem>
+        <listitem><para>Action增强：refresh方法增加额外的queryMap参数支持。</para></listitem>
+        <listitem><para>ESUI - Calendar：修复在IE下背景颜色穿透的问题。</para></listitem>
+        <listitem><para>ESUI - MultiCalendar：优化复日期选择控件shortcut区间重复匹配时多项active的交互。</para></listitem>
+        <listitem><para>ESUI - TextLine：增加onchange事件支持，增加行号区域宽度定制支持，修复setValue时行号区域不更新的bug。</para></listitem>
+        <listitem><para>ESUI - TextInput：修复setValue值为null时填入值为字符串null的问题，修复TextInput控件placeholder在获焦时内容未清空的问题，修复输入内容为placeholder时getValue为空的问题。</para></listitem>
+        <listitem><para>ESUI - Table：添加breakLine的全局配置支持，修复editable列在开启breakLine时的鼠标移入抖动问题，修复table控件标题配置为function时sort标记失效的问题。</para></listitem>
+        <listitem><para>ESUI - Tip：添加关闭按钮显示的配置与提示箭头配置功能，修复在超出可视区域自动方向判断的bug。</para></listitem>
+    </orderedlist>
 </section>
 
 
@@ -45,23 +59,23 @@
     <title>1.2.0</title>
 
     <orderedlist>
-		<listitem><para>提供内置的简易UI组件库：ESUI。</para></listitem>
-		<listitem><para>Action增强：允许getQueryByContext接口传入参数表。</para></listitem>
-		<listitem><para>修复firefox下query部分带中文自动转移导致的Action两次enter问题。</para></listitem>
-		<listitem><para>修复controller在调度action时currentLocation记录失败导致referer为空的问题。</para></listitem>
-	</orderedlist>
+        <listitem><para>提供内置的简易UI组件库：ESUI。</para></listitem>
+        <listitem><para>Action增强：允许getQueryByContext接口传入参数表。</para></listitem>
+        <listitem><para>修复firefox下query部分带中文自动转移导致的Action两次enter问题。</para></listitem>
+        <listitem><para>修复controller在调度action时currentLocation记录失败导致referer为空的问题。</para></listitem>
+    </orderedlist>
 </section>
 
 <section>   
     <title>1.1.0</title>
 
     <orderedlist>
-		<listitem><para>Action增强：多例化与运行时环境管理增强，增加事件机制，并提供Action扩展机制。</para></listitem>
-		<listitem><para>功能升级：IE下，使用动态创建iframe的方法替代静态页面保存历史记录。</para></listitem>
-		<listitem><para>增加Module的抽象。</para></listitem>
-		<listitem><para>template增强：支持lang以及其他类型变量解析与替换功能。</para></listitem>
-		<listitem><para>controller增强：增加loadSubByPath方法。</para></listitem>
-		<listitem><para>修复Action.extend后扩展时无法影响到先前扩展具有别名的Action的问题。</para></listitem>
-	</orderedlist>
+        <listitem><para>Action增强：多例化与运行时环境管理增强，增加事件机制，并提供Action扩展机制。</para></listitem>
+        <listitem><para>功能升级：IE下，使用动态创建iframe的方法替代静态页面保存历史记录。</para></listitem>
+        <listitem><para>增加Module的抽象。</para></listitem>
+        <listitem><para>template增强：支持lang以及其他类型变量解析与替换功能。</para></listitem>
+        <listitem><para>controller增强：增加loadSubByPath方法。</para></listitem>
+        <listitem><para>修复Action.extend后扩展时无法影响到先前扩展具有别名的Action的问题。</para></listitem>
+    </orderedlist>
 </section>
 </article>
