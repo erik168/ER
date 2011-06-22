@@ -5,11 +5,12 @@ er.locator.onredirect = function () {
 };
 
 test("redirect", function() {
+    testVar.onredirect = 0;
     er.locator.redirect('/hello');
    
     same( baidu.g( 'Main' ).innerHTML, 'hello world', "主区域被填充内容" );
     same( location.hash, '#/hello', "设置的location被反映到地址栏中" );
-    ok( testVar.onredirect > 0, 'locator.onredirect事件被触发' );
+    ok( testVar.onredirect === 1, 'locator.onredirect事件被触发' );
 });
 
 test("query parse", function() {

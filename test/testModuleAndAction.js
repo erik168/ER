@@ -44,19 +44,19 @@ myModule.test = new er.Action({
     },
 
     onCustomEvent: function ( evt ) {
-        testVar[ evt ] = 1;
+        testVar[ evt ]++;
     }
 });
 
 
 myModule.hello = new er.Action({
     enter: function () {
-        testVar.enter = 1;
+        testVar.enter++;
         er.Action.prototype.enter.apply(this, arguments);
     },
     
     leave: function () {
-        testVar.leave = 1;
+        testVar.leave++;
         er.Action.prototype.leave.apply(this, arguments);
     },
 
@@ -70,16 +70,16 @@ myModule.hello = new er.Action({
     },
 
     onCustomEvent: function ( evt ) {
-        testVar[ evt ] = 1;
+        testVar[ evt ]++;
     }
 });
 
 er.template.parse('<!--target:hello-->hello ${name}');
 
 er.Action.onenter = function () {
-    testVar.onenter = 1;
+    testVar.onenter++;
 };
 
 er.Action.onleave = function () {
-    testVar.onleave = 1;
+    testVar.onleave++;
 };

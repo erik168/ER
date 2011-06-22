@@ -30,11 +30,11 @@ test("loadSub and unloadSub", function() {
 
 test("fireMain and fireEvent", function() {
     er.locator.redirect('/hello');
-
+    testVar.fireByMain = 0;
     er.controller.fireMain( 'CustomEvent', 'fireByMain' );
     same( testVar.fireByMain, 1, '当前主Action的CustomEvent事件通过er.controller.fireMain被触发' );
     
-    testVar.fireByMain = null;
+    testVar.fireByMain = 0;
     er.controller.fireEvent( 'CustomEvent', 'fireByMain' );
     same( testVar.fireByMain, 1, '当前主Action的CustomEvent事件通过er.controller.fireEvent被触发' );
 
@@ -42,6 +42,7 @@ test("fireMain and fireEvent", function() {
     el.id = 'subWrapper';
     document.body.appendChild( el );
 
+    testVar.fireBySub = 0;
     var runtimeContext = er.controller.loadSub('subWrapper', 'myModule.hello', {queryMap:{name:'ER on sub'}});
     er.controller.fireEvent( 'CustomEvent', 'fireBySub', runtimeContext );
     same( testVar.fireBySub, 1, 'sub action的CustomEvent事件通过er.controller.fireEvent被触发' );

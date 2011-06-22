@@ -2,12 +2,16 @@ module("er.Action");
 
 
 test("enter", function() {
-    er.locator.redirect( '/hello' );
+    testVar.enter = 0;
+    testVar.onenter = 0;
+    er.locator.redirect( '/hello~name=erik' );
     same( testVar.enter, 1, "Action的enter方法被执行过" );
     same( testVar.onenter, 1, "Action的onenter事件被触发过" );
 });
 
 test("leave", function() {
+    testVar.leave = 0;
+    testVar.onleave = 0;
     er.locator.redirect( '/test' );
     same( testVar.leave, 1, "Action的leave方法被执行过" );
     same( testVar.onleave, 1, "Action的onleave事件被触发过" );
