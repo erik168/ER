@@ -15,10 +15,11 @@ test("redirect", function() {
 
 test("query parse", function() {
     var name = '中国人民从此站起来了!@#$%^&*()_,./;\'[]{}:"<>?\|-_=+';
-    er.locator.redirect('/hello~name=' + encodeURIComponent(name));
+    er.locator.redirect('/hello~name=' + encodeURIComponent(name) + '&test=hello');
 
     var queryMap = er.locator.getQueryMap();
     same( queryMap.name, name, "设置的name参数应该和parse的name query相等");
+    same( queryMap.test, 'hello', "设置的test参数应该和parse的name query相等");
 });
 
 asyncTest("back and forward", function() {
