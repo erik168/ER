@@ -40,7 +40,7 @@ ui.Layer.prototype = {
         main.style.position = 'absolute';
         main.style.left     = this._HIDE_POS;
         main.style.top      = this._HIDE_POS;
-        main.style.zIndex   = this.zIndex || '90000';
+        this.zIndex && (main.style.zIndex = this.zIndex);
         this.width  && (main.style.width = this.width + 'px');
         this.height && (main.style.height = this.height + 'px');
         
