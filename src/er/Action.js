@@ -7,17 +7,19 @@
  * author:  erik
  */
 
+///import er.IAction;
 ///import er.template;
+///import baidu.lang.inherits;
 ///import baidu.object.extend;
 
 er.Action = function () {
-    var /**
+    /**
      * 状态保持器
      * 
      * @desc
      *      状态保持器能根据path保持相关Context狀態
      */
-    stateHolder_ = (function () {
+    var stateHolder_ = (function () {
         var stateMap = {};
 
         return {
@@ -45,17 +47,60 @@ er.Action = function () {
         };
     })();
 
+    
+    
     /**
-     * Action基础功能
+     * 绘制Action的函数
+     * 
+     * @inner
+     * @desc
+     *      挂接到ActionBase中，因为重复挂接而声明在外部
      */
-    var ActionBase_ = {
-        /**
-         * 标识action
-         *
-         * @private
-         */
-        __action__: 1,
+    function renderAction_() {
+        var me   = this,
+            arg  = me.arg,
+            dom  = baidu.g( arg.domId ),
+            view = me.VIEW;
+        
+        // 获取view
+        switch ( typeof view ) {
+        case 'object':
+            view = view[ arg.type ];
+            break;
+        case 'function':
+            view = view.call( me );
+            break;
+        default:
+            view = String( view );
+            break;
+        }
+        
+        er.template.merge( dom, view, me._contextId );
+    }
+    
+    // 声明Action扩展对象
+    var ActionBaseX_ = {};
 
+    /**
+     * Action类
+     * 
+     * @desc 
+     *      实现action的加载与重绘以及常用列表页与表单页的基础功能
+     * @param {Object} obj 业务action功能对象
+     * @param {string} opt_name action名，加载默认action的基础功能
+     */
+    var Action_ = function ( obj, opt_name ) {
+        var construct = arguments.callee;
+        var superClazz = opt_name ? ( ActionBaseX_[ opt_name ] || construct ) : construct;
+        
+        var clazz = new Function();
+        clazz.prototype = obj;
+        baidu.inherits( clazz, superClazz );
+        return clazz;
+    };
+
+    // Action的基础功能
+    Action_.prototype = {
         /**
          * 进入当前action
          * 
@@ -75,6 +120,7 @@ er.Action = function () {
             this.__fireEvent( 'enter' );
             
             // 重置会话上下文
+            me._contextId = me._contextId || arg._contextId;
             er.context.addPrivate( me._contextId );
             
             // 初始化context
@@ -186,7 +232,7 @@ er.Action = function () {
         fireEvent: function ( type, eventArg ) {
             type = type.replace( /^on/i, '' );
             if ( this.RESERVE_EVENT[ type ] ) {
-                throw new Error("ER: Reserve event cannot fire manually.");
+                throw new Error("ER: Reserve event cannot be fired manually.");
                 return;
             }
 
@@ -249,9 +295,9 @@ er.Action = function () {
              * @inner
              */
             function getState( key ) {
-                if ( hasValue( queryMap[ key ] ) ) {
+                if ( er._util.hasValue( queryMap[ key ] ) ) {
                     return queryMap[ key ];
-                } else if ( !ignoreState && hasValue( stateSaved[ key ] ) ) {
+                } else if ( !ignoreState && er._util.hasValue( stateSaved[ key ] ) ) {
                     return stateSaved[ key ];
                 }
                 return stateMap[ key ];
@@ -345,7 +391,7 @@ er.Action = function () {
             if ( queryMap ) {
                 for ( key in queryMap ) {
                     value = this.getContext( queryMap[ key ] );
-                    if ( hasValue( value ) ) {
+                    if ( er._util.hasValue( value ) ) {
                         buffer.push( key + '=' + encodeURIComponent( value ) );
                     }
                 }
@@ -374,7 +420,7 @@ er.Action = function () {
             // 自动组装state对应的context    
             for ( key in stateMap ) {
                 value = this.getContext( key );
-                if ( !hasValue( value ) ) {
+                if ( !er._util.hasValue( value ) ) {
                     value = '';
                 }
                 buffer.push( key + '=' + encodeURIComponent( value ) );
@@ -385,7 +431,7 @@ er.Action = function () {
                 cxtKey = opt_extraMap[ key ];
                 if ( typeof cxtKey == 'string' ) {
                     value = this.getContext( cxtKey );
-                    if ( !hasValue( value ) ) {
+                    if ( !er._util.hasValue( value ) ) {
                         value = '';
                     }
                     
@@ -393,7 +439,7 @@ er.Action = function () {
                 }
             }
             
-            buffer.push( '_r=' + getUID() );
+            buffer.push( '_r=' + er._util.getUID() );
             locator_.redirect( '~' + buffer.join('&') );
         },
 
@@ -461,64 +507,13 @@ er.Action = function () {
             dom && ( dom.innerHTML = '' );
         }
     }; 
-    
-    /**
-     * 绘制Action的函数
-     * 
-     * @inner
-     * @desc
-     *      挂接到ActionBase中，因为重复挂接而声明在外部
-     */
-    function renderAction_() {
-        var me   = this,
-            arg  = me.arg,
-            dom  = baidu.g( arg.domId ),
-            view = me.VIEW;
-        
-        // 获取view
-        switch ( typeof view ) {
-        case 'object':
-            view = view[ arg.type ];
-            break;
-        case 'function':
-            view = view.call( me );
-            break;
-        default:
-            view = String( view );
-            break;
-        }
-        
-        er.template.merge( dom, view, me._contextId );
-    }
-    
-    /**
-     * Action类
-     * 
-     * @desc 
-     *      实现action的加载与重绘以及常用列表页与表单页的基础功能
-     * @param {Object} obj 业务action功能对象
-     * @param {string} opt_name action名，加载默认action的基础功能
-     */
-    var Action_ = function ( obj, opt_name ) {
-        var base = opt_name ? ( ActionBaseX_[ opt_name ] || ActionBase_ ) : ActionBase_,
-            clazz = function ( contextId ) {
-                this._contextId = contextId;
-                baidu.extend(this, obj);
-            };
-        
-        clazz.prototype = base;
-        base = null;
-        
-        return clazz;
-    };
-    
-    // 将基础功能挂接到Action的prototype中，暴露基类方法
-    // 为了Action扩展能调用基类方法
-    Action_.prototype = baidu.object.clone( ActionBase_ );
+
+    // 实现IAction
+    baidu.inherits( Action_, er.IAction );
     
     // 初始化Action扩展原型对象构造器
     ActionX_ = new Function();
-    ActionX_.prototype = ActionBase_;
+    ActionX_.prototype = Action_.prototype;
 
     /**
      * 扩展Action的功能
@@ -529,14 +524,19 @@ er.Action = function () {
      */
     Action_.extend = function ( obj, opt_name ) {
         var key, 
-            base = ActionBase_;
+            base = Action_.prototype;
         
         if ( opt_name ) {
             base = ActionBaseX_[ opt_name ];
             if ( !base ) {
-                base = new ActionX_();
+                base = new Function();
+                base.prototype = obj;
+                baidu.inherits( base, Action_ );
+
                 ActionBaseX_[ opt_name ] = base;
+                return;
             }
+            base = base.prototype;
         }
         
         for ( key in obj ) {

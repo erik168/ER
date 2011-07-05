@@ -14,6 +14,10 @@ var myModule = new er.Module({
                 action  : 'myModule.hello'
             },
             {
+                path    : '/ext',
+                action  : 'myModule.ext'
+            },
+            {
                 path    : '/auto',
                 action  : 'myModule.auto'
             },
@@ -73,6 +77,18 @@ myModule.hello = new er.Action({
         testVar[ evt ]++;
     }
 });
+
+
+myModule.ext = new er.Action({
+    VIEW: 'hello',
+
+    CONTEXT_INITER_MAP: {
+        name: function (callback) {
+            this.setContext('name', this.arg.queryMap.name || 'world');
+            callback();
+        }
+    }
+}, 'rename');
 
 er.template.parse('<!--target:hello-->hello ${name}');
 

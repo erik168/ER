@@ -7,6 +7,7 @@
  * author:  erik
  */
 
+///import er.IAction;
 ///import er.Module;
 ///import er.permission;
 ///import baidu.sio.callByBrowser;
@@ -139,11 +140,13 @@ er.controller = function () {
      * @param {string} opt_privateId 私有环境id
      */
     function loadAction( action, arg, opt_privateId ) {
-        if ( action && action.prototype.__action__ ) {
+        if ( action && action.prototype instanceof er.IAction ) {
             var actionContextId = er._util.getUID(),
                 actionContext;
             
             
+            arg = arg || {};
+            arg._contextId = actionContextId;
             actionContext = new action( actionContextId );
             contextContainer[ actionContextId ] = actionContext;
             actionContext.enter( arg );
@@ -268,7 +271,7 @@ er.controller = function () {
         if ( action || !actionPath ) {
             return loadAction( action, arg );
         } else {
-            privateId = getUID();
+            privateId = er._util.getUID();
             baidu.sio.callByBrowser( actionPath, function () {
                 loadAction( findAction( actionName ), arg, privateId );
             });
