@@ -136,8 +136,11 @@ er.AbstractAction = function () {
             this.__moveOntoPhase( 'enter' );
             
             // 重置会话上下文
-            me._contextId = me._contextId || arg._contextId;
-            er.context.addPrivate( me._contextId );
+            if ( !me._contextId ) {
+                me._contextId = arg._contextId;
+                me._model = {};
+                er.context.addPrivate( me._contextId, me._model );
+            }
             
             // 将query装填入context
             for ( key in queryMap ) {
@@ -187,6 +190,7 @@ er.AbstractAction = function () {
         dispose: function () {
             // 释放context
             er.context.removePrivate( this._contextId );
+            this._model = null;
             
             // 清空主区域
             var dom = baidu.g( this.arg.domId );

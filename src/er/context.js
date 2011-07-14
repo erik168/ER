@@ -8,45 +8,72 @@
  */
 
 ///import er;
+///import baidu.object.clone;
 
 /**
  * 运行时的上下文数据管理器
  */
 er.context = function () {
     var publicContext = {},    // public级别数据容器
-        privateContext = {};   // private级别数据容器
+        privateContext = {},   // private级别数据容器
+        changeListeners = [];  // context变化的监听器容器
 
     return {
         /**
          * 设置应用环境上下文
          * 
+         * @name er.context.set
          * @public
-         * @param {string|Object} name 环境变量名
-         * @param {Any} value 环境变量值
-         * @param {string} opt_contextId 环境id
+         * @param {string} name 环境变量名
+         * @param {Any}    value 环境变量值
+         * @param {Object} [opt_arg] 设置选项
+         *     @config {string} [contextId] 私有环境id
          */
-        set: function ( name, value, opt_contextId ) {
-            var context = opt_contextId ? privateContext[ opt_contextId ] : publicContext;
+        set: function ( name, value, opt_arg ) {
+            opt_arg         = opt_arg || {};
+            var contextId   = opt_arg.contextId;  
+            var context     = contextId ? privateContext[ contextId ] : publicContext;
+            var evtArg      = {};
+            var newValue    = baidu.object.clone( value );
+            var i, len;
             
             if ( !context ) {
-                throw new Error('ER: private context "' + opt_contextId + '" is not exist.');
+                throw new Error('ER: private context "' + contextId + '" is not exist.');
             }
-            context[ name ] = baidu.object.clone( value );
+            
+            // 初始化event argument
+            contextId && (evtArg.contextId = contextId);
+            evtArg.oldValue = context[ name ] || null;
+            evtArg.newValue = newValue;
+            
+            // change事件触发
+            for ( i = 0, len = changeListeners.length; i < len; i++ ) {
+                changeListeners[ i ].call( er.context, evtArg );
+            }
+
+            context[ name ] = newValue;
         },
         
         /**
          * 增加私有环境
          * 
-         * @param {string} contextId 环境标识
+         * @public
+         * @name er.context.addPrivate
+         * @param {string} contextId 私有环境id
+         * @param {Object} [opt_container] 数据容器对象
          */
-        addPrivate: function ( contextId ) {
-            !privateContext[ contextId ] && ( privateContext[ contextId ] = {} );
+        addPrivate: function ( contextId, opt_container ) {
+            if ( !privateContext[ contextId ] ) {
+                privateContext[ contextId ] = opt_container || {};
+            }
         },
         
         /**
          * 移除私有环境
          * 
-         * @param {string} contextId 环境标识
+         * @public
+         * @name er.context.removePrivate
+         * @param {string} contextId 私有环境id
          */
         removePrivate: function ( contextId ) {
             delete privateContext[ contextId ];
@@ -56,16 +83,21 @@ er.context = function () {
          * 获取上下文环境变量
          * 
          * @public
+         * @name er.context.get
          * @param {string} name 上下文变量名
-         * @param {string} opt_contextId 环境id
-         * @return {string}
+         * @param {Object} opt_arg 读取选项
+         *     @config {string} [contextId] 私有环境id
+         * @return {Any}
          */
-        get: function ( name, opt_contextId ) {
-            var value,
-                priv;
+        get: function ( name, opt_arg ) {
+            opt_arg = opt_arg || {};
+
+            var contextId = opt_arg.contextId;
+            var value;
+            var priv;
                 
-            if ( 'string' == typeof opt_contextId ) { 
-                priv = privateContext[ opt_contextId ];
+            if ( 'string' == typeof contextId ) { 
+                priv = privateContext[ contextId ];
                 value = priv[ name ];
             }
             
@@ -79,6 +111,33 @@ er.context = function () {
             }
     
             return null;
+        },
+
+        /**
+         * 增加context的change事件监听器
+         *
+         * @public
+         * @name er.context.addChangeListener
+         * @param {Function} listener 监听器
+         */
+        addChangeListener: function ( listener ) {
+            changeListeners.push( listener );
+        },
+        
+        /**
+         * 移除context的change事件监听器
+         *
+         * @public
+         * @name er.context.addChangeListener
+         * @param {Function} listener 监听器
+         */
+        removeChangeListener: function ( listener ) {
+            var len = changeListeners.length;
+            while ( len-- ) {
+                if ( listener === changeListeners[ len ] ) {
+                    changeListeners.splice( len, 1 );
+                }
+            }
         }
     };
 }();
