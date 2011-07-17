@@ -1,0 +1,24 @@
+/* 开发时css源文件 */
+/* 如果开发时css较多，建议分文件，避免单一文件过大 */
+
+body {
+    margin:0;
+}
+
+.header {
+    background      : #ececec;
+    border-bottom   : 2px solid #888;
+    color           : #148CB5;
+    height          : 50px;
+    line-height     : 50px;
+    padding-left    : 20px;
+    font-size       : 24px;
+    font-weight     : bold;
+    font-family     : MetaBold, Trebuchet MS, sans-serif; 
+}
+
+.main {
+    min-width   : 980px;
+    padding     : 0 10px;
+    margin      : 5px auto;
+}

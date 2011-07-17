@@ -1,0 +1,8 @@
+/* 建议 */
+/* debug时，使用import的方法引入外部css */
+/* 上线前或提交测试前，使用shell合并 */
+
+/* 注意 */
+/* IE下有不能import超过32个外部css的限制，合并后则没问题 */
+
+@import url(../src/sample.css);
