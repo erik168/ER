@@ -26,8 +26,3 @@ er.IAction.prototype.enter = function ( args ) {
  */
 er.IAction.prototype.leave = function () {
 };
-
-/**
- * Action接口标识的声明
- */
-er.IAction.prototype.__action__ = 1;

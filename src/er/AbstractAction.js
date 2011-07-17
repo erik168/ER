@@ -8,69 +8,18 @@
  */
 
 ///import er.IAction;
-///import er.template;
 ///import er.context;
+///import er.Model;
+///import er.View;
+///import er._util;
 ///import baidu.lang.inherits;
 
 er.AbstractAction = function () {
-    
-    /**
-     * 绘制Action的函数
-     * 
-     * @inner
-     * @desc
-     *      挂接到ActionBase中，因为重复挂接而声明在外部
-     */
-    function renderAction_() {
-        var me   = this,
-            arg  = me.arg,
-            dom  = baidu.g( arg.domId ),
-            view = me.VIEW;
-        
-        // 获取view
-        switch ( typeof view ) {
-        case 'object':
-            view = view[ arg.type ];
-            break;
-        case 'function':
-            view = view.call( me );
-            break;
-        default:
-            view = String( view );
-            break;
-        }
-        
-        er.template.merge( dom, view, me._contextId );
-    }
-    
-    // 声明Action扩展对象
-    var ActionBaseX_ = {};
 
     function AbstractAction_() {}
 
     // Action的基础功能
     AbstractAction_.prototype = {
-        /**
-         * action使用的设置context
-         * 
-         * @protected
-         * @param {string} key context名
-         * @param {Object} value
-         */
-        setContext: function ( key, value ) {
-            er.context.set( key, value, this._contextId );
-        },
-        
-        /**
-         * 获取context，可获取action所处私有环境的context
-         * 
-         * @protected
-         * @param {string} key context名
-         */
-        getContext: function ( key ) {
-            return er.context.get( key, this._contextId );
-        },
-        
         /**
          * 生命周期阶段声明
          */
@@ -78,8 +27,8 @@ er.AbstractAction = function () {
             'enter'             : 1,
             'leave'             : 1,
             'entercomplete'     : 1,
-            'beforeinitcontext' : 1,
-            'afterinitcontext'  : 1,
+            'beforeinitmodel'   : 1,
+            'afterinitmodel'    : 1,
             'beforerender'      : 1,
             'afterrender'       : 1,
             'beforerepaint'     : 1,
@@ -98,21 +47,6 @@ er.AbstractAction = function () {
                 this[ '__' + phase ] && this[ '__' + phase ].call( this );
             }
         },
-
-        /**
-         * 绘制当前action的显示
-         * 
-         * @protected
-         * @param {HTMLElement} dom 绘制区域的dom元素
-         */
-        render: renderAction_,
-        
-        /**
-         * 重新绘制当前action的显示
-         * 
-         * @protected
-         */
-        repaint: renderAction_,
         
         /**
          * 进入当前action
@@ -126,30 +60,51 @@ er.AbstractAction = function () {
         enter: function ( arg ) {
             arg = arg || {};
 
-            var me = this;
             var queryMap = arg.queryMap || {};
             var key;
+            var view;
+            var templateName;
            
             // 保存arg    
-            me.arg = arg; 
+            this.arg = arg; 
             
-            this.__moveOntoPhase( 'enter' );
-            
-            // 重置会话上下文
-            if ( !me._contextId ) {
-                me._contextId = arg._contextId;
-                me._model = {};
-                er.context.addPrivate( me._contextId, me._model );
+            // 初始化guid
+            if ( !this.guid ) {
+                this.guid = arg._contextId;
             }
+
+            // 初始化model
+            if ( !this.hasOwnProperty( 'model' ) ) {
+                this.model = new (this.model || er.Model)();
+                this.model.construct( { guid: this.guid } );
+            }
+
+            // 初始化视图生成器
+            if ( !this._view ) {
+                templateName = this.VIEW;
+                if ( typeof templateName == 'function' ) {
+                    templateName = templateName.call( this );
+                }
+
+                view = this.view || er.View;
+                view = new view();
+                view.setTarget( arg.domId );
+                view.setTemplate( String( templateName ) );
+                view.setModel( this.model );
+
+                this._view = view;
+            }
+
+            this.__moveOntoPhase( 'enter' );
             
             // 将query装填入context
             for ( key in queryMap ) {
-                me.setContext( key, queryMap[ key ] );
+                this.setContext( key, queryMap[ key ] );
             }
 
             // 初始化context
-            me.__moveOntoPhase( 'beforeinitcontext' );
-            me.initContext( callback );
+            this.__moveOntoPhase( 'beforeloadmodel' );
+            this.model.load( callback );
             
             /**
              * 初始化context后的回调，用于绘制主区域或重绘控件
@@ -157,7 +112,7 @@ er.AbstractAction = function () {
              * @inner
              */
             function callback() {
-                me.__moveOntoPhase( 'afterinitcontext' );
+                me.__moveOntoPhase( 'afterloadmodel' );
                 if ( arg.refresh ) {
                     me.__moveOntoPhase( 'beforerepaint' );
                     me.repaint();
@@ -189,52 +144,11 @@ er.AbstractAction = function () {
          */
         dispose: function () {
             // 释放context
-            er.context.removePrivate( this._contextId );
-            this._model = null;
+            this.model = null;
             
-            // 清空主区域
-            var dom = baidu.g( this.arg.domId );
-            dom && ( dom.innerHTML = '' );
-        },
-
-        /**
-         * 初始化context
-         * 
-         * @prtected
-         * @param {Object} argMap 初始化的参数
-         * @param {Function} callback 初始化完成的回调函数
-         */
-        initContext: function ( callback ) {
-            var me          = this,
-                initerMap   = me.CONTEXT_INITER_MAP,
-                initerList  = [],
-                i           = -1,
-                len         = 0,
-                key;
-            
-            // 初始化context initer函数的列表
-            for ( key in initerMap ) {
-                initerList.push( key );
-                len++;
-            }
-            
-            // 开始初始化action指定的context
-            repeatCallback();
-            
-            /**
-             * Context初始化的回调函数
-             * 
-             * @inner
-             */
-            function repeatCallback() {
-                i++;
-                
-                if ( i < len ) {
-                    initerMap[ initerList[ i ] ].call( me, repeatCallback );
-                } else {
-                    callback();
-                }
-            }
+            // 清空视图
+            this._view.clear();
+            this._view = null;
         }
     };
 

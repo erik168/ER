@@ -59,7 +59,7 @@ er.Action = function () {
      * @param {Object} obj 业务action功能对象
      * @param {string} opt_name action名，加载默认action的基础功能
      */
-    var Action_ = function ( obj, opt_name ) {
+    function Action_( obj, opt_name ) {
         var construct = arguments.callee;
         var superClazz = opt_name ? ( ActionBaseX_[ opt_name ] || construct ) : construct;
         
@@ -121,8 +121,8 @@ er.Action = function () {
          *
          * @protected
          */      
-        __afterinitcontext: function () {
-            this.__fireEvent( 'afterinitcontext' );
+        __afterloadmodel: function () {
+            this.__fireEvent( 'afterloadmodel' );
         },
 
         /**
@@ -130,14 +130,13 @@ er.Action = function () {
          *
          * @protected
          */      
-        __beforeinitcontext: function () {
-            var me          = this;
-            var arg         = me.arg;
+        __beforeloadmodel: function () {
+            var arg         = this.arg;
             var path        = arg.path;
             var queryMap    = arg.queryMap;
-            var stateMap    = me.STATE_MAP || {};
+            var stateMap    = this.STATE_MAP || {};
             var stateSaved  = stateHolder_.get( path ) || {};
-            var ignoreState = me.IGNORE_STATE || (queryMap && queryMap.ignoreState);
+            var ignoreState = this.IGNORE_STATE || (queryMap && queryMap.ignoreState);
 
             var key, value;
             var state = {};
@@ -155,13 +154,13 @@ er.Action = function () {
                     }
 
                     state[ key ] = value;
-                    me.setContext( key, value );
+                    this.model.set( key, value );
                 }
 
                 stateHolder_.set( path, state );
             }
 
-            this.__fireEvent( 'beforeinitcontext' );
+            this.__fireEvent( 'beforeloadmodel' );
         },
 
         /**
@@ -216,10 +215,6 @@ er.Action = function () {
 
     // 实现IAction
     baidu.inherits( Action_, er.AbstractAction );
-    
-    // 初始化Action扩展原型对象构造器
-    ActionX_ = new Function();
-    ActionX_.prototype = Action_.prototype;
 
     /**
      * 扩展Action的功能

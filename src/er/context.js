@@ -42,7 +42,7 @@ er.context = function () {
             }
             
             // 初始化event argument
-            contextId && (evtArg.contextId = contextId);
+            contextId && ( evtArg.contextId = contextId );
             evtArg.oldValue = context[ name ] || null;
             evtArg.newValue = newValue;
             
