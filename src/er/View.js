@@ -10,16 +10,18 @@
 ///import er.context;
 ///import er.AbstractView;
 ///import er.UIAdapter;
+///import baidu.object.extend;
 ///import baidu.lang.inherits;
 
 er.View = function () {
     var AbstractView = er.AbstractView;
 
-    function View( extend ) {
-        var construct = new Function();
+    function View( options ) {
+        var construct = function () {
+            baidu.extend( this, options );
+        };
     
-        construct.prototype = extend;
-        baidu.inherits( construct, View );
+        construct.prototype = View.prototype;
         return construct;
     }
 
@@ -31,7 +33,7 @@ er.View = function () {
                 this.UI_PROP_MAP, 
                 this.model.getGUID()
             );
-        }
+        },
 
         repaint: function ( controlMap ) {
             controlMap = controlMap || this._controlMap;
@@ -68,6 +70,11 @@ er.View = function () {
     };
 
     baidu.inherits( View, AbstractView );
+
+    View.extend = function ( ext ) {
+        baidu.extend( View.prototype, ext || {} );
+    };
+ 
     return View;
 }();
 
