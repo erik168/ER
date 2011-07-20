@@ -9,8 +9,9 @@
 
 var user = new er.Module({
     config: {
-        action: {
-            '/user/list': 'user.list'
-        }
+        action: [
+            {path: '/user/list', action: 'user.list'},
+            {path: '/', action: 'user.list'},
+        ]
     }
 });
