@@ -113,7 +113,7 @@ esui.util = function () {
          * 
          * @public
          * @param {string} id 控件id
-         * @return {Object}
+         * @return {esui.Control}
          */
         get: function ( id ) {
             return container[ id ] || null;
@@ -125,7 +125,7 @@ esui.util = function () {
          * @public
          * @param {string} type 控件类型
          * @param {Object} options 控件初始化参数
-         * @return {Object} 创建的控件对象
+         * @return {esui.Control} 创建的控件对象
          */
         create: function ( type, options ) {
             options = options || {};
@@ -145,10 +145,10 @@ esui.util = function () {
         },
 
         /**
-         * 释放控件对象
+         * 销毁控件
          * 
          * @public
-         * @param {Object|string} ctrl 控件或控件id
+         * @param {esui.Control|string} ctrl 控件或控件id
          */
         dispose: function ( ctrl ) {
             if ( ctrl ) {
@@ -187,7 +187,7 @@ esui.util = function () {
          * 
          * @public
          * @param {HTMLElement} dom dom元素
-         * @return {Object}
+         * @return {esui.Control}
          */
         getControlByDom: function ( dom ) {
             if ( !dom ) {

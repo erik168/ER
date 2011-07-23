@@ -13,6 +13,6 @@
  * 销毁控件
  * 
  * @public
- * @param {Object|string} ctrl 控件或控件id
+ * @param {esui.Control|string} ctrl 控件或控件id
  */
 esui.dispose = esui.util.dispose;
