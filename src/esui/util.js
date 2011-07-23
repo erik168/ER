@@ -13,6 +13,9 @@
     
 /**
  * UI组件功能库
+ *
+ * @static
+ * @private
  */
 esui.util = function () {
     var container    = {};
@@ -136,7 +139,6 @@ esui.util = function () {
                 if ( options.main ) {
                     uiObj.render();
                 }
-                container[ id ] = uiObj;
             }
             
             return uiObj;
@@ -155,9 +157,9 @@ esui.util = function () {
                     control = container[ ctrl ];
                 }
                 
-                if ( control && control.__ui__ ) {
+                if ( control && control instanceof esui.Control ) {
                     id = control.id;
-                    control.dispose();
+                    control.__dispose();
                     delete container[ id ];
                 }
             } else {
@@ -244,6 +246,17 @@ esui.util = function () {
             return controlMap;
         },
         
+        /**
+         * 构造控件
+         *
+         * @public
+         * @param {ecui.Control} control 控件实例
+         */
+        construct: function ( control ) {
+            container[ control.id ] = control;
+            control.__construct();
+        },
+
         /**
          * 判断值不为空(null|undefined)
          * 

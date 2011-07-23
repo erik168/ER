@@ -29,10 +29,7 @@ esui.Control = function ( options ) {
         this.id = esui.util.getGUID();
     }
 
-    // 生成控件主元素
-    if ( !this.main ) {
-        this.main = this.__createMain();
-    }
+    esui.util.construct( this );
 };
 
 esui.Control.prototype = {
@@ -139,13 +136,34 @@ esui.Control.prototype = {
     getState: function ( state ) {
         return !!this._state[ state ];
     },
-
+    
     /**
      * 释放控件
      * 
      * @public
      */
     dispose: function () {
+        esui.util.dispose( this );
+    },
+    
+    /**
+     * 构造控件
+     *
+     * @protected
+     */
+    __construct: function () {
+        // 生成控件主元素
+        if ( !this.main ) {
+            this.main = this.__createMain();
+        }
+    },
+
+    /**
+     * 释放控件
+     * 
+     * @protected
+     */
+    __dispose: function () {
         var controlMap = this._controlMap,
             main = this.main;
         
