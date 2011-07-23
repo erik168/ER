@@ -97,6 +97,8 @@ esui.Button.prototype = {
 
             // 初始化状态事件
             main.onclick = me._getHandlerClick();
+
+            me._isRendered = true;
         }
 
         // 设定宽度

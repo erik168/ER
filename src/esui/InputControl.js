@@ -22,6 +22,16 @@ esui.InputControl = function ( options ) {
 
 esui.InputControl.prototype = {
     /**
+     * 渲染控件
+     *
+     * @public
+     */
+    render: function () {
+        this.name = this.main.getAttribute( 'name' );
+        esui.Control.prototype.render.call( this );
+    },
+
+    /**
      * 获取控件的值
      *
      * @public

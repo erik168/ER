@@ -225,7 +225,7 @@ esui.Control.prototype = {
     },
     
     /**
-     * 生成控件主元素
+     * 创建控件主元素
      *
      * @protected
      * @return {HTMLElement}

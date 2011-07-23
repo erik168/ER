@@ -2,44 +2,24 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/CheckBox.js
+ * path:    esui/CheckBox.js
  * desc:    多选框控件
  * author:  zhaolei, erik
- * date:    $Date$
  */
+
+///import esui.BoxControl;
+///import baidu.lang.inherits;
 
 /**
  * 多选框控件
  * 
  * @param {Object} options 控件初始化参数
  */
-ui.CheckBox = function (options) {
-    // 初始化参数
-    this.__initOptions(options);
-    this._type      = 'checkbox';
-    
-    this._wrapTag   = 'INPUT';
-    this._wrapType  = 'checkbox';
+esui.CheckBox = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
+    this._type = 'checkbox';
+
+    esui.BoxControl.call( this, options );
 };
 
-/**
- * 继承自BaseBox
- */
-ui.CheckBox.prototype = new ui.BaseBox();
-
-/**
- * 获取参数值
- * 
- * @public
- * @return {string}
- */
-ui.CheckBox.prototype.getParamValue = function () {
-    if (this.getChecked()) {
-        return this.getChecked() - 0;
-    }
-    
-    return 0;
-};
-
-
-ui.BaseInput.derive(ui.CheckBox);
+baidu.inherits( esui.CheckBox, esui.BoxControl );
