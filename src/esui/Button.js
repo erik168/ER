@@ -129,16 +129,6 @@ esui.Button.prototype = {
      */
     setContent: function ( content ) {
         baidu.g( this.__getId( 'label' ) ).innerHTML = content;
-    },
-    
-    /**
-     * 释放控件
-     * 
-     * @public
-     */
-    dispose: function () {
-        this.main.onclick = null;
-        esui.Control.prototype.dispose.call( this );
     }
 };
 

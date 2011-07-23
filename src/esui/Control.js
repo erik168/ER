@@ -178,6 +178,7 @@ esui.Control.prototype = {
         
         // 释放控件主区域的事件以及引用
         if ( main ) {
+            main.onclick     = null;
             main.onmouseover = null;
             main.onmouseout  = null;
             main.onmousedown = null;
