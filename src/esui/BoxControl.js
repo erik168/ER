@@ -198,29 +198,6 @@ esui.BoxControl.prototype = {
             }
         };
     },
-    
-    /**
-     * 创建控件主元素
-     *
-     * @protected
-     * @return {HTMLInputElement}
-     */
-    __createMain: function () {
-        var input;
-        var tagName = 'input';
-        
-        this.name && (tagName = '<input name="' + this.name + '" />');
-        input = document.createElement( tagName );
-        
-        // 非IE浏览器不认createElement( '<input name=...' )
-        if ( !input ) {
-            input = document.createElement( 'input' );
-            this.name && (input.name = this.name);
-        }
-
-        input.type = this._type;
-        return input;
-    },
 
     /**
      * 释放控件
@@ -233,6 +210,20 @@ esui.BoxControl.prototype = {
         this._label     = null;
 
         esui.InputControl.prototype.__dispose.call( this );
+    },
+
+    /**
+     * 创建控件主元素
+     *
+     * @protected
+     * @return {HTMLInputElement}
+     */
+    __createMain: function () {
+        return esui.InputControl.prototype.__createInput.call( this, {
+            tagName : 'input',
+            name    : this.name,
+            type    : this.type
+        } );
     }
 };
 

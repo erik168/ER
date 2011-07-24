@@ -9,6 +9,7 @@
 
 ///import esui.util;
 ///import esui.get;
+///import esui.init;
 ///import baidu.dom.addClass;
 ///import baidu.dom.removeClass;
 
