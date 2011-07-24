@@ -5,64 +5,86 @@
  * path:    ui/Calendar.js
  * desc:    单日期选择器
  * author:  zhaolei, erik
- * date:    $Date: 2010/05/07 11:57:07 $
  */
+
+///import esui.InputControl;
+///import esui.Layer;
+///import esui.MonthView;
+///import esui.Select;
+///import esui.Button;
+///import baidu.lang.inherits;
+///import baidu.date.format;
+///import baidu.date.parse;
+///import baidu.dom.getPosition;
+///import baidu.page.getWidth;
 
 /**
  * 单日期选择器
  * 
  * @param {Object} options 控件初始化参数
  */
-ui.Calendar = function (options) {
-    this.__initOptions(options);
-    
+esui.Calendar = function (options) {
     // 类型声明，用于生成控件子dom的id和class
     this._type = 'cal';
 
     // 初始化显示日期的年月
-    this.now = this.now || ui.config.NOW || new Date();
+    this.now = this.now || esui.config.NOW || new Date();
     var now = this.now;
-    now = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    now = this.now = new Date(
+        now.getFullYear(), 
+        now.getMonth(), 
+        now.getDate()
+    );
     
-    this.__initOption('range', null, 'RANGE');
-    this.value = this.value || new Date(now.getTime());
-   
-    // 日期格式化方式初始化
-    this.__initOption('dateFormat', null, 'DATE_FORMAT');
-    this.__initOption('paramFormat', null, 'DATE_FORMAT');
-    
-    this.month = parseInt(this.month, 10) || now.getMonth();
-    this.year = parseInt(this.year, 10) || now.getFullYear();
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 1;
 
-    this._controlMap = {};
+    esui.Control.call( this, options );
+    
+    // 日期格式化方式初始化
+    this.__initOption( 'dateFormat', null, 'DATE_FORMAT' );
+    this.__initOption( 'valueFormat', null, 'VALUE_FORMAT' );
+    this.__initOption( 'range', null, 'RANGE' );
+
+    // 初始化value与valueAsDate
+    var valueAsDate;
+    if ( this.value ) {
+        valueAsDate = baidu.date.parse( this.value );
+    }
+
+    if ( valueAsDate ) {
+        this.valueAsDate = valueAsDate;
+    } else {
+        this.valueAsDate = this.valueAsDate || new Date( now.getTime() );
+    }
+   
+    
+    this.month = parseInt( this.month, 10 ) || now.getMonth();
+    this.year  = parseInt( this.year, 10 )  || now.getFullYear();
 };
 
-ui.Calendar.DATE_FORMAT = 'yyyy-MM-dd';
-ui.Calendar.RANGE = {
+esui.Calendar.DATE_FORMAT = 'yyyy-MM-dd';
+esui.Calendar.VALUE_FORMAT = 'yyyy-MM-dd';
+esui.Calendar.RANGE = {
     begin: new Date(2001, 8, 3),
     end: new Date(2046, 10, 4)
 };
 
 
-ui.Calendar.prototype = {
+esui.Calendar.prototype = {
     /**
      * 绘制控件
      * 
      * @public
      * @param {HTMLElement} main 控件的容器元素
      */
-    render: function (main) {
+    render: function () {
         var me = this;
-        if ( main && main.tagName != 'DIV' ) {
-            return;
-        }
+        var main = me.main;
         
-        ui.Base.render.call(me, main, true);
-        
-        if ( !me._isRender ) {
-            // 设置formName
-            me.formName = main.getAttribute('name');
-            
+        if ( !me._isRendered ) {
+            esui.InputControl.prototype.render.call( me );
+
             // 初始化主区域
             main.innerHTML = me._getMainHtml();
             main.onclick = me._getMainClickHandler();
@@ -70,10 +92,10 @@ ui.Calendar.prototype = {
             // 创建日历部件的控件对象
             me._renderLayer();
 
-            me._isRender = 1;
+            me._isRendered = 1;
         }
         
-        me.setValue( me.value );
+        me.setValueAsDate( me.valueAsDate );
     },
     
     /**
@@ -84,8 +106,9 @@ ui.Calendar.prototype = {
      */
     _getMainClickHandler: function () {
         var me = this;
-        return function (e) {
-            if (!me.getState('disabled')) {
+
+        return function ( e ) {
+            if ( !me.isDisabled() ) {
                 me.getLayer()._preventHide();
                 me.toggleLayer();
             }
@@ -100,7 +123,8 @@ ui.Calendar.prototype = {
      */
     toggleLayer: function () {
         var me = this;
-        if (this.getLayer().isShow()) {
+
+        if ( this.getLayer().isShow() ) {
             me.hideLayer();
         } else {
             me.showLayer();
@@ -114,7 +138,7 @@ ui.Calendar.prototype = {
      */
     hideLayer: function () {
         this.getLayer().hide();
-        this.removeState('active');
+        this.removeState( 'active' );
     },
     
     /**
@@ -124,22 +148,22 @@ ui.Calendar.prototype = {
      */
     showLayer: function () {
         var me = this,
-            main        = me._main,
+            main        = me.main,
             pos         = baidu.dom.getPosition(main),
             pageWidth   = baidu.page.getWidth(),
             layer       = me.getLayer(),
-            layerWidth  = layer._main.offsetWidth,
-            value       = me.value,
+            layerWidth  = layer.main.offsetWidth,
             layerTop    = pos.top + main.offsetHeight,
             layerLeft;
 
-        if (pageWidth < (pos.left + layerWidth)) {
+        if ( pageWidth < ( pos.left + layerWidth ) ) {
             layerLeft = pos.left + main.offsetWidth - layerWidth;
         } else {
             layerLeft = pos.left;
         }
-        layer.show(layerLeft, layerTop);
-        this.setState('active');
+
+        layer.show( layerLeft, layerTop );
+        this.addState( 'active' );
     },
 
     /**
@@ -149,15 +173,17 @@ ui.Calendar.prototype = {
      * @return {string}
      */
     _getMainHtml: function () {
-        var me = this,
+        var me    = this,
             input = 'text',
-            date = me.getValue();
+            date  = me.getValueAsDate();
 
-        return ui._format(me._tplMain,
-                            me.__getId(input),
-                            me.__getClass(input),
-                            me.__getClass('arrow'),
-                            baidu.date.format(date, me.dateFormat));
+        return esui.util.format( 
+            me._tplMain,
+            me.__getId( input ),
+            me.__getClass( input ),
+            me.__getClass( 'arrow' ),
+            baidu.date.format( date, me.dateFormat ) 
+        );
     },
     
     /**
@@ -184,30 +210,29 @@ ui.Calendar.prototype = {
      * @private
      */
     _renderLayer: function () {
-      var me = this,
-            layerId = me.__getId('layer'),
-            layer = ui.util.create('Layer', 
-                {
+        var me = this,
+            layerId = me.__getId( 'layer' ),
+            layer   = esui.util.create( 'Layer', {
                     id      : layerId,
                     autoHide: 'click',
                     retype  : 'cal-layer'
-                });
+                } );
         
         me._controlMap.layer = layer;
         layer.appendTo();
         layer.onhide = me._getLayerHideHandler();
         
-        layer._main.innerHTML = ui._format(me._tplLayer,
-            me.__getClass('layer-head'),
-            me.__getId('prevmonth'),
-            me.__getId('nextmonth'),
-            me.__getId('year'),
-            me.__getId('month'),
-            me.__getId('monthview')
+        layer.main.innerHTML = esui.util.format(
+            me._tplLayer,
+            me.__getClass( 'layer-head' ),
+            me.__getId( 'prevmonth' ),
+            me.__getId( 'nextmonth' ),
+            me.__getId( 'year' ),
+            me.__getId( 'month' ),
+            me.__getId( 'monthview' )
         );
         
         me._initLayerUI();
-
     },
     
     /**
@@ -216,39 +241,49 @@ ui.Calendar.prototype = {
      * @private
      */
     _initLayerUI: function () {
-        var prevMonth = this.__getId('prevmonth');
-        var nextMonth = this.__getId('nextmonth');
-        var year      = this.__getId('year');
-        var month     = this.__getId('month');
-        var monthView = this.__getId('monthview');
+        var prevMonth = this.__getId( 'prevmonth' );
+        var nextMonth = this.__getId( 'nextmonth' );
+        var year      = this.__getId( 'year' );
+        var month     = this.__getId( 'month' );
+        var monthView = this.__getId( 'monthview' );
         
-        var layer = this.getLayer();
-        var uiProp = {};
-        var controlMap;
+        var layer        = this.getLayer();
+        var uiProp       = {};
         var layerCtrlMap = layer._controlMap;
-
-        uiProp[monthView] = {value: this.value, customClass: this._getMVCustomClass()};
-        uiProp[month]  = {datasource:this._getMonthOptions(this.year), value:this.month};
-        uiProp[year]  = {datasource:this._getYearOptions(), value:this.year};
+        var controlMap;
         
-        controlMap = ui.util.init(layer._main, uiProp);
-        prevMonth = controlMap[prevMonth];
-        nextMonth = controlMap[nextMonth];
-        year = controlMap[year];
-        month = controlMap[month];
-        monthView = controlMap[monthView];
 
-        layerCtrlMap.prevMonth = prevMonth;
-        layerCtrlMap.nextMonth = nextMonth;
-        layerCtrlMap.year = year;
-        layerCtrlMap.month = month;
-        layerCtrlMap.monthview = monthView;
+        uiProp[ monthView ] = {
+            valueAsDate: this.valueAsDate, 
+            customClass: this._getMVCustomClass()
+        };
+        uiProp[ month ] = {
+            datasource: this._getMonthOptions( this.year ), 
+            value: this.month
+        };
+        uiProp[ year ] = {
+            datasource: this._getYearOptions(), 
+            value: this.year
+        };
+        
+        controlMap  = esui.util.init( layer.main, uiProp );
+        prevMonth   = controlMap[ prevMonth ];
+        nextMonth   = controlMap[ nextMonth ];
+        year        = controlMap[ year ];
+        month       = controlMap[ month ];
+        monthView   = controlMap[ monthView ];
 
-        year.onchange = this._getYearChangeHandler();
-        month.onchange = this._getMonthChangeHandler();
-        nextMonth.onclick = this._getMonthNexter();
-        prevMonth.onclick = this._getMonthPrever();
-        monthView.onchange = this._getMVChangeHandler();
+        layerCtrlMap.prevMonth  = prevMonth;
+        layerCtrlMap.nextMonth  = nextMonth;
+        layerCtrlMap.year       = year;
+        layerCtrlMap.month      = month;
+        layerCtrlMap.monthview  = monthView;
+
+        year.onchange       = this._getYearChangeHandler();
+        month.onchange      = this._getMonthChangeHandler();
+        nextMonth.onclick   = this._getMonthNexter();
+        prevMonth.onclick   = this._getMonthPrever();
+        monthView.onchange  = this._getMVChangeHandler();
     },
     
     /**
@@ -258,12 +293,12 @@ ui.Calendar.prototype = {
      * @param {Date} date
      * @return {boolean}
      */
-    _isInRange: function (date) {
+    _isInRange: function ( date ) {
         var begin = this.range.begin;
         var end = this.range.end;
 
-        if ((begin && date - begin < 0) 
-            || (end && end - date < 0)
+        if ( ( begin && date - begin < 0 ) 
+             || ( end && end - date < 0 )
         ) {
             return false;
         }
@@ -279,15 +314,18 @@ ui.Calendar.prototype = {
      */
     _getMVChangeHandler: function () {
         var me = this;
-        return function (date) {
-            if (!me._isInRange(date)) {
+
+        return function ( date ) {
+            if ( !me._isInRange( date ) ) {
                 return false;
             }
 
-            if (me.onchange(date) !== false) {
+            if ( me.onchange( date ) !== false ) {
                 me.value = date;
                 me.hideLayer();
-                baidu.g(me.__getId('text')).innerHTML = baidu.date.format(date, me.dateFormat);
+
+                var textEl = baidu.g( me.__getId( 'text' ) );
+                textEl.innerHTML = baidu.date.format( date, me.dateFormat );
             } else {
                 return false;
             }
@@ -304,9 +342,9 @@ ui.Calendar.prototype = {
      */
     _getMVCustomClass: function () {
         var me = this;
-        return function (date) {
-            if (!me._isInRange(date)) {
-                return this.__getClass('item-out');
+        return function ( date ) {
+            if ( !me._isInRange( date ) ) {
+                return this.__getClass( 'item-out' );
             }
 
             return '';
@@ -322,7 +360,7 @@ ui.Calendar.prototype = {
     _getMonthNexter: function () {
         var me = this;
         return function () {
-            me._repaintMonthView(me.year, me.month + 1);
+            me._repaintMonthView( me.year, me.month + 1 );
         };
     },
     
@@ -335,7 +373,7 @@ ui.Calendar.prototype = {
     _getMonthPrever: function () {
         var me = this;
         return function () {
-            me._repaintMonthView(me.year, me.month - 1);
+            me._repaintMonthView( me.year, me.month - 1 );
         };
     },
 
@@ -348,10 +386,10 @@ ui.Calendar.prototype = {
     _getYearChangeHandler: function () {
         var me = this;
 
-        return function (year) {
+        return function ( year ) {
             me.year = year;
 
-            me._repaintMonthView(year, me.month);
+            me._repaintMonthView( year, me.month );
             me.getLayer()._preventHide();
         };
     },
@@ -365,8 +403,8 @@ ui.Calendar.prototype = {
     _getMonthChangeHandler: function () {
         var me = this;
 
-        return function (month) {
-            me._repaintMonthView(me.year, month);
+        return function ( month ) {
+            me._repaintMonthView( me.year, month );
             me.getLayer()._preventHide();
         };
     },
@@ -378,7 +416,7 @@ ui.Calendar.prototype = {
      * @return {HTMLElement}
      */
     getLayer: function () {
-        return this._controlMap['layer'];
+        return this._controlMap.layer;
     },
 
     /**
@@ -390,7 +428,7 @@ ui.Calendar.prototype = {
     _getLayerHideHandler: function () {
         var me = this;
         return function () {
-            me.removeState('active');
+            me.removeState( 'active' );
         };
     },
     
@@ -401,16 +439,19 @@ ui.Calendar.prototype = {
      * @return {Array}
      */
     _getYearOptions: function () {
-        var range = this.range,
-            ds = [],
-            i,
-            end = range.end.getFullYear();
+        var range  = this.range,
+            result = [],
+            end    = range.end.getFullYear(),
+            i      = range.begin.getFullYear();
 
-        for (i = range.begin.getFullYear(); i <= end; i++) {
-            ds.push({name: i, value:i});
+        for ( ; i <= end; i++ ) {
+            result.push( {
+                name  : i, 
+                value : i
+            } );
         }
 
-        return ds;
+        return result;
     },
 
     /**
@@ -420,23 +461,26 @@ ui.Calendar.prototype = {
      * @param {number} year 选中的年
      * @return {Array}
      */
-    _getMonthOptions: function (year) {
-        var range = this.range,
-            ds = [],
-            i = 0,
-            len = 11;
+    _getMonthOptions: function ( year ) {
+        var range   = this.range,
+            result  = [],
+            i       = 0,
+            len     = 11;
         
-        if (year == range.begin.getFullYear()) {
+        if ( year == range.begin.getFullYear() ) {
             i = range.begin.getMonth();
-        } else if (year == range.end.getFullYear()) {
+        } else if ( year == range.end.getFullYear() ) {
             len = range.end.getMonth();
         }
 
-        for (; i <= len; i++) {
-            ds.push({name: (i + 1), value:i});
+        for ( ; i <= len; i++) {
+            result.push( {
+                name: (i + 1), 
+                value: i
+            });
         }
 
-        return ds;
+        return result;
     },
     
     /**
@@ -444,80 +488,99 @@ ui.Calendar.prototype = {
      * 
      * @private
      */
-    _repaintMonthView: function (year, month) {
-        if (!ui._hasValue(year)) {
+    _repaintMonthView: function ( year, month ) {
+        if ( !esui.util.hasValue( year ) ) {
             year = this.year;
         }
-        if (!ui._hasValue(month)) {
+        if ( !esui.util.hasValue( month ) ) {
             month = this.month;
         }
 
         var me = this,
-            range = me.range,
-            view = new Date(year, month, 1),
-            layer = me.getLayer(),
-            cal   = layer._controlMap.monthview,
-            rangeBegin = range.begin.getFullYear() * 12 + range.begin.getMonth(),
-            rangeEnd   = range.end.getFullYear() * 12 + range.end.getMonth(),
-            viewMonth  = year * 12 + month,
-            monthSelect = layer._controlMap.month;
+            range       = me.range,
+            view        = new Date(year, month, 1),
+            layer       = me.getLayer(),
+            layerCM     = layer._controlMap,
+            cal         = layerCM.monthview,
+            rangeBegin  = range.begin.getFullYear() * 12 + range.begin.getMonth(),
+            rangeEnd    = range.end.getFullYear() * 12 + range.end.getMonth(),
+            viewMonth   = year * 12 + month,
+            monthSelect = layerCM.month;
         
         month = view.getMonth();
-        if (rangeBegin - viewMonth > 0) {
-            month += (rangeBegin - viewMonth);
-        } else if (viewMonth - rangeEnd > 0) {
-            month -= (viewMonth - rangeEnd);
+        if ( rangeBegin - viewMonth > 0 ) {
+            month += ( rangeBegin - viewMonth );
+        } else if ( viewMonth - rangeEnd > 0 ) {
+            month -= ( viewMonth - rangeEnd );
         }
-        view.setMonth(month);
+        view.setMonth( month );
         me.month = view.getMonth();
-        me.year = view.getFullYear();
+        me.year  = view.getFullYear();
         
-        monthSelect.datasource = me._getMonthOptions(me.year);
+        monthSelect.datasource = me._getMonthOptions( me.year );
         monthSelect.render();
-        monthSelect.setValue(me.month);
+        monthSelect.setValue( me.month );
         
-        layer._controlMap.year.setValue(me.year);
-        layer._controlMap.prevMonth.disable((rangeBegin >= viewMonth));
-        layer._controlMap.nextMonth.disable((rangeEnd <= viewMonth));
+        layerCM.year.setValue( me.year );
+        layerCM.prevMonth.setDisabled( ( rangeBegin >= viewMonth ) );
+        layerCM.nextMonth.setDisabled( ( rangeEnd <= viewMonth ) );
         
         // 绘制日历部件
-        cal.setView(view);
+        cal.setView( view );
     },
    
     /**
-     * 获取当前选取的日期
+     * 获取当前选取的日期(字符串表示)
      * 
      * @public
      * @return {string}
      */
     getValue: function () {
-        return this.value || null;
-    },
-    
-    /**
-     * 获取参数值
-     * 
-     * @public
-     * @return {string}
-     */
-    getParamValue: function () {
-        return baidu.date.format(this.value, this.paramFormat) || null;
+        if ( this.valueAsDate ) {
+            return baidu.date.format( this.valueAsDate, this.valueFormat );
+        }
+
+        return '';
     },
     
     /**
      * 设置当前选取的日期
      * 
      * @public
-     * @param {Date} date 选取的日期
+     * @param {string} value 选取的日期(字符串表示)
      */
-    setValue: function (date) {
+    setValue: function ( value ) {
+        var valueAsDate = baidu.date.parse( value );
+        valueAsDate && ( this.setValueAsDate( valueAsDate ) );
+    },
+    
+    /**
+     * 获取当前选取的日期对象
+     * 
+     * @public
+     * @return {Date}
+     */
+    getValueAsDate: function () {
+        return this.valueAsDate || null;
+    },
+
+    /**
+     * 设置当前选取的日期
+     * 
+     * @public
+     * @param {Date} valueAsDate 选取的日期
+     */
+    setValueAsDate: function ( valueAsDate ) {
+        if ( !valueAsDate ) {
+            return;
+        }
+
         var me = this;
-        me.value = date;
+        me.valueAsDate = valueAsDate;
         
-        me.getLayer()._controlMap.monthview.select(date);
-        baidu.g(me.__getId('text')).innerHTML = baidu.date.format(date, me.dateFormat);
-    }
+        me.getLayer()._controlMap.monthview.setValueAsDate( valueAsDate );
+        baidu.g( me.__getId('text') ).innerHTML = baidu.date.format( valueAsDate, me.dateFormat );
+    },
 };
 
-ui.BaseInput.derive(ui.Calendar);
-
+baidu.inherits( esui.Calendar, esui.InputControl );

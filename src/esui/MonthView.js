@@ -5,26 +5,85 @@
  * path:    ui/MonthView.js
  * desc:    日历月份显示单元
  * author:  erik, zhaolei
- * date:    $Date$
  */
+
+///import esui.Control;
+///import baidu.lang.inherits;
+///import baidu.dom.g;
+///import baidu.dom.addClass;
+///import baidu.dom.removeClass;
+
 
 /**
  * 日历月份显示单元
  * 
  * @param {Object} options 控件初始化参数
  */
-ui.MonthView = function (options) {
-	this.__initOptions(options);
+esui.MonthView = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
 	this._type = "month";
 	
-    this.now = this.now || new Date();
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
 
-    var viewBase = this.value || ui.config.now || this.now;
-	this.year = parseInt(this.year, 10) || viewBase.getFullYear();
-	this.month = parseInt(this.month, 10) || viewBase.getMonth();
+    esui.Control.call( this, options );
+
+    this.now = this.now || esui.config.NOW || new Date();
+    var viewBase = this.valueAsDate || this.now;
+	this.year = parseInt( this.year, 10 ) || viewBase.getFullYear();
+	this.month = parseInt( this.month, 10 ) || viewBase.getMonth();
 };
 
-ui.MonthView.prototype = {
+esui.MonthView.prototype = {
+    /**
+	 * 设置当前显示的月份日期
+	 * 
+	 * @public
+	 * @param {Date} view 当前显示的月份日期
+	 */
+	setView: function ( view ) {
+        this.month = view.getMonth();
+        this.year = view.getFullYear();
+        this.render();   
+	},
+    
+    /**
+     * 获取当前选择的日期
+     * 
+     * @public
+     * @return {Date}
+     */
+    getValueAsDate: function () {
+        return this.valueAsDate || null;
+    },
+    
+    /**
+     * 选择日期
+     * 
+     * @public
+     * @param {Date} date 要选择的日期
+     */
+    setValueAsDate: function ( date ) {
+        if ( date instanceof Date ) {
+            var me = this;
+            
+            me._resetSelected();
+            me.valueAsDate = date;
+            me._paintSelected();
+        }
+    },
+	
+	/**
+	 * 绘制控件
+     *
+     * @public
+	 */
+	render: function () {
+        esui.Control.prototype.render.call( this );
+        this.main.innerHTML = this._getHtml();
+        this.setValueAsDate( this.valueAsDate );
+    },
+
     /**
      * 日期的模板
      * @private
@@ -41,45 +100,6 @@ ui.MonthView.prototype = {
 	 * 标题显示配置
 	 */
 	TITLE_WORDS: ['一', '二', '三', '四', '五', '六', '日'],
-	
-	/**
-	 * 设置当前显示的月份日期
-	 * 
-	 * @public
-	 * @param {Date} view 当前显示的月份日期
-	 */
-	setView: function (view) {
-        this.month = view.getMonth();
-        this.year = view.getFullYear();
-        this.render();   
-	},
-	
-	/**
-	 * 绘制控件
-     *
-     * @public
-	 */
-	render: function (main) {
-        ui.Base.render.call(this, main);
-	    var el = this._main;
-	    if (el) {
-	        el.innerHTML = this._getHtml();
-	        this.select(this.value);
-	    }
-    },
-    
-    /**
-     * 将控件添加到某个dom元素中
-     * 
-     * @param {HTMLElement} wrap 目标dom
-     */
-    appendTo: function (wrap) {
-        if (!this._main) {
-            var main = document.createElement('div');
-            wrap.appendChild(main);
-            this.render(main);
-        }
-    },
     
     /**
      * 获取控件的html
@@ -89,65 +109,66 @@ ui.MonthView.prototype = {
      */
     _getHtml: function () {
         var me = this,
-            html        = [ui._format(me._tplHead, me.__getClass('main'))],
+            html        = [ esui.util.format( me._tplHead, me.__getClass( 'main' ) ) ],
             index       = 0,
             year        = me.year,
             month       = me.month,
-            repeater    = new Date(year, month, 1),
-            nextMonth   = new Date(year, month + 1, 1),
-            begin       = 1 - (repeater.getDay() + 6) % 7,
+            repeater    = new Date( year, month, 1 ),
+            nextMonth   = new Date( year, month + 1, 1 ),
+            begin       = 1 - ( repeater.getDay() + 6 ) % 7,
             titles      = me.TITLE_WORDS,
             tLen        = titles.length,
             tIndex,
             virtual,
-            overClass   = me.__getClass('over'),
-            virClass    = me.__getClass('item-virtual'),
-            itemClass   = me.__getClass('item'),
+            overClass   = me.__getClass( 'over' ),
+            virClass    = me.__getClass( 'item-virtual' ),
+            itemClass   = me.__getClass( 'item' ),
             currentClass,
             customClass,
             overHandler = "baidu.addClass(this, '" + overClass + "')",
             outHandler  = "baidu.removeClass(this, '" + overClass + "')";
         
         // 绘制表头
-        for (tIndex = 0; tIndex < tLen; tIndex++) {
-            html.push('<td class="' + me.__getClass('title') + '">' + titles[tIndex] + '</td>');
+        for ( tIndex = 0; tIndex < tLen; tIndex++ ) {
+            html.push( '<td class="' + me.__getClass('title') + '">' + titles[ tIndex ] + '</td>' );
         }
-        html.push('</tr></thead><tbody><tr>')        
-        repeater.setDate(begin);
+        html.push( '</tr></thead><tbody><tr>' )        
+        repeater.setDate( begin );
         
         // 绘制表体
-        while (nextMonth - repeater > 0 || index % 7 !== 0) {
-            if (begin > 0 && index % 7 === 0) {
-                html.push('</tr><tr>');
+        while ( nextMonth - repeater > 0 || index % 7 !== 0 ) {
+            if ( begin > 0 && index % 7 === 0 ) {
+                html.push( '</tr><tr>' );
             }
             
             virtual = (repeater.getMonth() != month);
 
             // 构建date的css class
             currentClass = itemClass;
-            customClass = me._getCustomDateValue('customClass', repeater);
+            customClass = me._getCustomDateValue( 'customClass', repeater );
+
             virtual && (currentClass += ' ' + virClass);
             customClass && (currentClass += ' ' + customClass);
 
-            html.push(ui._format
-                (me._tplItem, 
+            html.push( esui.util.format(
+                    me._tplItem, 
                     repeater.getDate(),
                     repeater.getFullYear(),
                     repeater.getMonth(),
-                    me._getItemId(repeater),
+                    me._getItemId( repeater ),
                     currentClass,
-                    me._getCustomDateValue('customStyle', repeater),
-                    (virtual ? '' : overHandler),
-                    (virtual ? '' : outHandler),
-                    (virtual ? '' : me.__getStrRef() + "._selectByItem(this)")
-                ));
+                    me._getCustomDateValue( 'customStyle', repeater ),
+                    ( virtual ? '' : overHandler ),
+                    ( virtual ? '' : outHandler ),
+                    ( virtual ? '' : me.__getStrRef() + "._selectByItem(this)" )
+                ) );
                           
-            repeater = new Date(year, month, ++begin);
+            repeater = new Date( year, month, ++begin );
             index ++;
         }
                
-        html.push('</tr></tbody></table>');
-        return html.join('');
+        html.push( '</tr></tbody></table>' );
+        return html.join( '' );
     },
     
     /**
@@ -158,16 +179,16 @@ ui.MonthView.prototype = {
      * @param {Date} date 日期
      * @return {string}
      */
-    _getCustomDateValue: function (name, date) {
-        var value = this[name];
+    _getCustomDateValue: function ( name, date ) {
+        var value = this[ name ];
         var valueType = typeof value;
         
-        switch (valueType) {
+        switch ( valueType ) {
         case 'string':
             return value;
             break
         case 'function':
-            return value.call(this, date) || '';
+            return value.call( this, date ) || '';
             break
         }
         
@@ -180,12 +201,12 @@ ui.MonthView.prototype = {
      * @private
      * @param {HTMLElement} item dom元素td
      */
-    _selectByItem: function (item) {
-        var date = item.getAttribute('date'),
-            month = item.getAttribute('month'),
-            year = item.getAttribute('year');
+    _selectByItem: function ( item ) {
+        var date  = item.getAttribute( 'date' ),
+            month = item.getAttribute( 'month' ),
+            year  = item.getAttribute( 'year' );
             
-        this._change(new Date(year, month, date));
+        this._change( new Date( year, month, date ) );
     },
     
     onchange: new Function(),
@@ -196,29 +217,13 @@ ui.MonthView.prototype = {
      * @private
      * @param {Date} date 当前日期
      */
-    _change: function (date) {
-        if (!date) {
+    _change: function ( date ) {
+        if ( !date ) {
             return;
         }
         
-        if (this.onchange(date) !== false) {
-            this.select(date);
-        }
-    },
-    
-    /**
-     * 选择日期
-     * 
-     * @public
-     * @param {Date} date 要选择的日期
-     */
-    select: function (date) {
-        if (date instanceof Date) {
-            var me = this;
-            
-            me._resetSelected();
-            me.value = date;
-            me._paintSelected();
+        if ( this.onchange( date ) !== false ) {
+            this.setValueAsDate( date );
         }
     },
 
@@ -230,10 +235,11 @@ ui.MonthView.prototype = {
     _resetSelected: function () {
         var me = this;
 
-        if (me.value) {
-            var item = baidu.g(me._getItemId(me.value));
-            item && baidu.removeClass(item, me.__getClass('selected'));
-            me.value = null;
+        if ( me.valueAsDate ) {
+            var item = baidu.g( me._getItemId( me.valueAsDate ) );
+            item && baidu.removeClass( item, me.__getClass( 'selected' ) );
+
+            me.valueAsDate = null;
         }
     },
 
@@ -245,10 +251,11 @@ ui.MonthView.prototype = {
     _paintSelected: function () {
         var me = this;
 
-        if (me.value) {
-            var date = me.value;
-            var item = baidu.g(me._getItemId(date));
-            item && baidu.addClass(item, me.__getClass('selected'));
+        if ( me.valueAsDate ) {
+            var date = me.valueAsDate;
+            var item = baidu.g( me._getItemId( date ) );
+
+            item && baidu.addClass( item, me.__getClass( 'selected' ) );
         }
     },
     
@@ -259,21 +266,13 @@ ui.MonthView.prototype = {
      * @param {Date} date 日期
      * @return {string}
      */
-    _getItemId: function (date) {
-        return this.__getId(date.getFullYear() 
-                            + '-' + date.getMonth() 
-                            + '-' + date.getDate());
-    },
-    
-    /**
-     * 获取当前选择的日期
-     * 
-     * @public
-     * @return {Date}
-     */
-    getValue: function () {
-        return this.value || null;
+    _getItemId: function ( date ) {
+        return this.__getId(
+            date.getFullYear() 
+            + '-' + date.getMonth() 
+            + '-' + date.getDate()
+        );
     }
 };
 
-ui.Base.derive(ui.MonthView);
+baidu.inherits( esui.MonthView, esui.Control );
