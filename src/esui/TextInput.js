@@ -219,7 +219,7 @@ esui.TextInput.prototype = {
      */
     _removeInputListener: function () {
         var changeHandler = this._changeHandler;
-        var main = this._main;
+        var main = this.main;
 
         if ( baidu.ie ) {
             main.onpropertychange = null;

@@ -63,6 +63,7 @@ esui.Control.prototype = {
      * @param {HTMLElement} wrap
      */
     appendTo: function ( wrap ) {
+        wrap = wrap || document.body;
         wrap.appendChild( this.main );
         this.render();
     },
@@ -74,6 +75,7 @@ esui.Control.prototype = {
      */
     disable: function () {
         this.addState( 'disabled' );
+        this.disabled = true;
     },
     
     /**
@@ -83,6 +85,7 @@ esui.Control.prototype = {
      */
     enable: function () {
         this.removeState( 'disabled' );
+        this.disabled = false;
     },
 
     /**
@@ -157,6 +160,9 @@ esui.Control.prototype = {
         if ( !this.main ) {
             this.main = this.__createMain();
         }
+        
+        // 子控件容器
+        this._controlMap = {};
     },
 
     /**

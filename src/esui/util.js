@@ -322,4 +322,3 @@ esui.util = function () {
 baidu.on( window, 'unload', function () {
     esui.util.dispose();
 } );
-

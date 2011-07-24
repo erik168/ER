@@ -2,35 +2,98 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/Select.js
+ * path:    esui/Select.js
  * desc:    下拉选择框
  * author:  erik, zhaolei, linzhifeng
- * date:    $Date$
  */
 
+///import esui.InputControl;
+///import esui.Layer;
+///import baidu.lang.inherits;
 
 /**
  * 下拉选择框控件
  * 
  * @param {Object} options 参数
  */
-ui.Select = function(options) {
-    this.__initOptions(options);
+esui.Select = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
     this._type = 'select';
-    this._controlMap = {};
    
-    this.__initOption('maxItem', null, 'MAX_ITEM');
-    this.__initOption('emptyText', null, 'EMPTY_TEXT');
-    this.emptyLabel = ui._format(this._tplLabel,  this.__getClass('text-def'), this.emptyText);
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 1;
+    
+    esui.Control.call( this, options );
+
+    // 参数初始化
+    this.__initOption( 'maxItem', null, 'MAX_ITEM' );
+    this.__initOption( 'emptyText', null, 'EMPTY_TEXT' );
+    this.emptyLabel = esui.util.format(
+        this._tplLabel,  
+        this.__getClass('text-def'), 
+        this.emptyText );
     
     this.datasource = this.datasource || [];
-    this.index = -1;
 };
 
-ui.Select.EMPTY_TEXT = '请选择';
-ui.Select.MAX_ITEM = 8;  // 浮动层最大选项设置，超出则浮动层出现滚动条
+esui.Select.EMPTY_TEXT = '请选择'; // 选项为空时主区域显示文字
+esui.Select.MAX_ITEM   = 8;        // 浮动层最大选项设置，超出则浮动层出现滚动条
 
-ui.Select.prototype = {
+esui.Select.prototype = {
+    /**
+     * 设置控件为禁用
+     * 
+     * @public
+     */
+    disable: function () {
+        this.hideLayer();
+        esui.InputControl.prototype.disable.call( this );
+    },
+    
+    /**
+     * 设置控件为可用
+     * 
+     * @public
+     */
+    enable: function () {
+        this.hideLayer();
+        esui.InputControl.prototype.enable.call( this );
+    },
+    
+    /**
+     * 绘制控件
+     * 
+     * @public
+     * @param {HTMLElement} main 外部容器
+     */
+    render: function() {
+        var me = this,
+            main = me.main,
+            value = me.value;
+
+        if ( !me._isRendered ) {
+            esui.InputControl.prototype.render.call( me );
+
+            main.innerHTML  = me._getMainHtml();
+            main.onclick    = me._getMainClickHandler();
+
+            me._isRendered = 1;
+        }
+        
+        // 绘制浮动层
+        me._renderLayer();
+        
+        me.width && ( main.style.width = me.width + 'px' );
+        if ( !me.value && esui.util.hasValue( me.selectedIndex ) ) {
+            me.setSelectedIndex( me.selectedIndex );
+        } else {
+            me.setValue( value );
+        }
+        
+        me.setReadOnly ( !!me.readOnly );
+        me.setDisabled( !!me.disabled );
+    },
+    
     // 主体部分模板
     _tplMain: '<div id="{0}" class="{1}" value="" style="width:{3}px"><nobr>{2}</nobr></div><div class="{4}" arrow="1"></div>',
     
@@ -45,106 +108,59 @@ ui.Select.prototype = {
     _getMainHtml: function() {
         var me = this;
         
-        return ui._format(me._tplMain,
-                            me.__getId('text'),
-                            me.__getClass('text'),
-                            me.staticText || me.emptyLabel,
-                            me.width - 20,
-                            me.__getClass('arrow')
-            );
+        return esui.util.format(
+            me._tplMain,
+            me.__getId( 'text' ),
+            me.__getClass( 'text' ),
+            me.staticText || me.emptyLabel,
+            me.width - 20,
+            me.__getClass( 'arrow' )
+        );
     },
-    
-    /**
-     * 将控件添加到某个dom元素中
-     * 
-     * @param {HTMLElement} wrap 目标dom
-     */
-    appendTo: function (wrap) {
-        if (this._main) {
-            return;
-        }
 
-        var main = document.createElement('div');
-        wrap.appendChild(main);
-        this.render(main);
-    },
-    
-    /**
-     * 绘制控件
-     * 
-     * @param {HTMLElement} main 外部容器
-     */
-    render: function(main) {
-        var me = this,
-            value = me.value;
-
-        if ( !me._isRender ) {
-            ui.Base.render.call(me, main, true);
-
-            me.formName     = main.getAttribute('name');
-            main.innerHTML  = me._getMainHtml();
-            main.onclick    = me._getMainClickHandler();
-
-            me._isRender = 1;
-        }
-        
-        main = me._main;
-        if ( !main ) {
-            return;
-        }
-
-        me.width && (main.style.width = me.width + 'px');
-
-        me._renderLayer();
-        me.setValue(value);
-
-        me.setReadOnly ( !!me.readOnly );
-        me.disable( !!me.disabled );
-    },
-    
     /**
      * 绘制下拉列表
      *
      * @private
      */
     _renderLayer: function() {
-        var me = this,
-            layerId = me.__getId('layer'),
-            layer = me.getLayer(),
+        var me      = this,
+            layerId = me.__getId( 'layer' ),
+            layer   = me.getLayer(),
+            len     = me.datasource.length,
+            maxItem = me.maxItem,
             layerMain,
             layerMainWidth,
-            len = me.datasource.length,
-            maxItem = me.maxItem,
             itemHeight;
         
-        if (!layer) {
-            layer = ui.util.create('Layer', {
+        if ( !layer ) {
+            layer = esui.util.create( 'Layer', {
                     id      : layerId,
                     autoHide: 'click',
                     retype  : 'select-layer'
-                });
+                } );
             layer.appendTo();
-            me._controlMap['layer'] = layer;
+            me._controlMap[ 'layer' ] = layer;
             layer.onhide = me._getLayerHideHandler();
         }
         
         
-        layerMain = layer.getMain();
+        layerMain = layer.main;
         layerMain.style.width   = 'auto';
         layerMain.style.height  = 'auto';
         layerMain.innerHTML     = me._getLayerHtml();
         layerMainWidth          = layerMain.offsetWidth;
 
-        if (len > maxItem) {
+        if ( len > maxItem ) {
             itemHeight = layerMain.firstChild.offsetHeight;
-            layerMain.style.height = maxItem * (itemHeight + 1) + 'px';
+            layerMain.style.height = maxItem * ( itemHeight + 1 ) + 'px';
             layerMainWidth += 17;
         }
 
-        if (layerMainWidth < me.width) {
-            layer.setWidth(me.width);
+        if ( layerMainWidth < me.width ) {
+            layer.setWidth( me.width );
         } else {
-            layer.setWidth(layerMainWidth);
+            layer.setWidth( layerMainWidth );
         }
         
         // TODO:页面resize的时候需要调整浮动层的位置
@@ -159,7 +175,7 @@ ui.Select.prototype = {
     _getLayerHideHandler: function () {
         var me = this;
         return function () {
-            me.removeState('active');
+            me.removeState( 'active' );
         };
     },
 
@@ -175,13 +191,13 @@ ui.Select.prototype = {
      * @return {string}
      */
     _getLayerHtml: function () {
-        var me = this,
-            datasource = me.datasource,
-            i = 0,
-            len = datasource.length,
-            html = [],
-            strRef = me.__getStrRef(),
-            basicClass = me.__getClass('item'),
+        var me          = this,
+            datasource  = me.datasource,
+            i           = 0,
+            len         = datasource.length,
+            html        = [],
+            strRef      = me.__getStrRef(),
+            basicClass  = me.__getClass( 'item' ),
             itemClass,
             dis,
             item,
@@ -189,41 +205,41 @@ ui.Select.prototype = {
             iconHtml,
             titleTip;
 
-        for (; i < len; i++) {
-            itemClass = basicClass;
-            dis = 0;
-            item = datasource[i];
-            iconHtml = '';
-            titleTip = '';
+        for ( ; i < len; i++ ) {
+            itemClass   = basicClass;
+            dis         = 0;
+            item        = datasource[ i ];
+            iconHtml    = '';
+            titleTip    = '';
             
             // 初始化icon的HTML
-            if (item.icon) {
-                iconClass = me.__getClass('icon-' + item.icon);
-                iconHtml = ui._format(me._tplIcon, iconClass);
+            if ( item.icon ) {
+                iconClass = me.__getClass( 'icon-' + item.icon );
+                iconHtml = esui.util.format( me._tplIcon, iconClass );
             }
             
             // 初始化基础样式
-            if (item.style) {
+            if ( item.style ) {
                 itemClass += ' ' + basicClass + '-' + item.style;
             }
             
             // 初始化不可选中的项
-            if (item.disabled) {
+            if ( item.disabled ) {
                 dis = 1;
                 itemClass += ' ' + basicClass + '-disabled'; 
             }
             
             // 初始化选中样式
-            if (item.value == me.value) {
-                itemClass += ' ' + me.__getClass('item-selected')
+            if ( item.value == me.value ) {
+                itemClass += ' ' + me.__getClass( 'item-selected' )
             }
-            if (me.titleTip) {
+            if ( me.titleTip ) {
                 titleTip = 'title="' + item.name + iconHtml + '"';
             }
             
             html.push(
-                ui._format(me._tplItem,
-                    me.__getId('item') + i,
+                esui.util.format(me._tplItem,
+                    me.__getId( 'item' ) + i,
                     itemClass,
                     i,
                     item.value,
@@ -234,10 +250,10 @@ ui.Select.prototype = {
                     strRef + '._itemClickHandler(this)',
                     iconHtml,
                     titleTip
-                    ));
+                ) );
         }
         
-        return html.join('');
+        return html.join( '' );
     },
     
     /**
@@ -246,9 +262,9 @@ ui.Select.prototype = {
      * @public
      * @param {boolean} readOnly
      */
-    setReadOnly: function (readOnly) {
+    setReadOnly: function ( readOnly ) {
         this.readOnly = readOnly = !!readOnly;
-        readOnly ? this.setState('readonly') : this.removeState('readonly');
+        readOnly ? this.addState( 'readonly' ) : this.removeState( 'readonly' );
     },
     
     /**
@@ -259,11 +275,13 @@ ui.Select.prototype = {
      */
     _getMainClickHandler: function () {
         var me = this;
-        return function (e) {
+
+        return function ( e ) {
             e = e || window.event;
             var tar = e.srcElement || e.target;
-            if (!me.readOnly && !me.getState('disabled')) {
-                if (tar.getAttribute('arrow') || me.onmainclick() !== false) {
+
+            if ( !me.readOnly && !me.isDisabled() ) {
+                if ( tar.getAttribute( 'arrow' ) || me.onmainclick() !== false ) {
                     me.getLayer()._preventHide();
                     me.toggleLayer();
                 }
@@ -280,10 +298,10 @@ ui.Select.prototype = {
      */
     showLayer: function() {
         var me = this,
-            main                = me._main,
-            mainPos             = baidu.dom.getPosition(main),
+            main                = me.main,
+            mainPos             = baidu.dom.getPosition( main ),
             layer               = me.getLayer(),
-            layerMain           = layer.getMain(),
+            layerMain           = layer.main,
             layerOffsetHeight   = layerMain.offsetHeight,
             mainOffsetHeight    = main.offsetHeight,
             pageVHeight         = baidu.page.getViewHeight(),
@@ -293,14 +311,14 @@ ui.Select.prototype = {
                                     - baidu.page.getScrollTop(),
             layerTop;
 
-        if (pageVHeight > layerVHeight) {
+        if ( pageVHeight > layerVHeight ) {
             layerTop = mainPos.top + mainOffsetHeight - 1;
         } else {
             layerTop = mainPos.top - layerOffsetHeight + 1;
         }
         
-        layer.show(mainPos.left, layerTop);
-        me.setState('active');
+        layer.show( mainPos.left, layerTop );
+        me.addState( 'active' );
     },
     
     /**
@@ -310,7 +328,7 @@ ui.Select.prototype = {
      */
     hideLayer: function() {
         this.getLayer().hide();
-        this.removeState('active');
+        this.removeState( 'active' );
     },
     
     /**
@@ -320,7 +338,7 @@ ui.Select.prototype = {
      */
     toggleLayer: function() {
         var me = this;
-        if (me.getLayer().isShow()) {
+        if ( me.getLayer().isShow() ) {
             me.hideLayer();
         } else {
             me.showLayer();
@@ -333,7 +351,7 @@ ui.Select.prototype = {
      * @return {Object}
      */
     getLayer: function() {
-        return this._controlMap['layer'];
+        return this._controlMap[ 'layer' ];
     },
     
     /**
@@ -342,40 +360,17 @@ ui.Select.prototype = {
      * @return {HTMLElement}
      */
     _getCur: function() {
-        return baidu.g(this.__getId('text'));
+        return baidu.g( this.__getId( 'text' ) );
     },
     
     /**
      * 获取当前选中的值
      * 
-     * @param {number} opt_index 获取第n个数据的value
+     * @public
      * @return {string}
      */
-    getValue: function(opt_index) {
-        var value,
-            datasource = this.datasource;
-
-        if (typeof opt_index == 'number') {
-            opt_index < datasource.length && (value = datasource[opt_index].value);
-        } else {
-            value = this.value;
-        }
-
-        if (ui._hasValue(value)) {
-            return value;
-        }
-
-        return null;
-    },
-    
-    /**
-     * 设置数据来源
-     * 
-     * @public
-     * @param {Array} datasource 列表数据源
-     */
-    setDataSource: function (datasource) {
-        this.datasource = datasource || this.datasource;
+    getValue: function( opt_index ) {
+        return this.value || null;
     },
     
     /**
@@ -384,25 +379,26 @@ ui.Select.prototype = {
      * @public
      * @param {string} value 值
      */
-    setValue: function(value) {
+    setValue: function( value ) {
         var me = this,
-            layer = me.getLayer().getMain(),
-            items = layer.getElementsByTagName('div'),
+            layer = me.getLayer().main,
+            items = layer.getElementsByTagName( 'div' ),
             len,
             i,
             item;
-        
-        for (i = 0, len = items.length; i < len; i++) {
-            item = items[i].getAttribute('value');
-            if (item == value) {
-                me.selectByIndex(i);
-                return;
+
+        if ( value ) {
+            for ( i = 0, len = items.length; i < len; i++ ) {
+                item = items[ i ].getAttribute( 'value' );
+                if ( item == value ) {
+                    me.setSelectedIndex( i );
+                    return;
+                }
             }
         }
         
         me.value = null;
-        me.index = -1;
-        me.selectByIndex(-1);
+        me.setSelectedIndex( -1 );
     },
     
     /**
@@ -410,23 +406,26 @@ ui.Select.prototype = {
      * 
      * @public
      * @param {number} index 选项的索引序号
-     * @param {boolean} isDispatch 是否发送事件
+     * @param {boolean} opt_isDispatch 是否发送事件
      */
-    selectByIndex: function (index, isDispatch) {
-        var selected = this.datasource[index],
+    setSelectedIndex: function ( index, opt_isDispatch ) {
+        var selected = this.datasource[ index ],
             value;
             
-        if (!selected) {
+        if ( !selected ) {
             value = null;
         } else {
             value = selected.value;
         }
         
 
-        this.index = index;
+        this.selectedIndex = index;
         this.value = value;
         
-        if (isDispatch === true && this.onchange(value, selected) === false) {
+        if (
+            opt_isDispatch === true 
+            && this.onchange( value, selected ) === false
+        ) {
             return;
         }
         
@@ -441,8 +440,8 @@ ui.Select.prototype = {
      * @private
      */
     _repaint: function () {
-        var selected = this.datasource[this.index],
-            word = this.staticText || (selected ? selected.name : this.emptyLabel),
+        var selected = this.datasource[ this.selectedIndex ],
+            word = this.staticText || ( selected ? selected.name : this.emptyLabel ),
             el = this._getCur();
             
         el.title = word;
@@ -454,20 +453,22 @@ ui.Select.prototype = {
     /**
      * 重绘选项列表层
      * 
+     * @private
      */
     _repaintLayer: function () {
-        var me = this,
-            index = me.index,
-            first = me.getLayer().getMain().firstChild,
-            selectedClass = me.__getClass('item-selected');
+        var me              = this,
+            index           = me.selectedIndex,
+            walker          = me.getLayer().main.firstChild,
+            selectedClass   = me.__getClass( 'item-selected' );
             
-        while (first) {
-            if (first.getAttribute('index') == index) {
-                baidu.addClass(first, selectedClass);
+        while ( walker ) {
+            if ( walker.getAttribute( 'index' ) == index ) {
+                baidu.addClass( walker, selectedClass );
             } else {
-                baidu.removeClass(first, selectedClass);
+                baidu.removeClass( walker, selectedClass );
             }
-            first = first.nextSibling;
+
+            walker = walker.nextSibling;
         }
     },
     
@@ -477,16 +478,16 @@ ui.Select.prototype = {
      * @private
      * @param {HTMLElement} item 选项
      */
-    _itemClickHandler: function (item) {
-        var index = item.getAttribute('index');
-        var disabled = item.getAttribute('dis');
+    _itemClickHandler: function ( item ) {
+        var index = item.getAttribute( 'index' );
+        var disabled = item.getAttribute( 'dis' );
 
-        if (disabled == 1) {
+        if ( disabled == 1 ) {
             return;
         }
 
         this.hideLayer();
-        this.selectByIndex(parseInt(index, 10), true);
+        this.setSelectedIndex( parseInt( index, 10 ), true );
     },
 
     /**
@@ -495,13 +496,15 @@ ui.Select.prototype = {
      * @private
      * @param {HTMLElement} item 选项
      */
-    _itemOverHandler: function (item) {
-        if (item.getAttribute('dis') == 1) {
+    _itemOverHandler: function ( item ) {
+        if ( item.getAttribute( 'dis' ) == 1 ) {
             return;
         }
         
-        var index = item.getAttribute('index');
-        baidu.addClass(this.__getId('item') + index, this.__getClass('item-hover'));
+        var index = item.getAttribute( 'index' );
+        baidu.addClass( 
+            this.__getId( 'item' ) + index, 
+            this.__getClass( 'item-hover' ) );
     },
     
     /**
@@ -510,37 +513,22 @@ ui.Select.prototype = {
      * @private
      * @param {HTMLElement} item 选项
      */
-    _itemOutHandler: function (item) {
-        var index = item.getAttribute('index');
-        baidu.removeClass(this.__getId('item') + index, this.__getClass('item-hover'));
-    },
-    
-    /**
-     * 设置为disabled
-     * 
-     * @public
-     */
-    disable: function (disabled) {
-        this.hideLayer();
-        if (disabled) {
-            this.setState('disabled');
-        } else {
-            this.removeState('disabled');
-        }
+    _itemOutHandler: function ( item ) {
+        var index = item.getAttribute( 'index' );
+        baidu.removeClass(
+            this.__getId( 'item' ) + index, 
+            this.__getClass( 'item-hover' ) );
     },
     
     /**
      * 释放控件
      * 
-     * @public
+     * @private
      */
-    dispose: function () {
-        var me = this;
-        
-        me.onchange = null;
-        me._main.onclick = null;
-        ui.Base.dispose.call(me);
+    __dispose: function () {
+        this.onchange = null;
+        esui.InputControl.prototype.__dispose.call( this );
     }
 };
 
-ui.BaseInput.derive(ui.Select);
+baidu.inherits( esui.Select, esui.InputControl );
