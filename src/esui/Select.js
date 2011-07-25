@@ -23,7 +23,7 @@ esui.Select = function ( options ) {
     // 标识鼠标事件触发自动状态转换
     this._autoState = 1;
     
-    esui.Control.call( this, options );
+    esui.InputControl.call( this, options );
 
     // 参数初始化
     this.__initOption( 'maxItem', null, 'MAX_ITEM' );
