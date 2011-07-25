@@ -97,10 +97,12 @@ esui.Schedule.prototype = {
      * @param {boolean} disabled 是否禁用
      */
     setDisabled: function ( disabled ) {
+        disabled = !!disabled;
         var stateName = 'disabled';
         var shortcut;
         var bodyHead;
-
+        
+        this.disabled = disabled;
         if ( disabled ) {
             this.addState( stateName );
         } else {

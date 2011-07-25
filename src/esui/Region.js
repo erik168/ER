@@ -2,52 +2,149 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/Region.js
+ * path:    esui/Region.js
  * desc:    地域选择控件
  * author:  zhouyu, erik
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
+
+///import esui.InputControl;
+///import esui.Select;
+///import baidu.lang.inherits;
+///import baidu.object.clone;
 
 /**
  * 地域选择控件
+ *
  * @param {Object} options 控件初始化参数
  */
-ui.Region = function (options) {
-    this.__initOptions(options);
-    this._type = "region";
+esui.Region = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
+    this._type = 'region';
+    
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
 
-    this._initDatasource(this.datasource);
-    this.mode = this.mode || 'multi';
-    if (this.mode == 'multi') {
-        this.value = this.value || [];
+    esui.InputControl.call( this, options );
+
+
+    this._initDatasource( this.datasource );
+    
+    // 初始化mode
+    if ( this.mode != 'single' ) {
+        this.mode = 'multi';
     }
 
-    this._controlMap = {};
+    // 初始化value
+    var valueAsRaw = this.valueAsRaw || this.value;
+    if ( this.mode == 'multi' ) {
+        if ( typeof valueAsRaw == 'string' ) {
+            valueAsRaw = valueAsRaw.split( ',' );
+        } else if ( !( valueAsRaw instanceof Array ) ) {
+            valueAsRaw = [];
+        }
+    }
+    this.valueAsRaw =  valueAsRaw;
 };
 
  
-ui.Region.prototype = {
+esui.Region.prototype = {
     /**
      * 渲染控件
      *
      * @public
-     * @param {Object} main 控件挂载的DOM
      */
-    render: function (main) {
-        var me = this;
-        if (!me._isRender) {
-            ui.Base.render.call(me, main);
-            switch (me.mode.toLowerCase()) {
+    render: function () {
+        if ( !this._isRendered ) {
+            esui.InputControl.prototype.render.call( this );
+
+            switch ( this.mode ) {
             case 'multi':
-                me._initMulti();
+                this._initMulti();
                 break;
             case 'single':
-                me._initSingle();
+                this._initSingle();
                 break;
             }
             
-            me._isRender = 1;
+            this._isRendered = 1;
         }
+    },
+    
+    /**
+     * 获取当前选中的值
+     * 
+     * @public
+     * @return {string}
+     */
+    getValue: function () {
+        if ( this.mode == 'multi' ) {
+            return this.valueAsRaw.join( ',' );
+        }
+
+        return this.valueAsRaw;
+    },
+    
+    /**
+     * 设置当前选中的值
+     * 
+     * @public
+     * @param {string} value
+     */
+    setValue: function ( value ) {
+        this.valueAsRaw = value;
+        
+        if ( this.mode == 'multi' ) {
+            this._selectMulti( value.split( ',' ) );
+        } else {
+            this._controlMap.select.setValue( value );
+        }
+    },
+
+    /**
+     * 设置控件的禁用状态
+     * 
+     * @public
+     * @param {boolean} disabled 是否禁用
+     */
+    setDisabled: function ( disabled ) {
+        disabled = !!disabled;
+        if ( this.mode == 'multi' ) {
+            var cbs = this.main.getElementsByTagName( 'input' );
+            var cbsLen = cbs.length;
+            var cb;
+
+            while ( cbsLen-- ) {
+                cb = cbs[ cbsLen ];
+                if ( cb.type == 'checkbox' ) {
+                    cb.disabled = disabled;
+                }
+            }
+
+            this._updateMulti();
+        } else {
+            this._controlMap.select.setDisabled( disabled );
+        }
+
+        this[ disabled ? 'addState' : 'removeState' ]( 'disabled' );
+        this.disabled = disabled;
+    },
+    
+    /**
+     * 设置控件为禁用
+     * 
+     * @public
+     */
+    disable: function () {
+        this.setDisabled( true );
+    },
+    
+    /**
+     * 设置控件为可用
+     * 
+     * @public
+     */
+    enable: function () {
+        this.setDisabled( false );
     },
     
     /**
@@ -55,39 +152,38 @@ ui.Region.prototype = {
      * 
      * @private
      */
-    _initMulti: function(){
-        var me = this;
-        var data = this.datasource;
-        var len = data.length;
+    _initMulti: function () {
+        var data    = this.datasource;
+        var len     = data.length;
+        var html    = [];
         var i;
-        var html = [];
         
-        for (i = 0; i < len; i++) {
-            html.push(this._getOptionHtml(data[i], 0));
+        for ( i = 0; i < len; i++ ) {
+            html.push( this._getOptionHtml( data[ i ], 0 ) );
         }
 
-        me._main.innerHTML = html.join('');
-        me._selectMulti(me.value);
+        this.main.innerHTML = html.join( '' );
+        this._selectMulti( this.valueAsRaw );
     },
     
     /**
      * 选中地域（多选）
      * 
      * @private
-     * @param {Array} value
+     * @param {Array} valueAsRaw
      */
-    _selectMulti: function (value) {
-        this.value = value;
+    _selectMulti: function ( valueAsRaw ) {
+        this.valueAsRaw = valueAsRaw;
 
-        var len = value.length;
+        var len = valueAsRaw.length;
         var map = {};
         var key;
-        while (len --) {
-            map[value[len]] = 1;
+        while ( len -- ) {
+            map[ valueAsRaw[ len ] ] = 1;
         }
 
-        for (key in this._dataMap) {
-            this._getOption(key).checked = (key in map);
+        for ( key in this._dataMap ) {
+            this._getOption( key ).checked = ( key in map );
         }
 
         this._updateMulti();
@@ -98,31 +194,32 @@ ui.Region.prototype = {
      * 
      * @private
      */
-    _updateMulti: function (data, dontResetValue) {
-        data = data || {children:this.datasource};
-        if (!dontResetValue) {
-            this.value = [];
+    _updateMulti: function ( data, dontResetValue ) {
+        data = data || {children: this.datasource};
+        if ( !dontResetValue ) {
+            this.valueAsRaw = [];
         }
 
         var children = data.children;
-        var len = children instanceof Array && children.length;
+        var len      = children instanceof Array && children.length;
         var i;
         var item;
         var isChecked = true;
         var isItemChecked;
-        var checkbox = data.id && this._getOption(data.id);
+        var checkbox = data.id && this._getOption( data.id );
 
-        if (len) {
-            for (i = 0; i < len; i++) {
-                isItemChecked = this._updateMulti(children[i], 1);
+        if ( len ) {
+            for ( i = 0; i < len; i++ ) {
+                isItemChecked = this._updateMulti( children[ i ], 1 );
                 isChecked = isChecked && isItemChecked;
             }
 
-            checkbox && (checkbox.checked = isChecked);
+            checkbox && ( checkbox.checked = isChecked );
             return isChecked;
         } else {
-            this.value.push(data.id);
-            return checkbox.checked;
+            isChecked = checkbox.checked;
+            isChecked && this.valueAsRaw.push( data.id );
+            return isChecked;
         }
     },
     
@@ -141,44 +238,44 @@ ui.Region.prototype = {
      * @param {number} level 选项层级
      * @return {string}
      */
-    _getOptionHtml: function (data, level) {
-        var id = data.id;
-        var optionClass = [];
-        var bodyClass = this.__getClass('option-body');
-        var childrenClass = this.__getClass('option-children');
-        var html = [];
-        var children = data.children;
-        var len = children instanceof Array && children.length;
+    _getOptionHtml: function ( data, level ) {
+        var id              = data.id;
+        var optionClass     = [];
+        var bodyClass       = this.__getClass( 'option-body' );
+        var childrenClass   = this.__getClass( 'option-children' );
+        var html            = [];
+        var children        = data.children;
+        var len             = children instanceof Array && children.length;
         var i;
         
         optionClass.push(
-            this.__getClass('option'),
-            this.__getClass('option-' + id),
-            this.__getClass('option-level' + level)
+            this.__getClass( 'option' ),
+            this.__getClass( 'option-' + id ),
+            this.__getClass( 'option-level' + level )
         );
 
         html.push(
             '<dl class="' + optionClass.join(' ') + '">',
-            ui._format(
+            esui.util.format(
                 this._tplOption,
                 id,
                 data.text,
-                this.__getId('option_' + id),
+                this.__getId( 'option_' + id ),
                 bodyClass,
                 this.__getStrRef() + '._optionClick(this)',
                 level
-            ));
+            ) );
         
-        if (len) {
-            html.push('<dd class="' + childrenClass + '">');
-            for (i = 0; i < len; i++) {
-                html.push(this._getOptionHtml(children[i], level + 1));
+        if ( len ) {
+            html.push( '<dd class="' + childrenClass + '">' );
+            for ( i = 0; i < len; i++ ) {
+                html.push( this._getOptionHtml( children[ i ], level + 1 ) );
             }
-            html.push('</dd>');
+            html.push( '</dd>' );
         }
-        html.push('</dl>');
+        html.push( '</dl>' );
         
-        return html.join('');
+        return html.join( '' );
     },
     
     /**
@@ -187,25 +284,25 @@ ui.Region.prototype = {
      * @private
      * @param {HTMLInputElement} dom 选项checkbox的dom
      */
-    _optionClick: function (dom, dontRefreshView) {
-        var id          = dom.getAttribute('optionId');
-        var data        = this._dataMap[id];
+    _optionClick: function ( dom, dontRefreshView ) {
+        var id          = dom.getAttribute( 'optionId' );
+        var data        = this._dataMap[ id ];
         var isChecked   = dom.checked;
         var children    = data.children;
         var len         = children instanceof Array && children.length;
         var item;
         var checkbox;
         
-        if (len) {
-            while (len--) {
-                item = children[len];
-                checkbox = this._getOption(item.id);
+        if ( len ) {
+            while ( len-- ) {
+                item = children[ len ];
+                checkbox = this._getOption( item.id );
                 checkbox.checked = isChecked;
-                this._optionClick(checkbox, 1);
+                this._optionClick( checkbox, 1 );
             }
         }
 
-        if (!dontRefreshView) {
+        if ( !dontRefreshView ) {
             this._updateMulti();
         }
     },
@@ -217,8 +314,8 @@ ui.Region.prototype = {
      * @param {string} id 选项标识
      * @return {HTMLInputElement}
      */
-    _getOption: function (id) {
-        return baidu.g(this.__getId('option_' + id));
+    _getOption: function ( id ) {
+        return baidu.g( this.__getId( 'option_' + id ) );
     },
     
     /**
@@ -226,38 +323,28 @@ ui.Region.prototype = {
      *
      * @private
      */
-    _initDatasource: function (data) {
-        this.datasource = data || ui.Region.REGION_LIST;
-        this._dataMap = {};
+    _initDatasource: function ( data ) {
+        this.datasource = data || esui.Region.REGION_LIST;
+        this._dataMap   = {};
         data = this.datasource;
-        walker.call(this, data, {children: data});
+        walker.call( this, data, {children: data} );
 
-        function walker(data, parent) {
+        function walker( data, parent ) {
             var len = data instanceof Array && data.length;
             var i;
             var item;
             
-            if (!len) {
+            if ( !len ) {
                 return;
             }
 
-            for (i = 0; i < len; i++) {
-                item = baidu.object.clone(data[i]);
+            for ( i = 0; i < len; i++ ) {
+                item = baidu.object.clone( data[ i ] );
                 item.parent = parent;
-                this._dataMap[item.id] = item;
-                walker.call(this, item.children, item);
+                this._dataMap[ item.id ] = item;
+                walker.call( this, item.children, item );
             }
         }
-    },
-    
-    /**
-     * 获取当前选中的值
-     * 
-     * @public
-     * @return {Array|string}
-     */
-    getValue: function () {
-        return this.value;
     },
 
     /**
@@ -265,17 +352,16 @@ ui.Region.prototype = {
      *
      * @private
      */
-    _initSingle: function(){
+    _initSingle: function () {
         var me = this;
         var options = {
-            id: me.__getId("region"),
-            type: "Select",
-            datasource: me._singleDataAdapter(),
-            value: me.value,
-            width:100
+            id          : me.__getId( "region" ),
+            datasource  : me._singleDataAdapter(),
+            value       : me.valueAsRaw,
+            width       : 100
         };
-        var sinSelect = ui.util.create("Select", options);
-        sinSelect.appendTo(me._main);
+        var sinSelect = esui.util.create( "Select", options );
+        sinSelect.appendTo( me.main );
         sinSelect.onchange = me._getSelectChangeHandler();
 
         me._controlMap.select = sinSelect;
@@ -289,8 +375,8 @@ ui.Region.prototype = {
      */
     _getSelectChangeHandler: function () {
         var me = this;
-        return function (value) {
-            me.value = value;
+        return function ( value ) {
+            me.valueAsRaw = me.value = value;
         };
     },
 
@@ -302,46 +388,32 @@ ui.Region.prototype = {
      */
     _singleDataAdapter: function () {
         var result = [];
-        walker({children: this.datasource});
+        walker( {children: this.datasource} );
 
-        function walker(data) {
+        function walker( data ) {
             var children = data.children;
             var hasChild = !!children;
             var len, i;
-            if (data.id) {
-                result.push({
-                    name: data.text, 
-                    value: data.id, 
-                    disabled: hasChild
-                });
+            if ( data.id ) {
+                result.push( {
+                    name        : data.text, 
+                    value       : data.id, 
+                    disabled    : hasChild
+                } );
             }
-            if (hasChild) {
-                for (i = 0, len = children.length; i < len; i++) {
-                    walker(children[i]);
+
+            if ( hasChild ) {
+                for ( i = 0, len = children.length; i < len; i++ ) {
+                    walker( children[ i ] );
                 }
             }
         }
 
         return result;
-    },
-
-    /**
-     * 释放控件
-     * 
-     * @public
-     */
-    dispose: function () {
-        var me = this;
-        
-        if (this.mode == 'single') {
-            this._controlMap.select.onchange = null;
-        }
-        
-        ui.Base.dispose.call(this);
     }
 } 
 
-ui.Base.derive(ui.Region);
+baidu.inherits( esui.Region, esui.InputControl );
 
 
 /**
@@ -349,7 +421,7 @@ ui.Base.derive(ui.Region);
  *
  * @static
  */
-ui.Region.REGION_LIST = [
+esui.Region.REGION_LIST = [
     {
         id: 'China',
         text: '中国地区',
