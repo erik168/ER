@@ -27,6 +27,12 @@ esui.Calendar = function (options) {
     // 类型声明，用于生成控件子dom的id和class
     this._type = 'cal';
 
+    
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 1;
+
+    esui.InputControl.call( this, options );
+
     // 初始化显示日期的年月
     this.now = this.now || esui.config.NOW || new Date();
     var now = this.now;
@@ -35,12 +41,7 @@ esui.Calendar = function (options) {
         now.getMonth(), 
         now.getDate()
     );
-    
-    // 标识鼠标事件触发自动状态转换
-    this._autoState = 1;
 
-    esui.Control.call( this, options );
-    
     // 日期格式化方式初始化
     this.__initOption( 'dateFormat', null, 'DATE_FORMAT' );
     this.__initOption( 'valueFormat', null, 'VALUE_FORMAT' );
@@ -96,6 +97,59 @@ esui.Calendar.prototype = {
         }
         
         me.setValueAsDate( me.valueAsDate );
+    },
+   
+    /**
+     * 获取当前选取的日期(字符串表示)
+     * 
+     * @public
+     * @return {string}
+     */
+    getValue: function () {
+        if ( this.valueAsDate ) {
+            return baidu.date.format( this.valueAsDate, this.valueFormat );
+        }
+
+        return '';
+    },
+    
+    /**
+     * 设置当前选取的日期
+     * 
+     * @public
+     * @param {string} value 选取的日期(字符串表示)
+     */
+    setValue: function ( value ) {
+        var valueAsDate = baidu.date.parse( value );
+        valueAsDate && ( this.setValueAsDate( valueAsDate ) );
+    },
+    
+    /**
+     * 获取当前选取的日期对象
+     * 
+     * @public
+     * @return {Date}
+     */
+    getValueAsDate: function () {
+        return this.valueAsDate || null;
+    },
+
+    /**
+     * 设置当前选取的日期
+     * 
+     * @public
+     * @param {Date} valueAsDate 选取的日期
+     */
+    setValueAsDate: function ( valueAsDate ) {
+        if ( !valueAsDate ) {
+            return;
+        }
+
+        var me = this;
+        me.valueAsDate = valueAsDate;
+        
+        me.getLayer()._controlMap.monthview.setValueAsDate( valueAsDate );
+        baidu.g( me.__getId('text') ).innerHTML = baidu.date.format( valueAsDate, me.dateFormat );
     },
     
     /**
@@ -528,59 +582,16 @@ esui.Calendar.prototype = {
         // 绘制日历部件
         cal.setView( view );
     },
-   
-    /**
-     * 获取当前选取的日期(字符串表示)
-     * 
-     * @public
-     * @return {string}
-     */
-    getValue: function () {
-        if ( this.valueAsDate ) {
-            return baidu.date.format( this.valueAsDate, this.valueFormat );
-        }
-
-        return '';
-    },
     
     /**
-     * 设置当前选取的日期
+     * 释放控件
      * 
-     * @public
-     * @param {string} value 选取的日期(字符串表示)
+     * @protected
      */
-    setValue: function ( value ) {
-        var valueAsDate = baidu.date.parse( value );
-        valueAsDate && ( this.setValueAsDate( valueAsDate ) );
-    },
-    
-    /**
-     * 获取当前选取的日期对象
-     * 
-     * @public
-     * @return {Date}
-     */
-    getValueAsDate: function () {
-        return this.valueAsDate || null;
-    },
-
-    /**
-     * 设置当前选取的日期
-     * 
-     * @public
-     * @param {Date} valueAsDate 选取的日期
-     */
-    setValueAsDate: function ( valueAsDate ) {
-        if ( !valueAsDate ) {
-            return;
-        }
-
-        var me = this;
-        me.valueAsDate = valueAsDate;
-        
-        me.getLayer()._controlMap.monthview.setValueAsDate( valueAsDate );
-        baidu.g( me.__getId('text') ).innerHTML = baidu.date.format( valueAsDate, me.dateFormat );
-    },
+    __dispose: function () {
+        this.onchange = null;
+        esui.InputControl.prototype.__dispose.call( this );
+    }
 };
 
 baidu.inherits( esui.Calendar, esui.InputControl );
