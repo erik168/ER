@@ -2,58 +2,91 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/TextLine.js
+ * path:    esui/TextLine.js
  * desc:    带行号的文本输入框控件
  * author:  zhouyu, erik
- * date:    $Date: 2011-04-14 23:08:02 +0800 (四, 14  4 2011) $
  */
 
-ui.TextLine = function (options) {
-    this.__initOptions(options);
-    this._type = "textline";
+///import esui.InputControl;
+///import esui.TextInput;
+///import baidu.lang.inherits;
+///import baidu.string.trim;
+
+/**
+ * 带行号的文本输入框控件
+ * 
+ * @param {Object} options 参数
+ */
+esui.TextLine = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
+    this._type = 'textline';
+   
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
+    
+    esui.InputControl.call( this, options );
+
     this.number = 1;
     
-    this._controlMap = {};
-    this._lineId = this.__getId('line');
-    this._textId = this.__getId('text');
+    this._numberId      = this.__getId( 'number' );
+    this._textId        = this.__getId( 'text' );
+    this._numberInnId   = this._numberId + 'Word';
 
-    this.__initOption('height', null, 'HEIGHT');
-    this.__initOption('lineWidth', null, 'LINE_WIDTH');
+    this.__initOption( 'height', null, 'HEIGHT' );
 };
 
-ui.TextLine.LINE_WIDTH = 32;
-ui.TextLine.HEIGHT = 200;
+esui.TextLine.HEIGHT = 200;
 
-ui.TextLine.prototype = {
-    _tpl: '<div id="{0}" class="{2}" style="width:{4}px">1</div><textarea ui="type:TextInput;id:{1}" style="left:{3}px"></textarea>',
-    
+esui.TextLine.prototype = {
     /**
      * 渲染控件
      *
      * @public
-     * @param {Object} main 控件挂载的DOM
      */
-    render: function(main){
+    render: function () {
         var me = this;
 
-        if (!me._isRender) {
-            ui.Base.render.call(me, main);
+        if ( !me._isRendered ) {
+            esui.InputControl.prototype.render.call( me );
             
             me._renderMain();
             me._refreshLine();
             me._bindEvent();
-            me._isRender = 1;
-
-            // 绘制宽高
-            me.width && (main.style.width = me.width + 'px');
-            me.height && (main.style.height = me.height + 'px');
+            me._isRendered = 1;
         }
         
-        if ( me._isRender ) {
-            me.setValue(me.value);
-        }
+        // 绘制宽高
+        me.setWidth( me.width );
+        me.setHeight( me.height );
+
+        // 写入value
+        me.setValue( me.value );
     },
     
+    /**
+     * 显示行号区域
+     *
+     * @public
+     */
+    showNumber: function () {
+        this._numberHidden = false;
+        baidu.show( this._numberEl );
+
+        this._resetLineWidth();
+        this._resetScroll();
+    },
+    /**
+     * 隐藏行号区域
+     *
+     * @public
+     */
+    hideNumber: function () {
+        this._numberHidden = true;
+        baidu.hide( this._numberEl );
+        
+        this._resetLineWidth();
+    },
+
     /**
      * 设置控件的高度
      *
@@ -64,7 +97,7 @@ ui.TextLine.prototype = {
         this.height = height;
         
         if ( height ) {
-            this._lineEl.style.height = this._main.style.height = height + 'px';
+            this._numberEl.style.height = this.main.style.height = height + 'px';
             this._controlMap.text.setHeight( height );
         }
     },
@@ -79,8 +112,8 @@ ui.TextLine.prototype = {
         this.width = width;
         
         if ( width ) {
-            this._main.style.width = width + 'px';
-            this._controlMap.text.setWidth( width - this.lineWidth );
+            this.main.style.width = width + 'px';
+            this._resetLineWidth();
         }
     },
     
@@ -92,11 +125,13 @@ ui.TextLine.prototype = {
     _bindEvent: function(){
         var me = this;
 
-        var text = me._controlMap.text;
-        text.onchange = me._getLineRefresher();
-        text.getMain().onscroll = me._getScrollReseter();
+        var text = me._getTextCtrl();
+        me._lineRefresher   = me._getLineRefresher();
+        me._scrollRefresher = me._getScrollReseter();
 
-        me._lineEl.onscroll = me._getScrollLineReseter();
+        text.onchange           = me._lineRefresher;
+        text.main.onscroll      = me._scrollRefresher;
+        me._numberEl.onscroll   = me._getScrollLineReseter();
     },
     
     /**
@@ -133,42 +168,59 @@ ui.TextLine.prototype = {
      */
     _getLineRefresher: function () {
         var me = this;
-        return function(){
+
+        return function () {
+            var textEl = me._getTextEl();
             me._refreshLine();
+
             (typeof me.onchange == 'function') && me.onchange();
         };
     },
     
+    _tpl: '<div id="{0}" class="{2}"><pre style="margin:0;border:0;padding:0;">1</pre></div>'
+            + '<span id="{3}" class="{4}" style="left:-10000px;position:absolute;">1</span>'
+            + '<textarea ui="type:TextInput;id:{1}"></textarea>',
+    
+
     /**
      * 绘制主区域
      *
      * @private
      */
     _renderMain: function(){
-        var me = this;
-        var main = me._main;
-        var lineId = me._lineId;
-        var textId = me._textId;
-        var lineWidth = this.lineWidth;
+        var me              = this;
+        var main            = me.main;
+        var numberId        = me._numberId;
+        var textId          = me._textId;
+        var numberInnId     = me._numberInnId;
 
         var propMap = {};
-        propMap[textId] = {
-            width: me.width - lineWidth,
-            height: me.height,
-            value: me.value
+        var textCtrl;
+
+        propMap[ textId ] = {
+            width   : me.width,
+            height  : me.height,
+            value   : me.value
         };
 
-        main.innerHTML = ui._format(
-                            me._tpl, 
-                            lineId, 
-                            textId,
-                            me.__getClass('line'),
-                            lineWidth,
-                            lineWidth + 16
-                        );
-        me._controlMap.text = ui.util.init(main, propMap)[textId];
-        me._lineEl = baidu.g(lineId);
-        me._lineEl.style.height = me.height + "px";
+        main.innerHTML = esui.util.format(
+            me._tpl, 
+            numberId, 
+            textId,
+            me.__getClass( 'number' ),
+            numberInnId,
+            me.__getClass( 'numberinner' )
+        );
+        me._controlMap.text = textCtrl = esui.util.init( main, propMap )[ textId ];
+
+        // 移除text控件的hover状态自动触发
+        textCtrl.main.onmouseover = null;
+        textCtrl.main.onmouseout = null;
+
+        me._numberEl = baidu.g( numberId );
+        me._numberEl.style.height = me.height + "px";
+
+        me._numberInnEl = baidu.g( numberInnId );
     },
     
     /**
@@ -176,39 +228,92 @@ ui.TextLine.prototype = {
      *
      * @private
      */
-    _refreshLine: function(){
-        var me = this;
-        var html = [];
+    _refreshLine: function () {
+        var me      = this;
+        var html    = [];
+        var num     = me._getTextCtrl()
+                        .getValue()
+                        .split( "\n" )
+                        .length;
         var i;
-        var num = me._controlMap['text']
-                    .getValue()
-                    .split("\n")
-                    .length;
-        if (num != me.number) {
+
+        if ( num != me.number ) {
             me.number = num;
-            for (i = 1; i < num + 1; i++) {
-                html.push(i);
+            for ( i = 1; i < num + 1; i++ ) {
+                html.push( i );
             }
-            me._lineEl.innerHTML = html.join("<br />");
+
+            me._numberInnEl.innerHTML = num + 1;
+            
+            // chrome下节点太多性能会慢：“1<br>2”是3个节点
+            // IE下设置pre的innerHTML中，\n不会换行，很奇怪
+            if ( baidu.ie ) {
+                me._numberEl.innerHTML = html.join( "<br>" );
+            } else {
+                me._numberEl.firstChild.innerHTML = html.join( "\n" );
+            }
+            
+            me._resetLineWidth();
         }
+
         me._resetScroll();
     },
     
+    /**
+     * 重置行号区域的宽度
+     *
+     * @private
+     */
+    _resetLineWidth: function () {
+        var width       = Math.max( this._numberInnEl.offsetWidth, 14 );
+        var left        = width + 12;
+        var textWidth   = this.width - left;
     
+        this._numberEl.style.width = width + 18 + 'px';
+
+        if ( this._numberHidden ) {
+            left        = 0;
+            textWidth   = this.width;
+        }
+
+        this._getTextEl().style.left = left + 'px';
+        this._getTextCtrl().setWidth( textWidth );
+    },
+
+    /**
+     * 获取输入框元素
+     *
+     * @private
+     * @return {HTMLElement}
+     */
+    _getTextEl: function () {
+        return this._getTextCtrl().main;
+    },
+
+    /**
+     * 获取输入框控件
+     *
+     * @private
+     * @return {esui.TextInput}
+     */
+    _getTextCtrl: function () {
+        return this._controlMap.text;
+    },
+
     /**
      * 滚动文本输入框
      */
-    _resetScroll: function(){
+    _resetScroll: function () {
         var me = this;
-        me._lineEl.scrollTop = me._controlMap.text.getMain().scrollTop;
+        me._numberEl.scrollTop = me._getTextEl().scrollTop;
     },
     
     /**
      * 滚动数字区域
      */
-    _resetScrollByLine: function(){
+    _resetScrollByLine: function () {
         var me = this;
-        me._controlMap.text.getMain().scrollTop = me._lineEl.scrollTop;
+        me._getTextEl().scrollTop = me._numberEl.scrollTop;
     },
     
     /**
@@ -217,18 +322,17 @@ ui.TextLine.prototype = {
      * @public
      * @param {Array} lines
      */
-    addLines: function (lines) {
-        var me = this;
-        var text = me._controlMap.text;
-        var content = lines.join('\n');
-        var value = me.getValue();
+    addLines: function ( lines ) {
+        var me      = this;
+        var text    = me._controlMap.text;
+        var content = lines.join( '\n' );
+        var value   = me.getValue();
 
-        if (value.lenght > 0) {
+        if ( value.lenght > 0 ) {
             content = value + '\n' + content;
         }
 
-        text.setValue(content);
-        me._refreshLine();
+        text.setValue( content );
     },
     
     /**
@@ -237,9 +341,10 @@ ui.TextLine.prototype = {
      * @public
      * @param {string} value
      */
-    setValue: function (value) {
-        var text = this._controlMap.text;
-        text.setValue(value);
+    setValue: function ( value ) {
+        var text = this._getTextCtrl();
+        text.setValue( value );
+
         this._refreshLine();
     },
     
@@ -250,8 +355,8 @@ ui.TextLine.prototype = {
      * @return {string}
      */
     getValue: function() {
-        var text = this._controlMap.text;
-        return baidu.trim(text.getValue().replace(/\r/g, ''));
+        var text = this._getTextCtrl();
+        return baidu.trim( text.getValue().replace( /\r/g, '' ) );
     },
      
     /**
@@ -260,21 +365,22 @@ ui.TextLine.prototype = {
      * @public
      * @return {Array}
      */
-    getValueItems: function(){
-        var items = this.getValue().split('\n');
-        var len = items.length;
+    getValueAsArray: function () {
+        var items       = this.getValue().split( '\n' );
+        var len         = items.length;
+        var container   = {};
+        var result      = [];
         var i;
         var value;
-        var container = {};
-        var result = [];
+        
 
-        for (i = 0; i < len; i++) {
-            value = baidu.trim(items[i]);
-            if (value.length === 0 || container[value]) {
+        for ( i = 0; i < len; i++ ) {
+            value = baidu.trim( items[ i ] );
+            if ( value.length === 0 || container[ value ] ) {
                 continue;
             }
-            container[value] = 1;
-            result.push(value);
+            container[ value ] = 1;
+            result.push( value );
         }
 
         return result;
@@ -283,14 +389,20 @@ ui.TextLine.prototype = {
     /**
      * 释放
      * 
-     * @public
+     * @private
      */
-    dispose: function () {
-        this._lineEl.onscroll = null;
-        this._lineEl = null;
+    __dispose: function () {
+        this._numberInnerEl = null;
+        if ( this._numberId ) {
+            this._numberId.onscroll = null;
+            this._numberId = null;
+        }
 
-        ui.Base.dispose.call(this);
+        var text = this._getTextCtrl();
+        text && ( text.main.onscroll = null );
+
+        esui.InputControl.prototype.__dispose.call( this );
     }
 }
 
-ui.BaseInput.derive(ui.TextLine);
+baidu.inherits( esui.TextLine, esui.InputControl );

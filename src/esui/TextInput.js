@@ -173,6 +173,11 @@ esui.TextInput.prototype = {
             main.onkeypress = me._getPressHandler();
             me._addInputListener();
             
+            // 移除press状态的自动切换器
+            main.onmousedown = null;
+            main.onmouseup = null;
+
+            // 挂载获焦和失焦事件处理
             main.onfocus = me._getFocusHandler();
             main.onblur = me._getBlurHandler();
 
