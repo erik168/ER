@@ -2,28 +2,36 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/SideBar.js
+ * path:    esui/SideBar.js
  * desc:    左侧导航控件
  * author:  zhaolei, erik, linzhifeng
  */
 
+///import esui.Control;
+///import esui.Button;
+///import baidu.lang.inherits;
+
 /**
  * 左侧导航控件
+ *
  * @param {Object} options 控件初始化参数
  */
-ui.SideBar = function (options) {
-    this.__initOptions(options);
+esui.SideBar = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
     this._type = "sidebar";
+    
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
 
-    this._controlMap = {};
+    esui.Control.call( this, options );
 
     this.headHeight     = this.headHeight || 37;
     this.marginTop      = this.marginTop || 10;
     this.marginLeft     = this.marginLeft || 10;
     this.marginBottom   = this.marginBottom || 10;
 
-    this.__initOption('autoDelay', null, 'AUTO_DELAY');
-    this.__initOption('mode', null, 'MODE');
+    this.__initOption( 'autoDelay', null, 'AUTO_DELAY' );
+    this.__initOption( 'mode', null, 'MODE' );
 
     this._autoTimer = 0;
     
@@ -31,10 +39,10 @@ ui.SideBar = function (options) {
     // this._motioning = false;
 };
 
-ui.SideBar.AUTO_DELAY = 200;    //自动隐藏和自动显示的延迟
-ui.SideBar.MODE = 'fixed';      //初始化状态
+esui.SideBar.AUTO_DELAY = 200;      //自动隐藏和自动显示的延迟
+esui.SideBar.MODE       = 'fixed';  //初始化状态
 
-ui.SideBar.prototype = {
+esui.SideBar.prototype = {
     // TODO: 永久取消js实现的sidebar动画效果
     // motionStep      : 20,        //动态步伐
     // motionInterval  : 20,        //动态间隔
@@ -45,32 +53,32 @@ ui.SideBar.prototype = {
      * @private
      */
     _initCtrlBtn: function () {
-        var me = this;
-        var main = me._main;
-        var controlMap = me._controlMap;
-        var btnAutoHide = ui.util.create('Button', {
-            id: me.__getId('AutoHide'),
-            skin: 'autohide'
-        });
-        var btnFixed = ui.util.create('Button', {
-            id: me.__getId('Fixed'),
-            skin: 'fixed'
-        });
+        var me          = this;
+        var main        = me.main;
+        var controlMap  = me._controlMap;
+        var btnAutoHide = esui.util.create( 'Button', {
+            id      : me.__getId( 'AutoHide' ),
+            skin    : 'autohide'
+        } );
+        var btnFixed    = esui.util.create( 'Button', {
+            id      : me.__getId( 'Fixed' ),
+            skin    : 'fixed'
+        } );
         
         // 将按钮append到sidebarbar
-        btnAutoHide.appendTo(main);
-        btnFixed.appendTo(main);
+        btnAutoHide.appendTo( main );
+        btnFixed.appendTo( main );
         
         // 持有控件引用
-        controlMap.btnAutoHide = btnAutoHide;
-        controlMap.btnFixed = btnFixed;
+        controlMap.btnAutoHide  = btnAutoHide;
+        controlMap.btnFixed     = btnFixed;
         
         // 挂载行为
         btnAutoHide.onclick = this._getAutoHideClickHandler();
-        btnFixed.onclick = this._getFixedClickHandler();
+        btnFixed.onclick    = this._getFixedClickHandler();
         
         // 初始化按钮的显示
-        this._setMode(this.mode);
+        this._setMode( this.mode );
     },
     
     onmodechange: new Function(),
@@ -84,8 +92,8 @@ ui.SideBar.prototype = {
     _getFixedClickHandler: function () {
         var me = this;
         return function () {
-            me._setMode('fixed');
-            me.onmodechange(me.mode);
+            me._setMode( 'fixed' );
+            me.onmodechange( me.mode );
         };
     },
     
@@ -98,8 +106,8 @@ ui.SideBar.prototype = {
     _getAutoHideClickHandler: function () {
         var me = this;
         return function () {
-            me._setMode('autohide');
-            me.onmodechange(me.mode);
+            me._setMode( 'autohide' );
+            me.onmodechange( me.mode );
             me._hide();
         };
     },
@@ -110,19 +118,20 @@ ui.SideBar.prototype = {
      * @private
      * @param {string} mode
      */
-    _setMode: function (mode) {
+    _setMode: function ( mode ) {
         mode = mode.toLowerCase();
+
         var autoHideMain    = this._getAutoHideMain();
         var fixedMain       = this._getFixedMain();
         var neighbor        = this._getNeighbor();
-        var neighborHideClass = this.__getClass('neighbor-hide');
+        var neighborHideClass = this.__getClass( 'neighbor-hide' );
 
-        if (mode == 'fixed') {
-            baidu.hide(fixedMain);
-            baidu.show(autoHideMain);
+        if ( mode == 'fixed' ) {
+            baidu.hide( fixedMain );
+            baidu.show( autoHideMain );
         } else {
-            baidu.show(fixedMain);
-            baidu.hide(autoHideMain);
+            baidu.show( fixedMain );
+            baidu.hide( autoHideMain );
         }
 
         this.mode = mode;
@@ -155,7 +164,7 @@ ui.SideBar.prototype = {
      * @return {HTMLElement}
      */
     _getFixedMain: function () {
-        return this._controlMap.btnFixed.getMain();
+        return this._controlMap.btnFixed.main;
     },
     
     /**
@@ -165,7 +174,7 @@ ui.SideBar.prototype = {
      * @return {HTMLElement}
      */
     _getAutoHideMain: function () {
-        return this._controlMap.btnAutoHide.getMain();
+        return this._controlMap.btnAutoHide.main;
     },
     
     /**
@@ -175,18 +184,18 @@ ui.SideBar.prototype = {
      * @return {HTMLElement}
      */
     _initContent: function () {
-        var main = this._main;
-        var head = baidu.dom.first(main);
+        var main = this.main;
+        var head = baidu.dom.first( main );
         var body;
         
-        if (head) {
-            baidu.addClass(head, this.__getClass('head'));
+        if ( head ) {
+            baidu.addClass( head, this.__getClass( 'head' ) );
             this._headEl = head;
-            body = baidu.dom.next(head);
+            body = baidu.dom.next( head );
             
-            if (body) {
+            if ( body ) {
                 this._bodyEl = body;
-                baidu.addClass(body, this.__getClass('body'));
+                baidu.addClass( body, this.__getClass( 'body' ) );
             }
         }
     },
@@ -197,14 +206,14 @@ ui.SideBar.prototype = {
      * @private
      */
     _caching: function () {
-        var main = this._main;
-        var parent = main.parentNode;
-        var parentPos = baidu.dom.getPosition(parent);
-        var pos = baidu.dom.getPosition(main)
+        var main        = this.main;
+        var parent      = main.parentNode;
+        var parentPos   = baidu.dom.getPosition( parent );
+        var pos         = baidu.dom.getPosition( main )
 
-        if ( !ui._hasValue(this._mOffsetTop) ) {
+        if ( !esui.util.hasValue( this._mOffsetTop ) ) {
             this._mOffsetTop = pos.top - parentPos.top;
-            this.top = pos.top;
+            this.top  = pos.top;
             this.left = pos.left; 
         } else {
             this.top = parentPos.top + this._mOffsetTop;
@@ -217,20 +226,17 @@ ui.SideBar.prototype = {
      * @public
      * @param {HTMLElement} main 控件主元素
      */
-    render: function (main) {
-        if (this._main) {
-            return;
-        }
-        
+    render: function () {
         var me = this,
             pos;
 
-        ui.Base.render.call(me, main);
-        if (!me._isRender) {
+        
+        if ( !me._isRendered ) {
+            esui.Control.prototype.render.call( me );
             me._caching();
             
             // 给邻居元素添加控制样式的class
-            baidu.addClass(me._getNeighbor(), me.__getClass('neighbor'));
+            baidu.addClass( me._getNeighbor(), me.__getClass( 'neighbor' ) );
             
             // 初始化控制按钮，内容区域，mat和minibar
             me._initCtrlBtn();
@@ -240,13 +246,13 @@ ui.SideBar.prototype = {
             
             // 挂载resize和scorll的listener
             me.heightReseter = me._getHeightReseter();
-            me.topReseter = me._getTopReseter();
-            baidu.on(window, 'resize', me.heightReseter);
-            baidu.on(window, 'scroll', me.topReseter);
+            me.topReseter    = me._getTopReseter();
+            baidu.on( window, 'resize', me.heightReseter );
+            baidu.on( window, 'scroll', me.topReseter );
             
             // 给主元素添加over和out的事件handler
-            me._main.onmouseover = me._getMainOverHandler();
-            me._main.onmouseout = me._getMainOutHandler();
+            me.main.onmouseover = me._getMainOverHandler();
+            me.main.onmouseout  = me._getMainOutHandler();
 
             // 初始化高度和位置
             me._resetTop();
@@ -257,7 +263,7 @@ ui.SideBar.prototype = {
                 me._hide();
             }
 
-            me._isRender = 1;
+            me._isRendered = 1;
         }
     },
     
@@ -268,8 +274,9 @@ ui.SideBar.prototype = {
      */
     _renderMat: function () {
         var mat = document.createElement( 'div' );
-        mat.id = this.__getId( 'mat' );
-        mat.className = this.__getClass( 'mat' );
+
+        mat.id          = this.__getId( 'mat' );
+        mat.className   = this.__getClass( 'mat' );
         document.body.appendChild( mat );
     },
 
@@ -293,8 +300,8 @@ ui.SideBar.prototype = {
     _getMainOverHandler: function () {
         var me = this;
 
-        return function(){        
-            clearTimeout(me._autoTimer);
+        return function () {        
+            clearTimeout( me._autoTimer );
         };
     },
 
@@ -311,7 +318,7 @@ ui.SideBar.prototype = {
             if ( me._isAutoHide() ) {
                 event = event || window.event;
                 var tar = event.relatedTarget || event.toElement;
-                if (!baidu.dom.contains(me._main, tar)) {
+                if ( !baidu.dom.contains( me.main, tar ) ) {
                     me._autoHideBar();                        
                 }                                        
             }
@@ -325,32 +332,32 @@ ui.SideBar.prototype = {
      */
     _renderMiniBar:function () {
         var me = this,
-            div = document.createElement('div'),
+            div = document.createElement( 'div' ),
             html = [];
         
         // 构建minibar的html
         // 以主sidebar的标题为标题
         me._headEl && html.push(
             '<div class="' 
-            + me.__getClass('minibar-text') 
+            + me.__getClass( 'minibar-text' ) 
             + '">' + me._headEl.innerHTML 
             + '</div>');
         html.push('<div class="' + me.__getClass('minibar-arrow') + '"></div>');
         
         // 初始化minibar
-        div.innerHTML = html.join('');
-        div.id = me.__getId('MiniBar');
-        div.className = me.__getClass('minibar');
-        div.style.left = '-10000px';
-        div.style.top = me.top + 'px';
+        div.innerHTML   = html.join( '' );
+        div.id          = me.__getId( 'MiniBar' );
+        div.className   = me.__getClass( 'minibar' );
+        div.style.left  = '-10000px';
+        div.style.top   = me.top + 'px';
 
         // 持有引用
         me._miniBar = div;
         
         // 挂载行为
         div.onmouseover = me._getMiniOverHandler();
-        div.onmouseout = me._getMiniOutHandler();
-        document.body.appendChild(div);
+        div.onmouseout  = me._getMiniOutHandler();
+        document.body.appendChild( div );
     },
     
     /**
@@ -361,13 +368,15 @@ ui.SideBar.prototype = {
      */
     _getMiniOverHandler: function () {
         var me = this;
+        var hoverClass = me.__getClass('minibar-hover');
+
         return function () {            
-            if (!baidu.dom.hasClass(this, me.__getClass('minibar-hover'))){
-                baidu.addClass(this, me.__getClass('minibar-hover'));
+            if ( !baidu.dom.hasClass(this, hoverClass ) ){
+                baidu.addClass( this, hoverClass );
                 me._autoTimer = setTimeout(
                     function () {
                         me._hideMiniBar();
-                    }, me.autoDelay);
+                    }, me.autoDelay );
             }
         };
     },
@@ -381,8 +390,8 @@ ui.SideBar.prototype = {
     _getMiniOutHandler: function () {
         var me = this;
         return function () {
-            baidu.removeClass(this, me.__getClass('minibar-hover'));
-            clearTimeout(me._autoTimer);
+            baidu.removeClass( this, me.__getClass( 'minibar-hover' ) );
+            clearTimeout( me._autoTimer );
         };
     },
 
@@ -394,26 +403,26 @@ ui.SideBar.prototype = {
     _resetHeight: function () {
         var me          = this,
             page        = baidu.page,
-            pos         = baidu.dom.getPosition(me._main),
+            pos         = baidu.dom.getPosition( me.main ),
             scrollTop   = page.getScrollTop(),
             height      = page.getViewHeight(),
             bodyHeight;
 
-        if (height) {
+        if ( height ) {
             height = height - pos.top + scrollTop - me.marginTop;
         } else {
             height = 300;
         }   
-        if (height < 0){
+        if ( height < 0 ){
             height = 300;
         }
         
-        bodyHeight = height - me.headHeight;
+        bodyHeight      = height - me.headHeight;
         this.bodyHeight = bodyHeight;
-        this.height = height;
+        this.height     = height;
 
         me._getMat().style.height = height + me.marginTop * 2 + 'px';
-        me._main.style.height = 
+        me.main.style.height = 
         me._miniBar.style.height = 
             height + 'px';
 
@@ -444,27 +453,27 @@ ui.SideBar.prototype = {
      * @return {Function}
      */
     _resetTop: function () {
-        var me = this,
-            marginTop = me.marginTop,
-            scrollTop = baidu.page.getScrollTop(),
-            main = me._main,
-            mat = me._getMat(),
-            mini = me._miniBar,
-            top = me.top,
-            mainTop, miniTop, 
-            mainPos = 'absolute',
-            miniPos = 'absolute';
+        var me          = this,
+            marginTop   = me.marginTop,
+            scrollTop   = baidu.page.getScrollTop(),
+            main        = me.main,
+            mat         = me._getMat(),
+            mini        = me._miniBar,
+            top         = me.top, 
+            mainPos     = 'absolute',
+            miniPos     = 'absolute',
+            mainTop, miniTop;
         
         // 2x2的判断，真恶心
-        if (baidu.ie && baidu.ie < 7) {
-            if (scrollTop > top - marginTop) {
+        if ( baidu.ie && baidu.ie < 7 ) {
+            if ( scrollTop > top - marginTop ) {
                 mainTop = miniTop = scrollTop - top + me.top;
             } else {
                 mainTop = miniTop = top;
                 me._resetHeight();
             }
         } else {
-            if (scrollTop > top - marginTop) {
+            if ( scrollTop > top - marginTop ) {
                 miniPos = mainPos = 'fixed';
                 mainTop = miniTop = marginTop;    
             } else {
@@ -473,10 +482,10 @@ ui.SideBar.prototype = {
             }
         }
         
-        mat.style.top = mainTop - me.marginTop + 'px';
-        main.style.top = mainTop + 'px';
-        mat.style.position = main.style.position = mainPos;
-        mini.style.top = miniTop + 'px';
+        mat.style.top       = mainTop - me.marginTop + 'px';
+        main.style.top      = mainTop + 'px';
+        mat.style.position  = main.style.position = mainPos;
+        mini.style.top      = miniTop + 'px';
         mini.style.position = miniPos;
         setTimeout(function(){
             //移动过快时修补最后一次调整
@@ -512,11 +521,11 @@ ui.SideBar.prototype = {
      * @private
      */
     _show: function () {
-        var me = this,
-            step = 0,
-            endLeft = 10,
-            startLeft = -220,
-            minus = endLeft - startLeft,
+        var me          = this,
+            step        = 0,
+            endLeft     = 10,
+            startLeft   = -220,
+            minus       = endLeft - startLeft,
             interval;
                 
         /**
@@ -525,11 +534,11 @@ ui.SideBar.prototype = {
          */
         function finished() {
             me._getMat().style.left = 0;
-            me._main.style.left = endLeft + 'px'; 
+            me.main.style.left = endLeft + 'px'; 
             // TODO: 永久取消js实现的sidebar动画效果
             // me._motioning = false;
             
-            if (me._isAutoHide()){
+            if ( me._isAutoHide() ){
                 me._autoHideBar();                
             }
         }
@@ -551,7 +560,7 @@ ui.SideBar.prototype = {
                 }
                 
                 var pos = Math.floor(minus * me._tween(step));
-                me._main.style.left = startLeft + pos + 'px';
+                me.main.style.left = startLeft + pos + 'px';
             }, 
             me.motionInterval);  
         */
@@ -563,25 +572,25 @@ ui.SideBar.prototype = {
      * @private
      */
     _hide: function () {
-        var me = this,
-            step = 0,
-            endLeft = -220,
-            startLeft = 10,
-            minus = endLeft - startLeft,
+        var me          = this,
+            step        = 0,
+            endLeft     = -220,
+            startLeft   = 10,
+            minus   = endLeft - startLeft,
             interval;
         
         finished();
         return;
 
-        function finished(noMotion) {
+        function finished( noMotion ) {
             me._getMat().style.left = '-10000px';
-            me._main.style.left = endLeft + 'px';
+            me.main.style.left     = endLeft + 'px';
             //baidu.addClass(me._getNeighbor(), me.__getClass('neighbor-hide'));
             //me._repaintNeighbor();
             
             // TODO: 永久取消js实现的sidebar动画效果
             // me._motioning = false;
-            me._showMiniBar(noMotion);
+            me._showMiniBar( noMotion );
         };
         
         // TODO: 永久取消js实现的sidebar动画效果
@@ -598,7 +607,7 @@ ui.SideBar.prototype = {
                 }
                 
                 var pos = Math.floor(minus * me._tween(step));
-                me._main.style.left = startLeft + pos + 'px';
+                me.main.style.left = startLeft + pos + 'px';
             }, 
             me.motionInterval);        
         */
@@ -609,16 +618,17 @@ ui.SideBar.prototype = {
      * 
      * @private
      */
-    _autoHideBar : function(){
+    _autoHideBar : function () {
         var me = this;
-        clearTimeout(me._autoTimer);
-        me._autoTimer = setTimeout(function () {
-            var mPos = baidu.page.getMousePosition(),
-                navPos = baidu.dom.getPosition(me._main);
+        clearTimeout( me._autoTimer );
+        me._autoTimer = setTimeout( function () {
+            var mPos   = baidu.page.getMousePosition(),
+                navPos = baidu.dom.getPosition( me.main ),
+                main   = me.main;
 
-            if (mPos.x > navPos.left + me._main.offsetWidth 
-                || mPos.y < navPos.top 
-                || mPos.y > navPos.top + me._main.offsetHight
+            if ( mPos.x > navPos.left + main.offsetWidth 
+                 || mPos.y < navPos.top 
+                 || mPos.y > navPos.top + main.offsetHight
             ) {
                 me._hide();
             }            
@@ -631,14 +641,14 @@ ui.SideBar.prototype = {
      * @private
      */
     _showMiniBar: function (noMotion) {
-        var me = this,
-            step = 0,
-            endLeft = 0,
-            startLeft = -30,
-            minus = endLeft - startLeft,
+        var me          = this,
+            step        = 0,
+            endLeft     = 0,
+            startLeft   = -30,
+            minus       = endLeft - startLeft,
             interval;
         
-        if (noMotion) {
+        if ( noMotion ) {
             finish();
             return;
         }
@@ -685,11 +695,11 @@ ui.SideBar.prototype = {
      * @param {Function} onComplete 完成的回调函数
      */
     _hideMiniBar: function () {
-        var me = this,
-            step = 0,
-            endLeft = -30,
-            startLeft = 0,
-            minus = endLeft - startLeft,
+        var me          = this,
+            step        = 0,
+            endLeft     = -30,
+            startLeft   = 0,
+            minus       = endLeft - startLeft,
             interval;  
 
         /**
@@ -736,13 +746,16 @@ ui.SideBar.prototype = {
      * @desc 重绘内部的控件
      */
     _repaintNeighbor: function () {
-        var ctrlMap = ui.util.getControlMapByContainer(this._getNeighbor()),
+        var ctrls = esui.util.getControlsByContainer( this._getNeighbor() ),
+            len   = ctrls.length,
+            i,
             ctrl,
             key;
             
-        for (key in ctrlMap) {
-            ctrl = ctrlMap[key];
-            if (ctrl.refreshView) {
+        for ( i = 0; i < len; i++ ) {
+            ctrl = ctrls[ i ];
+
+            if ( ctrl.refreshView ) {
                 ctrl.refreshView();
             } else {
                 ctrl.render();
@@ -757,7 +770,7 @@ ui.SideBar.prototype = {
      * @return {HTMLElement}
      */
     _getNeighbor: function () {
-        return baidu.dom.next(this._main);
+        return baidu.dom.next( this.main );
     },
     
     /**
@@ -767,7 +780,7 @@ ui.SideBar.prototype = {
      * @return {HTMLElement}
      */
     _getMat: function () {
-        return baidu.g( this.__getId('mat') );
+        return baidu.g( this.__getId( 'mat' ) );
     },
 
     /**
@@ -775,21 +788,21 @@ ui.SideBar.prototype = {
      * 
      * @private
      */
-    dispose: function () {
+    __dispose: function () {
         var me = this;
         var mat = me._getMat();
             
-        baidu.un(window, 'resize' ,me.heightReseter);
-        baidu.un(window, 'scroll', me.topReseter);
-        document.body.removeChild(me._miniBar);
-        document.body.removeChild(mat);
+        baidu.un( window, 'resize' ,me.heightReseter );
+        baidu.un( window, 'scroll', me.topReseter );
+        document.body.removeChild( me._miniBar );
+        document.body.removeChild( mat );
 
         // 释放dom引用
         me._headEl = null;
         me._bodyEl = null;
         me._miniBar = null;
 
-        ui.Base.dispose.call(me);
+        esui.Control.prototype.__dispose.call( this );
     }
     
     // TODO: 永久取消js实现的sidebar动画效果
@@ -807,4 +820,4 @@ ui.SideBar.prototype = {
     */
 };
 
-ui.Base.derive(ui.SideBar);
+baidu.inherits( esui.SideBar, esui.Control );
