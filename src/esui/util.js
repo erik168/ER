@@ -233,11 +233,12 @@ esui.util = function () {
          * @param {boolean} disabled disable状态
          */
         setDisabledByContainer: function ( container, disabled ) {
-            var controlMap = esui.util.getControlMapByContainer( container );
-            var key, control;
+            var controls = esui.util.getControlMapByContainer( container );
+            var len = controls.length;
+            var control;
                 
-            for ( key in controlMap ) {
-                control = controlMap[ key ];
+            while ( len-- ) {
+                control = controls[ len ];
                 if ( control instanceof esui.Control ) {
                     control.setDisabled( disabled );
                 }
