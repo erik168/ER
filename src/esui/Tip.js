@@ -2,16 +2,23 @@
  * esui (ECOM Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/Tip.js
+ * path:    esui/Tip.js
  * desc:    提示控件
  * author:  linzhifeng, erik
- * date:    $Date: 2011-04-11 17:44:36 +0800 (一, 11  4 2011) $
  */
+
+///import esui.Control;
+///import esui.Layer;
+///import esui.Button;
+///import baidu.lang.inherits;
+///import baidu.event.on;
+///import baidu.event.un;
+///import baidu.dom.getPosition;
 
 /**
  * 提示控件
  */
-ui.Tip = function() {
+esui.Tip = function () {
     var LAYER_ID = '__TipLayer',
         TITLE_ID = '__TipLayerTitle',
         CLOSE_ID = '__TipLayerClose',
@@ -36,9 +43,9 @@ ui.Tip = function() {
         _layer.hide();
         _isShow = false;
         
-        var layerMain = _layer.getMain();
+        var layerMain = _layer.main;
         layerMain.onmouseover = null;
-        layerMain.onmouseout = null;
+        layerMain.onmouseout  = null;
     }
     
     /**
@@ -47,8 +54,8 @@ ui.Tip = function() {
      * @inner
      */
     function _preventHide() {
-        if (_hideTimeout) {
-            clearTimeout(_hideTimeout);
+        if ( _hideTimeout ) {
+            clearTimeout( _hideTimeout );
             _hideTimeout = null;
         }
     }
@@ -59,19 +66,23 @@ ui.Tip = function() {
      * @class
      * @public
      */
-    function Control(options) {
-        this.__initOptions(options);
+    function Control( options ) {
+        // 类型声明，用于生成控件子dom的id和class
         this._type = 'tip-entrance';
         
+        // 标识鼠标事件触发自动状态转换
+        this._autoState = 0;
+        
+        esui.Control.call( this, options );
         
         // 提示层的行为模式，over|click|auto
         this.mode = this.mode || 'over';
 
-        if (this.hideDelay) {
-            this.hideDelay = parseInt(this.hideDelay, 10);
+        if ( this.hideDelay ) {
+            this.hideDelay = parseInt( this.hideDelay, 10 );
         }
-        if (this.disabled) {
-            this.setState('disabled', 1);
+        if ( this.disabled ) {
+            this.addState( 'disabled', 1 );
         }
     }
     
@@ -80,21 +91,21 @@ ui.Tip = function() {
          * 渲染控件
          *
          * @public
-         * @param {HTMLElement} main 入口元素
          */
-        render: function (main) {
+        render: function () {
             var me = this;
             var mode = me.mode;
+            var main = me.main;
             var showFunc = me._getDoShow();
 
-            if (!me._isRender) {
-                ui.Base.render.call(me, main);
+            if ( !me._isRendered ) {
+                esui.Control.prototype.render.call( me );
                 
-                switch (mode)
+                switch ( mode )
                 {
                 case 'over':
                 case 'click':
-                    if (mode == 'over') {
+                    if ( mode == 'over' ) {
                         main.onmouseover = showFunc;
                     } else {
                         main.onclick = showFunc;
@@ -107,7 +118,7 @@ ui.Tip = function() {
                     break;
                 }
                 
-                me._isRender = 1;
+                me._isRendered = 1;
             }
         },
         
@@ -121,28 +132,28 @@ ui.Tip = function() {
 
             return function () {
                 // 判断tip的可用性
-                if (me.getState('disabled')) {
+                if ( me.isDisabled() ) {
                     return;
                 }
                 
                 // 构造提示的title和content
-                var title = me.title;
+                var title   = me.title;
                 var content = me.content;
-                if (typeof title == 'function') {
-                    title = title.call(me);
+                if ( typeof title == 'function' ) {
+                    title = title.call( me );
                 }
-                if (typeof content == 'function') {
-                    content = content.call(me);
+                if ( typeof content == 'function' ) {
+                    content = content.call( me );
                 }
                 
                 // 显示tip
-                _show(me._main, {
+                _show( me.main, {
                     title       : title,
                     content     : content,
                     arrow       : me.arrow,
                     hideDelay   : me.hideDelay,
                     mode        : me.mode
-                });
+                } );
             };
         },
         
@@ -155,27 +166,13 @@ ui.Tip = function() {
             var me = this;
 
             return function () {
-                Control.hide(me.hideDelay);
+                Control.hide( me.hideDelay );
             };
-        },
-        
-        /**
-         * 释放控件
-         *
-         * @public
-         */
-        dispose: function () {
-            if (this._main) {
-                var main = this._main;
-                main.onmouseover = null;
-                main.onmouseout = null;
-                this._main = null;
-            }
         }
     };
     
     // 从控件基类派生
-    ui.Base.derive(Control);
+    baidu.inherits( Control, esui.Control );
     
     /**
      * 显示提示
@@ -184,32 +181,32 @@ ui.Tip = function() {
      * @param {HTMLElement} entrance 入口元素
      * @param {Object}      tipInfo 提示信息
      */
-    function _show(entrance, tipInfo) {
-        if (!tipInfo || !entrance) {
+    function _show( entrance, tipInfo ) {
+        if ( !tipInfo || !entrance ) {
             return;
         }
 
         !_isInit && Control._init();
         
         // 阻止浮动层的隐藏
-        if (_isShow) {
+        if ( _isShow ) {
             _preventHide();
         }
         
         // 填入标题与内容
-        baidu.g(BODY_ID).innerHTML = tipInfo.content;
+        baidu.g( BODY_ID ).innerHTML = tipInfo.content;
         var title = tipInfo.title;
-        if (title) {
-            baidu.g(TITLE_ID).innerHTML = title;
-            baidu.show(TITLE_ID);
+        if ( title ) {
+            baidu.g( TITLE_ID ).innerHTML = title;
+            baidu.show( TITLE_ID );
         } else {
-            baidu.hide(TITLE_ID);
+            baidu.hide( TITLE_ID );
         }
         
         // 预初始化各种变量
         var arrow       = tipInfo.arrow, // 1|tr|rt|rb|br|bl|lb|lt|tl
             closeBtn    = tipInfo.closeButton,
-            pos         = baidu.dom.getPosition(entrance),
+            pos         = baidu.dom.getPosition( entrance ),
             mainLeft    = pos.left,
             mainTop     = pos.top,
             mainWidth   = entrance.offsetWidth,
@@ -218,8 +215,8 @@ ui.Tip = function() {
             viewHeight  = baidu.page.getViewHeight(),
             scrollLeft  = baidu.page.getScrollLeft(),
             scrollTop   = baidu.page.getScrollTop(),
-            layerMain   = _layer.getMain(),
-            closeMain   = ui.get(CLOSE_ID).getMain(),
+            layerMain   = _layer.main,
+            closeMain   = esui.util.get( CLOSE_ID ).main,
             layerWidth  = layerMain.offsetWidth,
             layerHeight = layerMain.offsetHeight,
             offsetX     = 5,
@@ -237,18 +234,19 @@ ui.Tip = function() {
             lTop,
             lBottom;
         
-        if ( !ui._hasValue( arrow ) ) {
+        if ( !esui.util.hasValue( arrow ) ) {
             arrow = Control.ARROW;
         }
 
-        if ( !ui._hasValue( closeBtn ) ) {
+        if ( !esui.util.hasValue( closeBtn ) ) {
             closeBtn = Control.CLOSE_BUTTON;
         }
+
         closeMain.style.display = closeBtn ? '' : 'none';
 
-        if (arrow) {
-            temp = 1;
-            arrow = String(arrow).toLowerCase();
+        if ( arrow ) {
+            temp    = 1;
+            arrow   = String( arrow ).toLowerCase();
             offsetX = 20;
             offsetY = 14;
             tLeft   = mainLeft + mainWidth - offsetX;
@@ -261,7 +259,7 @@ ui.Tip = function() {
             lRight  = mainLeft - offsetX - layerWidth;
 
             // 计算手工设置arrow时的位置
-            switch (arrow) {
+            switch ( arrow ) {
             case 'tr':
                 layerLeft = tRight;
                 layerTop = tTop;
@@ -302,38 +300,38 @@ ui.Tip = function() {
         } 
         
         // 计算自适应的位置
-        if (!temp) {
+        if ( !temp ) {
             layerTop = mainTop + mainHeight + offsetY;
-            arrow && (arrow = 't');
-            if (layerTop + layerHeight > viewHeight + scrollTop) {
-                if ((temp = mainTop - offsetY - layerHeight) > 0) {
+            arrow && ( arrow = 't' );
+            if ( layerTop + layerHeight > viewHeight + scrollTop ) {
+                if ( ( temp = mainTop - offsetY - layerHeight ) > 0 ) {
                     layerTop = temp;
-                    arrow && (arrow = 'b');
+                    arrow && ( arrow = 'b' );
                 }
             }
 
             layerLeft = mainLeft + mainWidth + offsetX;
-            arrow && (arrow += 'l');
-            if (layerLeft + layerWidth > viewWidth + scrollLeft) {
-                if ((temp = mainLeft - offsetX - layerWidth) > 0) {
+            arrow && ( arrow += 'l' );
+            if ( layerLeft + layerWidth > viewWidth + scrollLeft ) {
+                if ( ( temp = mainLeft - offsetX - layerWidth ) > 0 ) {
                     layerLeft = temp;
-                    arrow && (arrow = arrow.substr(0,1) + 'r');
+                    arrow && ( arrow = arrow.substr( 0, 1 ) + 'r' );
                 }
             }
         }
     
-        arrow && (arrowClass += ' ' + ARROW_CLASS + '-' + arrow);
-        baidu.g(ARROW_ID).className = arrowClass;
+        arrow && ( arrowClass += ' ' + ARROW_CLASS + '-' + arrow );
+        baidu.g( ARROW_ID ).className = arrowClass;
         
         // 绑定浮出层行为
-        if (tipInfo.mode != 'auto') {
+        if ( tipInfo.mode != 'auto' ) {
             layerMain.onmouseover = _preventHide;
-            layerMain.onmouseout = _getHider(tipInfo.hideDelay);
+            layerMain.onmouseout = _getHider( tipInfo.hideDelay );
         }
 
         // 显示提示层
         _isShow = true;
-        _layer.show(layerLeft, layerTop);
+        _layer.show( layerLeft, layerTop );
     };
     
     /**
@@ -343,9 +341,9 @@ ui.Tip = function() {
      * @public
      * @param {number} delay 延迟隐藏时间
      */
-    Control.hide = function (delay) {
+    Control.hide = function ( delay ) {
         delay = delay || Control.HIDE_DELAY;
-        _hideTimeout = setTimeout(_hide, delay);
+        _hideTimeout = setTimeout( _hide, delay );
     };
     
     Control.HIDE_DELAY = 300;
@@ -366,9 +364,9 @@ ui.Tip = function() {
      * @inner
      * @param {number} delay 延迟隐藏时间
      */
-    function _getHider(delay) {
+    function _getHider( delay ) {
         return function () {
-            Control.hide(delay);
+            Control.hide( delay );
         };
     }
     
@@ -379,36 +377,36 @@ ui.Tip = function() {
      * @private
      */
     Control._init = function () {
-        if (_isInit) {
+        if ( _isInit ) {
             return;
         }
 
         _isInit = 1;
-        _layer = ui.util.create('Layer', {
+        _layer = esui.util.create( 'Layer', {
                 id      : LAYER_ID,
                 retype  : 'tip',
                 width   : 300
-            });
+            } );
         _layer.appendTo();
 
-        var layerMain = _layer.getMain(),
-            title = document.createElement('h3'),
-            body  = document.createElement('div'),
-            arrow = document.createElement('div'),
-            close = ui.util.create('Button', {
-                id: CLOSE_ID,
-                skin: 'layerclose'
-            });
+        var layerMain = _layer.main,
+            title = document.createElement( 'h3' ),
+            body  = document.createElement( 'div' ),
+            arrow = document.createElement( 'div' ),
+            close = esui.util.create( 'Button', {
+                id      : CLOSE_ID,
+                skin    : 'layerclose'
+            } );
 
         // 初始化提示标题
-        title.id = TITLE_ID;
+        title.id        = TITLE_ID;
         title.className = TITLE_CLASS;
-        layerMain.appendChild(title);
+        layerMain.appendChild( title );
         
         // 初始化提示体
-        body.id = BODY_ID;
-        body.className = BODY_CLASS;
-        layerMain.appendChild(body);
+        body.id         = BODY_ID;
+        body.className  = BODY_CLASS;
+        layerMain.appendChild( body );
         
         // 初始化箭头
         arrow.id = ARROW_ID;
@@ -416,7 +414,7 @@ ui.Tip = function() {
         layerMain.appendChild(arrow);
         
         // 初始化关闭按钮
-        close.appendTo(layerMain);
+        close.appendTo( layerMain );
         close.onclick = _hide;
     };
 
@@ -425,4 +423,4 @@ ui.Tip = function() {
     return Control;
 }();
 
-baidu.on(window, 'load', ui.Tip._init);
+baidu.on( window, 'load', esui.Tip._init );

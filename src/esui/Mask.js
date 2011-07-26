@@ -2,30 +2,34 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  *
- * path:    ui/Mask.js
+ * path:    esui/Mask.js
  * desc:    页面遮盖控件
  * author:  zhaolei, erik, linzhifeng
- * date:    $Date$
  */
+
+///import esui;
+///import baidu.dom.g;
+///import baidu.event.on;
+///import baidu.event.un;
 
 /**
  * 页面遮盖控件
  */
-ui.Mask = (function() {
+esui.Mask = (function() {
     var maskClass = 'ui-mask';
-    var idPrefix = 'ctrlMask';
+    var idPrefix  = 'ctrlMask';
 
     /**
      * 遮盖层初始化
      *
      * @private
      */
-    function init(level) {
+    function init( level ) {
         var id = idPrefix + level,
-		    el = document.createElement('div');
+		    el = document.createElement( 'div' );
         
         el.id = id;
-        document.body.appendChild(el);
+        document.body.appendChild( el );
     }
 
     /**
@@ -34,7 +38,7 @@ ui.Mask = (function() {
      * @private
      * @param {HTMLElement} mask 遮盖层元素.
      */
-    function repaintMask(mask) {
+    function repaintMask( mask ) {
         var width = Math.max(
                         document.documentElement.clientWidth,
                         Math.max(
@@ -46,7 +50,7 @@ ui.Mask = (function() {
                             document.body.scrollHeight,
                             document.documentElement.scrollHeight));
 
-        mask.style.width = width + 'px';
+        mask.style.width  = width + 'px';
         mask.style.height = height + 'px';
     }
 
@@ -55,9 +59,9 @@ ui.Mask = (function() {
      *
      * @private
      */
-    function getResizeHandler(level) {
+    function getResizeHandler( level ) {
         return function () {
-		    repaintMask(getMask(level));
+		    repaintMask( getMask( level ) );
         };
     }
 
@@ -67,15 +71,15 @@ ui.Mask = (function() {
      * @private
      * @return {HTMLElement} 获取到的Mask元素节点.
      */
-    function getMask(level) {
+    function getMask( level ) {
         var id = idPrefix + level;
-        var mask = baidu.g(id);
+        var mask = baidu.g( id );
 
-        if (!mask) {
-            init(level);
+        if ( !mask ) {
+            init( level );
         }
 
-        return baidu.g(id);
+        return baidu.g( id );
     }
 	
     var resizeHandlerMap = {};
@@ -83,38 +87,38 @@ ui.Mask = (function() {
         /**
          * 显示遮盖层
          */
-        'show': function(level, type) {
+        'show': function( level, type ) {
             level = level || '0';
-            var mask = getMask(level),
+            var mask = getMask( level ),
                 clazz = [];
             
-            clazz.push(maskClass);
-            clazz.push(maskClass + '-level-' + level);
-			if (type) {
-                clazz.push(maskClass + '-' + type);
+            clazz.push( maskClass );
+            clazz.push( maskClass + '-level-' + level );
+			if ( type ) {
+                clazz.push( maskClass + '-' + type );
             }
             
-            repaintMask(mask);
+            repaintMask( mask );
 
-            mask.className = clazz.join(' ');
+            mask.className = clazz.join( ' ' );
             mask.style.display = 'block';
 
-            var resizeHandler = getResizeHandler(level);
-            resizeHandlerMap[level] = resizeHandler;
-			baidu.on(window, 'resize', resizeHandler);            
+            var resizeHandler = getResizeHandler( level );
+            resizeHandlerMap[ level ] = resizeHandler;
+			baidu.on( window, 'resize', resizeHandler );            
         },
 
         /**
          * 隐藏遮盖层
          */
-        'hide': function (level) {
+        'hide': function ( level ) {
             level = level || '0';
-			var mask = getMask(level);
-            if ('undefined' != typeof mask) {
+			var mask = getMask( level );
+            if ( 'undefined' != typeof mask ) {
                 mask.style.display = 'none';
 
-                var resizeHandler = resizeHandlerMap[level];
-				baidu.un(window, 'resize', resizeHandler);
+                var resizeHandler = resizeHandlerMap[ level ];
+				baidu.un( window, 'resize', resizeHandler );
             }
         }
     };

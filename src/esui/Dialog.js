@@ -2,22 +2,34 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/Dialog.js
+ * path:    esui/Dialog.js
  * desc:    对话框控件
  * author:  zhaolei, erik, linzhifeng
- * date:    $Date$
  */
+
+///import esui.Control;
+///import esui.Layer;
+///import esui.Button;
+///import esui.Mask;
+///import baidu.lang.inherits;
+///import baidu.dom.draggable;
+///import baidu.event.on;
+///import baidu.event.un;
 
 /**
  * 对话框控件
  * 
  * @param {Object} options 控件初始化参数
  */
-ui.Dialog = function (options) {
-    this.__initOptions(options);
+esui.Dialog = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
     this._type = 'dialog';
-    this._controlMap = {};
     
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
+    
+    esui.Control.call( this, options );
+
     // 初始化自动定位参数
     this.__initOption('autoPosition', null, 'AUTO_POSITION');
     
@@ -36,7 +48,7 @@ ui.Dialog = function (options) {
     this._resizeHandler = this._getResizeHandler();
 };
 
-ui.Dialog.prototype = {    
+esui.Dialog.prototype = {    
     /**
      * 对话框主体和尾部的html模板
      * @private
@@ -63,28 +75,28 @@ ui.Dialog.prototype = {
     show: function () {
         var mask = this.mask;
         var main;
-        if (!this.getLayer()) {
+        if ( !this.getLayer() ) {
             this.render();            
         }
 
-        main = this.getLayer().getMain();
+        main = this.getLayer().main;
 
         // 浮动层自动定位功能初始化
         if ( this.autoPosition ) {
-            baidu.on(window, 'resize', this._resizeHandler);
+            baidu.on( window, 'resize', this._resizeHandler );
         }
         
         this._resizeHandler(); 
 
         // 拖拽功能初始化
         if ( this.dragable ) {
-            baidu.dom.draggable(main, {handler:this.getHead()});
+            baidu.dom.draggable( main, {handler:this.getHead()} );
         }        
         
         // 如果mask不是object，则会隐式装箱
         // 装箱后的Object不具有level和type属性
         // 相当于未传参数
-        mask && ui.Mask.show(mask.level, mask.type);
+        mask && esui.Mask.show( mask.level, mask.type );
         
         this._isShow = true;
     },
@@ -97,11 +109,11 @@ ui.Dialog.prototype = {
     hide: function () {
         if ( this._isShow ) {
             if ( this.autoPosition ) {
-                baidu.un(window, 'resize', this._resizeHandler);
+                baidu.un( window, 'resize', this._resizeHandler );
             }
             
             this.getLayer().hide();
-            this.mask && ui.Mask.hide(this.mask.level);
+            this.mask && esui.Mask.hide( this.mask.level );
         }
 
         this._isShow = 0;
@@ -111,7 +123,7 @@ ui.Dialog.prototype = {
      * 获取浮出层控件对象
      * 
      * @public
-     * @return {ui.Layer}
+     * @return {esui.Layer}
      */
     getLayer: function () {
         return this._controlMap.layer;
@@ -123,9 +135,9 @@ ui.Dialog.prototype = {
      * @public
      * @param {string} html 要设置的文字，支持html
      */
-    setTitle: function (html) {
-        var el = baidu.g(this.__getId('title'));
-        if (el) {
+    setTitle: function ( html ) {
+        var el = baidu.g( this.__getId( 'title' ) );
+        if ( el ) {
             el.innerHTML = html;
         }
         this.title = html;
@@ -137,10 +149,10 @@ ui.Dialog.prototype = {
      * @public
      * @param {string} content 要设置的内容，支持html.
      */
-    setContent: function (content) {
+    setContent: function ( content ) {
         this.content = content;
         var body = this.getBody();
-        body && (body.innerHTML = content);
+        body && ( body.innerHTML = content );
     },
 
     
@@ -154,24 +166,25 @@ ui.Dialog.prototype = {
         var me = this;
             
         return function () {
-            var layer = me.getLayer(),
-                main = layer.getMain(),
-                left = me.left,
-                top = me.top; 
+            var layer   = me.getLayer(),
+                main    = layer.main,
+                left    = me.left,
+                top     = me.top; 
             
-            !left 
-                && (left = (baidu.page.getViewWidth() - main.offsetWidth) / 2);
+            if ( !left ) {
+                left = (baidu.page.getViewWidth() - main.offsetWidth) / 2;
+            }
             top += baidu.page.getScrollTop();
             
-            if (left < 0) {
+            if ( left < 0 ) {
                 left = 0;
             }
 
-            if (top < 0) {
+            if ( top < 0 ) {
                 top = 0;
             }
             
-            layer.show(left, top);
+            layer.show( left, top );
         };
     },
     
@@ -197,41 +210,57 @@ ui.Dialog.prototype = {
      * @public
      */
     render: function () {
-        var me = this,
-            layer = me.getLayer(),
+        var me      = this,
+            layer   = me.getLayer(),
             layerControl,
             main,
             closeBtn;
         
         // 避免重复创建    
-        if (layer) {
+        if ( layer ) {
             return;
         }
         
-        layer = ui.util.create('Layer', {
+        layer = esui.util.create( 'Layer', {
                 id      : me.__getId('layer'),
                 retype  : me._type,
                 skin    : me.dragable ? 'dragable' : '',
                 width   : me.width
-            });
+            } );
         layer.appendTo();
         me._controlMap.layer = layer;
         
         
         // 写入结构
-        main = layer.getMain();
+        main = layer.main;
         main.innerHTML = me._getHeadHtml()
-                            + me._getBFHtml('body')
-                            + me._getBFHtml('foot');
+                            + me._getBFHtml( 'body' )
+                            + me._getBFHtml( 'foot' );
 
         // 初始化关闭按钮
-        layerControl = ui.util.init(main);
-        closeBtn = layerControl[me.__getId('close')];
-        if (closeBtn) {
+        layerControl = esui.util.init( main );
+        closeBtn     = layerControl[ me.__getId( 'close' ) ];
+        if ( closeBtn ) {
             layer._controlMap.close = closeBtn;
             closeBtn.onclick = me._getCloseHandler();
         }
     },
+    
+    /** 
+     * dialog只允许在body下。重置appendTo方法
+     *
+     * @public
+     */ 
+    appendTo: function () {
+        this.render();
+    },
+
+    /** 
+     * dialog不需要创建main，方法置空
+     *
+     * @private
+     */
+    __createMain: function () {},
     
     /**
      * 获取对话框头部的html
@@ -240,21 +269,25 @@ ui.Dialog.prototype = {
      * @return {string}
      */
     _getHeadHtml: function () {
-        var me = this,
-            head = 'head',
-            title = 'title';
+        var me      = this,
+            head    = 'head',
+            title   = 'title';
         
-        return ui._format(me._tplHead,
-                          me.__getId(head),
-                          me.__getClass(head),
-                          me.__getId(title),
-                          me.__getClass(title),
-                          me.title,
-                          (!me.closeButton  ? '' :
-                              ui._format(me._tplClose,
-                                         me.__getId('close'))),
-                          me.__getStrCall('_headOver'),
-                          me.__getStrCall('_headOut'))                            
+        return esui.util.format(
+            me._tplHead,
+            me.__getId( head ),
+            me.__getClass( head ),
+            me.__getId( title ),
+            me.__getClass( title ),
+            me.title,
+            (!me.closeButton  ? '' :
+                esui.util.format(
+                    me._tplClose,
+                    me.__getId( 'close' )
+            ) ),
+            me.__getStrCall( '_headOver' ),
+            me.__getStrCall( '_headOut' )
+        );                            
     },
     
     /**
@@ -264,12 +297,14 @@ ui.Dialog.prototype = {
      * @param {string type 类型 body|foot
      * @return {string}
      */
-    _getBFHtml: function (type) {
+    _getBFHtml: function ( type ) {
         var me = this;
-        return ui._format(me._tplBF,
-                          me.__getId(type),
-                          me.__getClass(type),
-                          type == 'body' ? me.content : '');
+        return esui.util.format(
+            me._tplBF,
+            me.__getId( type ),
+            me.__getClass( type ),
+            type == 'body' ? me.content : ''
+        );
     },
     
     /**
@@ -279,7 +314,7 @@ ui.Dialog.prototype = {
      * @return {HTMLElement}
      */
     getBody: function () {
-        return baidu.g(this.__getId('body'));
+        return baidu.g( this.__getId( 'body' ) );
     },
     
     /**
@@ -289,7 +324,7 @@ ui.Dialog.prototype = {
      * @return {HTMLElement}
      */
     getHead: function () {
-        return baidu.g(this.__getId('head'));
+        return baidu.g( this.__getId( 'head' ) );
     },
 
     /**
@@ -299,7 +334,7 @@ ui.Dialog.prototype = {
      * @return {HTMLElement}
      */
     getFoot: function () {
-        return baidu.g(this.__getId('foot'));
+        return baidu.g( this.__getId( 'foot' ) );
     },
     
     /**
@@ -308,8 +343,9 @@ ui.Dialog.prototype = {
      * @private
      */
     _headOver: function () {
-        baidu.addClass(this.getHead(), 
-                       this.__getClass('head-hover'));
+        baidu.addClass(
+            this.getHead(), 
+            this.__getClass( 'head-hover' ) );
     },
     
     /**
@@ -318,34 +354,35 @@ ui.Dialog.prototype = {
      * @private
      */
     _headOut: function () {
-        baidu.removeClass(this.getHead(), 
-                          this.__getClass('head-hover'));
+        baidu.removeClass(
+            this.getHead(), 
+            this.__getClass( 'head-hover' ) );
     },
 
     /**
      * 释放控件
      * 
-     * @public
+     * @private
      */
-    dispose: function () {
-        if (this.autoPosition) {
-            baidu.un(window, 'resize', this._resizeHandler);
+    __dispose: function () {
+        if ( this.autoPosition ) {
+            baidu.un( window, 'resize', this._resizeHandler );
         }
-        this._resizeHandler = null;
 
-        ui.Base.dispose.call(this);
+        this._resizeHandler = null;
+        esui.Control.prototype.__dispose.call( this );
     }
 };
 
-ui.Base.derive(ui.Dialog);
+baidu.inherits( esui.Dialog, esui.Control );
 
-ui.Dialog.TOP = 100;
-ui.Dialog.WIDTH = 400;
-ui.Dialog.CLOSE_BUTTON = 1;
-ui.Dialog.OK_TEXT = '确定';
-ui.Dialog.CANCEL_TEXT = '取消';
+esui.Dialog.TOP             = 100;
+esui.Dialog.WIDTH           = 400;
+esui.Dialog.CLOSE_BUTTON    = 1;
+esui.Dialog.OK_TEXT         = '确定';
+esui.Dialog.CANCEL_TEXT     = '取消';
 
-ui.Dialog._increment = function () {
+esui.Dialog._increment = function () {
     var i = 0;
     return function () {
         return i++;
@@ -355,7 +392,7 @@ ui.Dialog._increment = function () {
 /**
  * alert dialog
  */
-ui.Dialog.alert = (function () {
+esui.Dialog.alert = (function () {
     var dialogPrefix = '__DialogAlert';
     var buttonPrefix = '__DialogAlertOk';
 
@@ -366,16 +403,18 @@ ui.Dialog.alert = (function () {
      * @param {Function} onok 用户定义的确定按钮点击函数
      * @return {Function}
      */
-    function getBtnClickHandler(onok, id) {
+    function getBtnClickHandler( onok, id ) {
         return function() {
-            var dialog = ui.get(dialogPrefix + id);
-            var isFunc = (typeof onok == 'function');
+            var dialog = esui.util.get( dialogPrefix + id );
+            var isFunc = ( typeof onok == 'function' );
 
-            if ((isFunc && onok(dialog) !== false) || !isFunc) {
+            if ( ( isFunc && onok( dialog ) !== false ) 
+                 || !isFunc
+            ) {
                 dialog.hide();
 
-                ui.util.dispose(buttonPrefix + id);
-                ui.util.dispose(dialog.id);
+                esui.util.dispose( buttonPrefix + id );
+                esui.util.dispose( dialog.id );
                 
                 dialog = null;
             }
@@ -391,37 +430,37 @@ ui.Dialog.alert = (function () {
      * @config {string} content 显示的文字内容
      * @config {Function} onok 点击确定按钮的行为，默认为关闭提示框
      */
-    function show (args) {
-        if (!args) {
+    function show ( args ) {
+        if ( !args ) {
             return;
         }
         
-        var index   = ui.Dialog._increment();
+        var index   = esui.Dialog._increment();
         var title   = args.title || '';
         var content = args.content || '';
         var type    = args.type || 'warning';
         var onok    = args.onok;
         var tpl     = '<div class="ui-dialog-icon ui-dialog-icon-{0}"></div><div class="ui-dialog-text">{1}</div>';
-        var dialog  = ui.util.create('Dialog', 
+        var dialog  = esui.util.create('Dialog', 
                                   {
-                                      id: dialogPrefix + index,
-                                      closeButton: 0,
-                                      title:'', 
-                                      width:440,
-                                      mask: {level: 3 || args.level}
+                                      id            : dialogPrefix + index,
+                                      closeButton   : 0,
+                                      title         : '', 
+                                      width         : 440,
+                                      mask          : {level: 3 || args.level}
                                   });
-        var button  = ui.util.create('Button', 
+        var button  = esui.util.create('Button', 
                                   {
-                                      id: buttonPrefix + index,
-                                      skin:'em',
-                                      content: ui.Dialog.OK_TEXT
+                                      id        : buttonPrefix + index,
+                                      skin      : 'em',
+                                      content   : esui.Dialog.OK_TEXT
                                   });
         
         dialog.show();
-        dialog.setTitle(title);
-        dialog.getBody().innerHTML = ui._format(tpl, type, content);
-        button.onclick = getBtnClickHandler(onok, index);
-        button.appendTo(dialog.getFoot()); 
+        dialog.setTitle( title );
+        dialog.getBody().innerHTML = esui.util.format( tpl, type, content );
+        button.onclick = getBtnClickHandler( onok, index );
+        button.appendTo( dialog.getFoot() ); 
     }
 
     return show;
@@ -430,7 +469,7 @@ ui.Dialog.alert = (function () {
 /**
  * confirm dialog
  */
-ui.Dialog.confirm = (function () {
+esui.Dialog.confirm = (function () {
     var dialogPrefix    = '__DialogConfirm';
     var okPrefix        = '__DialogConfirmOk';
     var cancelPrefix    = '__DialogConfirmCancel';
@@ -442,17 +481,19 @@ ui.Dialog.confirm = (function () {
      * @param {Function} eventHandler 用户定义的按钮点击函数
      * @return {Functioin}
      */
-    function getBtnClickHandler(eventHandler, id) {
+    function getBtnClickHandler( eventHandler, id ) {
         return function(){
-            var dialog = ui.get(dialogPrefix + id);
+            var dialog = esui.util.get( dialogPrefix + id );
             var isFunc = (typeof eventHandler == 'function');
 
-            if ((isFunc && eventHandler(dialog) !== false) || !isFunc) {
+            if ( (isFunc && eventHandler( dialog ) !== false ) 
+                 || !isFunc 
+            ) {
                 dialog.hide();
 
-                ui.util.dispose(okPrefix + id);
-                ui.util.dispose(cancelPrefix + id);
-                ui.util.dispose(dialog.id);
+                esui.util.dispose( okPrefix + id );
+                esui.util.dispose( cancelPrefix + id );
+                esui.util.dispose( dialog.id );
                 
                 dialog = null;
             }
@@ -469,50 +510,50 @@ ui.Dialog.confirm = (function () {
      * @config {Function} onok 点击确定按钮的行为，默认为关闭提示框
      * @config {Function} oncancel 点击取消按钮的行为，默认为关闭提示框
      */
-    function show (args) {
+    function show ( args ) {
         if (!args) {
             return;
         }
         
-        var index       = ui.Dialog._increment();
+        var index       = esui.Dialog._increment();
         var title       = args.title || '';
         var content     = args.content || '';
         var oncancel    = args.oncancel;
         var type        = args.type || 'warning';
         var onok        = args.onok;
         var tpl = '<div class="ui-dialog-icon ui-dialog-icon-{0}"></div><div class="ui-dialog-text">{1}</div>';
-        var dialog = ui.util.create('Dialog', 
+        var dialog = esui.util.create('Dialog', 
                                   {
-                                      id: dialogPrefix + index,
-                                      closeButton: 0,
-                                      title:'', 
-                                      width:440,
-                                      mask: {level: 3 || args.level}
+                                      id            : dialogPrefix + index,
+                                      closeButton   : 0,
+                                      title         :'', 
+                                      width         :440,
+                                      mask          : {level: 3 || args.level}
                                   });
                                   
-        var okBtn = ui.util.create('Button', 
+        var okBtn = esui.util.create('Button', 
                                   {
-                                      id: okPrefix + index,
-                                      skin:'em',
-                                      content: ui.Dialog.OK_TEXT
+                                      id        : okPrefix + index,
+                                      skin      :'em',
+                                      content   : esui.Dialog.OK_TEXT
                                   });
                                   
-        var cancelBtn = ui.util.create('Button', 
+        var cancelBtn = esui.util.create('Button', 
                                   {
-                                      id: cancelPrefix + index,
-                                      content: ui.Dialog.CANCEL_TEXT
+                                      id        : cancelPrefix + index,
+                                      content   : esui.Dialog.CANCEL_TEXT
                                   });
         dialog.show();
-        dialog.setTitle(title);
-        dialog.getBody().innerHTML = ui._format(tpl, type, content);
+        dialog.setTitle( title );
+        dialog.getBody().innerHTML = esui.util.format( tpl, type, content );
         
         var foot = dialog.getFoot();
-        okBtn.appendTo(foot);
-        cancelBtn.appendTo(foot);
+        okBtn.appendTo( foot );
+        cancelBtn.appendTo( foot );
 
         
-        okBtn.onclick = getBtnClickHandler(onok, index);
-        cancelBtn.onclick = getBtnClickHandler(oncancel, index);
+        okBtn.onclick = getBtnClickHandler( onok, index );
+        cancelBtn.onclick = getBtnClickHandler( oncancel, index );
     }
     
     return show;
