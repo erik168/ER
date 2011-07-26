@@ -171,8 +171,8 @@ esui.Control.prototype = {
      * @protected
      */
     __dispose: function () {
-        var controlMap = this._controlMap,
-            main = this.main;
+        var controlMap  = this._controlMap,
+            main        = this.main;
         
         // dispose子控件
         if ( controlMap ) {
