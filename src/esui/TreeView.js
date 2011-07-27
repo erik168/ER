@@ -2,23 +2,28 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/TreeView.js
+ * path:    esui/TreeView.js
  * desc:    树结构显示控件
  * author:  chenjincai, linzhifeng, erik
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
+
+
+///import esui.Control;
+///import baidu.lang.inherits;
 
 /**
  * 树状控件
  * 
  * @param {Object} options 控件初始化参数
  */
-ui.TreeView = function (options) {
-    // 初始化参数
-    this.__initOptions(options);
-    
+esui.TreeView = function ( options ) {
     // 类型声明，用于生成控件子dom的id和class
     this._type = 'treeview';
+
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
+
+    esui.Control.call( this, options );
 
     // 是否点击展开的参数初始化
     this.__initOption('clickExpand', null, 'CLICK_EXPAND');
@@ -33,36 +38,30 @@ ui.TreeView = function (options) {
     this._dataMap = {};
 };
 
-ui.TreeView.COLLAPSED = 0;
+esui.TreeView.COLLAPSED = 0;
 
-ui.TreeView.prototype = {
-    /**
-     * 将控件添加到某个dom元素中
-     * 
-     * @param {HTMLElement} wrap 目标dom
-     */
-	appendTo: function (wrap) {
-        var main = document.createElement('div');
-        wrap.appendChild(main);
-        this.render(main);
-    },   
-	
+// 配置点击是否展开
+esui.TreeView.CLICK_EXPAND = 0;
+
+// 配置是否展开选中的节点
+esui.TreeView.EXPAND_SELECTED = 1;
+
+esui.TreeView.prototype = {
     /**
      * 渲染控件
      *
      * @protected
-     * @param {Object} main 控件挂载的DOM
      */ 
-    render: function (main) {
+    render: function () {
         var me = this;
         
-        if ( !me._isRender ) {
-            ui.Base.render.call(me, main);
-            me.width && (me._main.style.width = me.width + 'px');
-            me._isRender = 1;
+        if ( !me._isRendered ) {
+            esui.Control.prototype.render.call( me );
+            me.width && (me.main.style.width = me.width + 'px');
+            me._isRendered = 1;
         }
 
-        me._main.innerHTML = me._getMainHtml();
+        me.main.innerHTML = me._getMainHtml();
     },
 	
     /**
@@ -84,15 +83,19 @@ ui.TreeView.prototype = {
      * @param {number}  level 当前节点层级
      * @return {string}
      */
-    _getChildsHtml: function (children, hideChildren, level) {
+    _getChildsHtml: function ( children, hideChildren, level ) {
         var me = this,
-            htmlArr = [];
+            htmlArr = [],
+            i;
 
-        for (var i = 0, len = children.length; i < len; i++){
-            htmlArr.push('<li>' + me._getNodeHtml(children[i], hideChildren, level + 1) + '</li>');
+        for ( i = 0, len = children.length; i < len; i++ ) {
+            htmlArr.push(
+                '<li>' 
+                + me._getNodeHtml( children[i], hideChildren, level + 1 ) 
+                + '</li>' );
         }
 
-        return htmlArr.join('');
+        return htmlArr.join( '' );
     },
 
     /**
@@ -116,21 +119,21 @@ ui.TreeView.prototype = {
      * @param {number}  level 节点层级
      * @return {string}
      */
-    _getNodeHtml: function (dataItem, hideChildren, level) {
+    _getNodeHtml: function ( dataItem, hideChildren, level ) {
         var levelNum = level;
-        level = this._getLevelTag(level);
+        level = this._getLevelTag( level );
 
         var me = this,
             type            = dataItem.type,
-            children        = me.getChildren(dataItem),
+            children        = me.getChildren( dataItem ),
             hasChildren     = children && children.length > 0,
-            itemId          = me.getItemId(dataItem),
-            typeClass       = me.__getClass('node-type'),
-            iconClass       = me.__getClass('node-icon'),
-            clazz           = me._getNodeClass('node', level),
-            childClazz      = me._getNodeClass('children', level),
-            nodeId          = me.__getId('node' + itemId),
-            itemHTML        = me.getItemHtml(dataItem),
+            itemId          = me.getItemId( dataItem ),
+            typeClass       = me.__getClass( 'node-type' ),
+            iconClass       = me.__getClass( 'node-icon' ),
+            clazz           = me._getNodeClass( 'node', level ),
+            childClazz      = me._getNodeClass( 'children', level ),
+            nodeId          = me.__getId( 'node' + itemId ),
+            itemHTML        = me.getItemHtml( dataItem ),
             ref             = me.__getStrRef(),    
             childDisplay    = '',
             _hideChildren   = hideChildren,
@@ -138,34 +141,34 @@ ui.TreeView.prototype = {
             html;
         
         
-        this._dataMap[itemId] = dataItem;
+        this._dataMap[ itemId ] = dataItem;
 
         // 节点基础类型解析
-        if (hasChildren) {
+        if ( hasChildren ) {
             nodeType = 'branch';
         } else {
             nodeType = 'leaf';
         }
-        clazz += ' ' + me.__getClass('node-' + nodeType);
-        if (level == 'root') {
+        clazz += ' ' + me.__getClass( 'node-' + nodeType );
+        if ( level == 'root' ) {
             _hideChildren = false;
         }
         
         // 节点用户定义类型解析
-        if (type) {
-            typeClass += ' ' + me.__getClass('node-type-' + type);
+        if ( type ) {
+            typeClass += ' ' + me.__getClass( 'node-type-' + type );
         }
         
         // 根据子节点数据判断当前节点和子节点的显示状态
-        if (_hideChildren) {
-            if (hasChildren) {
+        if ( _hideChildren ) {
+            if ( hasChildren ) {
                 childDisplay = ' style="display:none";';
             }
         } else {
-            clazz += ' ' + me.__getClass('node-expanded');
+            clazz += ' ' + me.__getClass( 'node-expanded' );
         }
 
-        html = ui._format(
+        html = esui.util.format(
                 me._tplNode,
                 nodeType,
                 clazz,
@@ -174,7 +177,7 @@ ui.TreeView.prototype = {
 				itemId,
                 iconClass,
                 typeClass,
-                me.__getClass('node-text'),
+                me.__getClass( 'node-text' ),
                 _hideChildren ? '' : '1',
                 levelNum,
                 ref + '._nodeClickHandler(this)',
@@ -184,13 +187,14 @@ ui.TreeView.prototype = {
             );
         
         // 构造子节点的html
-        if (hasChildren) {
-            html += ui._format('<ul id="{2}" value="{4}" class="{3}"{1}>{0}</ul>',
-                                me.getChildrenHtml(children, hideChildren, levelNum),
-                                childDisplay,
-                                me.__getId('children' + itemId),
-                                childClazz,
-                                itemId
+        if ( hasChildren ) {
+            html += esui.util.format(
+                '<ul id="{2}" value="{4}" class="{3}"{1}>{0}</ul>',
+                me.getChildrenHtml( children, hideChildren, levelNum ),
+                childDisplay,
+                me.__getId( 'children' + itemId ),
+                childClazz,
+                itemId
             );
         }
 
@@ -205,9 +209,9 @@ ui.TreeView.prototype = {
      * @param {number}  level 节点层级
      * @return {string}
      */
-    _getNodeClass: function(part, level) {
-        return this.__getClass(part) + ' ' 
-                    + this.__getClass(part + '-' + level);
+    _getNodeClass: function( part, level ) {
+        return this.__getClass( part ) + ' ' 
+               + this.__getClass( part + '-' + level );
     },
     
     /**
@@ -217,8 +221,8 @@ ui.TreeView.prototype = {
      * @param {number} level 节点层级
      * @return {string}
      */
-    _getLevelTag: function (level) {
-        if (level === 0) {
+    _getLevelTag: function ( level ) {
+        if ( level === 0 ) {
             level = 'root';
         } else {
             level = "level" + level;
@@ -232,8 +236,8 @@ ui.TreeView.prototype = {
      *
      * @private
      */
-    _nodeOverHandler: function (node) {
-        baidu.addClass(node, this.__getClass('node-hover'));
+    _nodeOverHandler: function ( node ) {
+        baidu.addClass( node, this.__getClass( 'node-hover' ) );
     },
     
     /**
@@ -241,8 +245,8 @@ ui.TreeView.prototype = {
      *
      * @private
      */
-    _nodeOutHandler: function (node) {
-        baidu.removeClass(node, this.__getClass('node-hover'));
+    _nodeOutHandler: function ( node ) {
+        baidu.removeClass( node, this.__getClass( 'node-hover' ) );
     },
     
     /**
@@ -250,9 +254,9 @@ ui.TreeView.prototype = {
      *
      * @private
      */
-    _iconClickHandler: function (iconElement) {
+    _iconClickHandler: function ( iconElement ) {
         var node = iconElement.parentNode;
-        this._toggle(node);
+        this._toggle( node );
         this._isPreventClick = 1;
     },
     
@@ -261,18 +265,18 @@ ui.TreeView.prototype = {
      *
      * @private
      */
-    _nodeClickHandler: function (node) {
-        var value = node.getAttribute('value'),
-            item = this._dataMap[value];
+    _nodeClickHandler: function ( node ) {
+        var value = node.getAttribute( 'value' ),
+            item  = this._dataMap[ value ];
         
         if (!this._isPreventClick 
-            && this.onchange(value, item) !== false
+            && this.onchange( value, item ) !== false
          ) {
-            this.select(value);
-            if (this.expandSelected) {
-                !node.getAttribute('isExpanded') && this._expand(node);
-            } else if (this.clickExpand) {
-                this._toggle(node);
+            this.select( value );
+            if ( this.expandSelected ) {
+                !node.getAttribute( 'isExpanded' ) && this._expand( node );
+            } else if ( this.clickExpand ) {
+                this._toggle( node );
             }
         }
 
@@ -287,20 +291,20 @@ ui.TreeView.prototype = {
      * @public
      * @param {string} id 节点id
      */
-    select: function (id) {
-        if (this._selected == id) {
+    select: function ( id ) {
+        if ( this._selected == id ) {
             return;
         }
         
-        var selectedClass = this.__getClass('node-selected'),
-            selectedNode = baidu.g(this.__getId('node' + this._selected));
+        var selectedClass = this.__getClass( 'node-selected' ),
+            selectedNode = baidu.g( this.__getId( 'node' + this._selected ) );
         
         // 移除现有选中节点的样式
-        selectedNode && baidu.removeClass(selectedNode, selectedClass);
+        selectedNode && baidu.removeClass( selectedNode, selectedClass );
 
         // 选择节点
         this._selected = id;
-        baidu.addClass(this.__getId('node' + id), selectedClass);
+        baidu.addClass( this.__getId( 'node' + id ), selectedClass );
     },
 
     /**
@@ -309,11 +313,11 @@ ui.TreeView.prototype = {
      * @private
      * @param {HTMLElement} node
      */
-    _toggle: function (node) {
-        if (node.getAttribute('isExpanded')) {
-            this._collapse(node);
+    _toggle: function ( node ) {
+        if ( node.getAttribute( 'isExpanded' ) ) {
+            this._collapse( node );
         } else {
-            this._expand(node);
+            this._expand( node );
         }
     },
     
@@ -323,12 +327,12 @@ ui.TreeView.prototype = {
      * @private
      * @param {HTMLElement} node
      */
-    _collapse: function (node) {
-        var value = node.getAttribute('value');
+    _collapse: function ( node ) {
+        var value = node.getAttribute( 'value' );
 
-        if (this.oncollapse(value) !== false) {
-            node.setAttribute('isExpanded', '');
-            this.collapse(value);
+        if ( this.oncollapse( value ) !== false ) {
+            node.setAttribute( 'isExpanded', '' );
+            this.collapse( value );
         }
     },
     
@@ -338,12 +342,12 @@ ui.TreeView.prototype = {
      * @private
      * @param {HTMLElement} node
      */
-    _expand: function (node) {
-        var value = node.getAttribute('value');
+    _expand: function ( node ) {
+        var value = node.getAttribute( 'value' );
 
-        if (this.onexpand(value) !== false) {
-            node.setAttribute('isExpanded', '1');
-            this.expand(value);
+        if ( this.onexpand( value ) !== false ) {
+            node.setAttribute( 'isExpanded', '1' );
+            this.expand( value );
         }
     },
 
@@ -356,10 +360,10 @@ ui.TreeView.prototype = {
      * @public
      * @param {string} id
      */
-    expand: function (id) {
-        var childWrap = baidu.g(this.__getId('children' + id));
+    expand: function ( id ) {
+        var childWrap = baidu.g( this.__getId( 'children' + id ) );
         childWrap && (childWrap.style.display = '');
-        baidu.addClass(this.__getId('node' + id), this.__getClass('node-expanded'));
+        baidu.addClass( this.__getId( 'node' + id ), this.__getClass( 'node-expanded' ) );
     },
     
     /**
@@ -368,10 +372,10 @@ ui.TreeView.prototype = {
      * @public
      * @param {string} id
      */
-    collapse: function (id) {
-        var childWrap = baidu.g(this.__getId('children' + id));
+    collapse: function ( id ) {
+        var childWrap = baidu.g( this.__getId( 'children' + id ) );
         childWrap && (childWrap.style.display = 'none');
-        baidu.removeClass(this.__getId('node' + id), this.__getClass('node-expanded'));
+        baidu.removeClass( this.__getId( 'node' + id ), this.__getClass( 'node-expanded' ) );
     },
 	
     /**
@@ -380,13 +384,13 @@ ui.TreeView.prototype = {
      * @public
 	 * @param {Object} dataItem
 	 */
-	repaintNodeText: function(dataItem) {
+	repaintNodeText: function( dataItem ) {
 		var me = this; 
-            itemId      = me.getItemId(dataItem),
-			itemHtml    = me.getItemHtml(dataItem),
-            nodeEl      = baidu.g(me.__getId('node' + itemId));
+            itemId      = me.getItemId( dataItem ),
+			itemHtml    = me.getItemHtml( dataItem ),
+            nodeEl      = baidu.g( me.__getId( 'node' + itemId ) );
         
-        if (itemHtml){
+        if ( itemHtml ){
 			nodeEl.lastChild.innerHTML = itemHtml;
 		}
 	},
@@ -397,39 +401,39 @@ ui.TreeView.prototype = {
      * @public
 	 * @param {Object} dataItem
 	 */	
-    repaintNode: function (dataItem) {
+    repaintNode: function ( dataItem ) {
         var me = this; 
-            itemId      = me.getItemId(dataItem),
-            children    = me.getChildren(dataItem),
-            nodeEl      = baidu.g(me.__getId('node' + itemId)),
-            childrenId  = me.__getId('children' + itemId),
-            childrenEl  = baidu.g(childrenId),
-            leafClass   = me.__getClass('node-leaf'),
-            branchClass = me.__getClass('node-branch'),
-            level       = parseInt(nodeEl.getAttribute('level'), 10);
+            itemId      = me.getItemId( dataItem ),
+            children    = me.getChildren( dataItem ),
+            nodeEl      = baidu.g( me.__getId( 'node' + itemId ) ),
+            childrenId  = me.__getId( 'children' + itemId ),
+            childrenEl  = baidu.g( childrenId ),
+            leafClass   = me.__getClass( 'node-leaf' ),
+            branchClass = me.__getClass( 'node-branch' ),
+            level       = parseInt( nodeEl.getAttribute( 'level' ), 10);
         
         // 刷新节点文字
-        this.repaintNodeText(dataItem);
+        this.repaintNodeText( dataItem );
 		
         // 绘制子节点
-		if (children instanceof Array && children.length) {
+		if ( children instanceof Array && children.length ) {
             // 创建子节点容器元素
-            if (!childrenEl) {
-                childrenEl = document.createElement('ul');
+            if ( !childrenEl ) {
+                childrenEl = document.createElement( 'ul' );
                 childrenEl.id = childrenId;
-                childrenEl.style.display = nodeEl.getAttribute('isExpanded') ? '' : 'none';
-                childrenEl.className = me._getNodeClass('children', this._getLevelTag(level));
-                nodeEl.parentNode.insertBefore(childrenEl, nodeEl.nextSibling);
+                childrenEl.style.display = nodeEl.getAttribute( 'isExpanded' ) ? '' : 'none';
+                childrenEl.className = me._getNodeClass( 'children', this._getLevelTag( level ) );
+                nodeEl.parentNode.insertBefore( childrenEl, nodeEl.nextSibling );
             }
 
-			childrenEl.innerHTML = me.getChildrenHtml(children, 1, level);
-            baidu.addClass(nodeEl, branchClass);
-            baidu.removeClass(nodeEl, leafClass);
-            nodeEl.setAttribute('type', 'branch');
+			childrenEl.innerHTML = me.getChildrenHtml( children, 1, level );
+            baidu.addClass( nodeEl, branchClass );
+            baidu.removeClass( nodeEl, leafClass );
+            nodeEl.setAttribute( 'type', 'branch' );
 		} else {
-            baidu.removeClass(nodeEl, branchClass);
-            baidu.addClass(nodeEl, leafClass);
-            nodeEl.setAttribute('type', 'leaf');
+            baidu.removeClass( nodeEl, branchClass );
+            baidu.addClass( nodeEl, leafClass );
+            nodeEl.setAttribute( 'type', 'leaf' );
         }
     },
 
@@ -439,8 +443,8 @@ ui.TreeView.prototype = {
      * @public
      * @return {Array}
      */
-    getChildrenHtml: function (children, hideChildren, level) {
-        return this._getChildsHtml(children, hideChildren, level);
+    getChildrenHtml: function ( children, hideChildren, level ) {
+        return this._getChildsHtml( children, hideChildren, level );
     },
 
     /**
@@ -450,7 +454,7 @@ ui.TreeView.prototype = {
      * @param {Object} item 当前节点的数据项
      * @return {Array}
      */
-    getChildren: function (item) {
+    getChildren: function ( item ) {
         return item.children || [];
     },
 
@@ -461,7 +465,7 @@ ui.TreeView.prototype = {
      * @param {Object} item 当前节点的数据项
      * @return {Array}
      */
-    getItemHtml: function (item) {
+    getItemHtml: function ( item ) {
         return item.text;
     },
     
@@ -472,48 +476,13 @@ ui.TreeView.prototype = {
      * @param {Object} item 当前节点的数据项
      * @return {string}
      */
-    getItemId: function (item) {
-        if ( ui._hasValue(item.id) ) {
+    getItemId: function ( item ) {
+        if ( esui.util.hasValue(item.id) ) {
             return item.id;
         }
 
-        return ui.TreeView._generateId();
+        return esui.util.getGUID();
     }
 }
 
-/**
- * 生成唯一id
- *
- * @private
- * @return {string}
- */
-ui.TreeView._generateId = function () {
-    var map = {};
-    return function (len) {
-        len = len || 10;
-        
-        var chars = "qwertyuiopasdfghjklzxcvbnm",
-            charsLen = chars.length,
-            len2 = len,
-            rand = "";
-            
-        while (len2--) {
-            rand += chars.charAt(Math.floor(Math.random() * charsLen));
-        }
-        
-        if (map[rand]) {
-            return ui.TreeView._generateId(len);
-        }
-        
-        map[rand] = 1;
-        return rand;
-    };
-}();
-
-ui.Base.derive(ui.TreeView);
-
-// 配置点击是否展开
-ui.TreeView.CLICK_EXPAND = 0;
-
-// 配置是否展开选中的节点
-ui.TreeView.EXPAND_SELECTED = 1;
+baidu.inherits( esui.TreeView, esui.Control );
