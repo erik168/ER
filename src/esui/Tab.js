@@ -2,46 +2,52 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/Tab.js
+ * path:    esui/Tab.js
  * desc:    Tab标签控件
  * author:  zhaolei, erik, wanghuijun
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
+
+///import esui.Control;
+///import baidu.lang.inherits;
 
 /**
  * Tab标签控件
  * 
  * @param {Object} options 控件初始化参数
  */
-ui.Tab = function (options) {
-    this.__initOptions(options);
-    this._type = "tab";
+esui.Tab = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
+    this._type = 'tab';
+    
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
+
+    esui.Control.call( this, options );
     
     this.activeIndex    = this.activeIndex || 0;
     this.allowEdit      = !!this.allowEdit;
-	this.maxCount       = this.maxCount || ui.Tab.MAX_COUNT || 5;
+	this.maxCount       = this.maxCount || esui.Tab.MAX_COUNT || 5;
 };
 
-ui.Tab.prototype = {
+esui.Tab.prototype = {
     /**
      * 渲染控件
      * 
-     * @protected
-     * @param {HTMLElement} main 控件挂载的DOM
+     * @public
      */
-    render: function (main) {
+    render: function () {
         var me = this;
-        ui.Base.render.call(me, main, false);
+        esui.Control.prototype.render.call( me );
 		
         this.tabs = this.datasource || this.tabs || [];
 
         // 绘制内容部分
-        me._main && me._renderTabs();
+        me._renderTabs();
     },
 
-    _tplItem: '<li class="{1}"{2}><em>{0}</em>{3}</li>',
-    _tplAdd: '<li class="add" onclick="{0}">+</li>',
-    _tplClose: '<span onclick="{0}"></span>',
+    _tplItem    : '<li class="{1}"{2}><em>{0}</em>{3}</li>',
+    _tplAdd     : '<li class="add" onclick="{0}">+</li>',
+    _tplClose   : '<span onclick="{0}"></span>',
     
     /**
      * 绘制标签区
@@ -50,10 +56,10 @@ ui.Tab.prototype = {
      */
     _renderTabs: function () {
         var me        = this,
-            main      = me._main,
+            main      = me.main,
             tabs      = me.tabs,
             len       = tabs.length,
-            itemClass = me.__getClass('item'),
+            itemClass = me.__getClass( 'item' ),
 			html      = [],
             currClass,
             i,
@@ -62,52 +68,56 @@ ui.Tab.prototype = {
 			closeHtml,
             clickHandler;
 		
-        if (len == 0) {
+        if ( len == 0 ) {
             main.innerHTML = '';
             return;
-        } else if (len <= me.activeIndex) {
+        } else if ( len <= me.activeIndex ) {
 			me.activeIndex = 0;
-		} else if (me.activeIndex < 0) {
+		} else if ( me.activeIndex < 0 ) {
             me.activeIndex = 0;
         }
 		
         for (i = 0; i < len; i++) {
-            tab = me.tabs[i];
-            title = tab.title;
-            currClass = itemClass;
-            closeHtml = '';
-            clickHandler = '';
+            tab             = me.tabs[ i ];
+            title           = tab.title;
+            currClass       = itemClass;
+            closeHtml       = '';
+            clickHandler    = '';
             
             // 初始化关闭按钮
-            if (me.allowEdit && !tab.stable) {
-                closeHtml = ui._format(me.tplClose,
-									   me.__getStrCall('_close', i));
+            if ( me.allowEdit && !tab.stable ) {
+                closeHtml = esui.util.format(
+                    me.tplClose,
+					me.__getStrCall( '_close', i )
+                );
             }
 
             // 首尾节点增加特殊class
-            if (i == 0) { 
-                currClass += ' ' + me.__getClass('item-first');
+            if ( i == 0 ) { 
+                currClass += ' ' + me.__getClass( 'item-first' );
             }
-            if (i == len - 1) {
-                currClass += ' ' + me.__getClass('item-last');
+            if ( i == len - 1 ) {
+                currClass += ' ' + me.__getClass( 'item-last' );
             }
             
             // 构建tab的样式与行为
-            if (i == me.activeIndex) {
-                currClass += ' ' + me.__getClass('item-active');
+            if ( i == me.activeIndex ) {
+                currClass += ' ' + me.__getClass( 'item-active' );
             } else {
                 clickHandler = ' onclick="' 
-                                + me.__getStrCall('_select', i)
+                                + me.__getStrCall( '_select', i )
                                 + '"';
             }
 
             // 构建tab项的html
             html.push(
-                ui._format(me._tplItem, 
-                           title, 
-                           currClass, 
-                           clickHandler, 
-                           closeHtml));
+                esui.util.format(
+                    me._tplItem, 
+                    title, 
+                    currClass, 
+                    clickHandler, 
+                    closeHtml
+                ) );
         }
 
 		// 填充tab的html
@@ -121,16 +131,16 @@ ui.Tab.prototype = {
      * @private
      */
     _resetPanel: function () {
-        var tabs = this.tabs;
-        var len  = tabs.length;
+        var tabs        = this.tabs;
+        var len         = tabs.length;
         var activeIndex = this.activeIndex;
         var i;
         var panel;
 
-        for (i = 0; i < len; i++) {
-            panel = tabs[i].panel;
-            if (panel) {
-                baidu.g(panel).style.display = (i == activeIndex ? '' : 'none');
+        for ( i = 0; i < len; i++ ) {
+            panel = tabs[ i ].panel;
+            if ( panel ) {
+                baidu.g( panel ).style.display = (i == activeIndex ? '' : 'none');
             }
         }
     },
@@ -143,9 +153,9 @@ ui.Tab.prototype = {
      * @private
      * @param {number} index 标签序号
      */
-    _select: function (index) {
-        if (this.onchange(index, this.tabs[index]) !== false) {
-            this.select(index);
+    _select: function ( index ) {
+        if ( this.onchange( index, this.tabs[ index ] ) !== false ) {
+            this.setActiveIndex( index );
         }
     },
 	
@@ -155,7 +165,7 @@ ui.Tab.prototype = {
      * @public
      * @param {number} index 标签序号
      */
-    select: function (index) {
+    setActiveIndex: function ( index ) {
         this.activeIndex = index;
         this._renderTabs();
     },
@@ -168,27 +178,27 @@ ui.Tab.prototype = {
      * @private
      * @param {number} index 标签序号
      */
-    _close: function (index) {
-        if (this.onclose(index, this.tabs[index]) !== false) {
-			this.close(index);
+    _close: function ( index ) {
+        if ( this.onclose( index, this.tabs[ index ] ) !== false ) {
+			this.remove( index );
         }
     },
 	
     /**
-     * 关闭标签
+     * 移除标签
      * 
      * @private
      * @param {number} index 标签序号
      */
-    close: function (index) {
+    remove: function ( index ) {
         var tabs = this.tabs;
-        tabs.splice(index, 1);
+        tabs.splice( index, 1 );
 
         // 重新设置activeIndex
-        if (this.activeIndex >= tabs.length) {
+        if ( this.activeIndex >= tabs.length ) {
             this.activeIndex--;
         }
-        if (this.activeIndex < 0) {
+        if ( this.activeIndex < 0 ) {
             this.activeIndex = 0;
         }
 
@@ -201,11 +211,11 @@ ui.Tab.prototype = {
      * @public
      * @param {Object} tab 标签数据
      */
-    add: function (tab) {
-        tab = tab || {title: '新建标签'}
-        this.tabs.push(tab);
+    add: function ( tab ) {
+        tab = tab || { title: '新建标签' }
+        this.tabs.push( tab );
         this._renderTabs();
     }
 };
 
-ui.Base.derive(ui.Tab);
+baidu.inherits( esui.Tab, esui.Control );
