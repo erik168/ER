@@ -2,26 +2,33 @@
  * ESUI (Enterprise Simple UI)
  * Copyright 2010 Baidu Inc. All rights reserved.
  * 
- * path:    ui/Pager.js
+ * path:    esui/Pager.js
  * desc:    分页控件
  * author:  zhaolei, erik, yanjunyi
- * date:    $Date: 2011-04-05 15:57:33 +0800 (二, 05  4 2011) $
  */
+
+
+///import esui.Control;
+///import baidu.lang.inherits;
 
 /**
  * @class ui.Pager
  * 页码组件
- * @extends ui.Base
  */
 
 /**
  * 构造函数
- * @method constructor
+ * 
  * @param {Object} options 控件初始化参数
  */
-ui.Pager = function (options) {
-    this.__initOptions(options);
-    this._type = "pager";
+esui.Pager = function ( options ) {
+    // 类型声明，用于生成控件子dom的id和class
+    this._type = 'pager';
+    
+    // 标识鼠标事件触发自动状态转换
+    this._autoState = 0;
+
+    esui.Control.call( this, options );
 	
 	// Add by junyi @2011-01-24
     // 起始页码数字，即传给后端计算当前页码的偏移量，大多数系统第一页数据的页码索引为0，少数系统为1，即可在此配置，默认：0。
@@ -31,15 +38,15 @@ ui.Pager = function (options) {
 	this.__initOption('nextText', null, 'NEXT_TEXT');
 	this.__initOption('omitText', null, 'OMIT_TEXT');
 	
-    this.showCount = parseInt(this.showCount, 10) || ui.Pager.SHOW_COUNT;
+    this.showCount = parseInt(this.showCount, 10) || esui.Pager.SHOW_COUNT;
 };
 
-ui.Pager.SHOW_COUNT = 5;
-ui.Pager.OMIT_TEXT = '…';
-ui.Pager.NEXT_TEXT = '<span class="ui-pager-pntext">下一页</span><span class="ui-pager-icon"></span>';
-ui.Pager.PREV_TEXT =  '<span class="ui-pager-icon"></span><span class="ui-pager-pntext">上一页</span>';
+esui.Pager.SHOW_COUNT = 5;
+esui.Pager.OMIT_TEXT  = '…';
+esui.Pager.NEXT_TEXT  = '<span class="ui-pager-pntext">下一页</span><span class="ui-pager-icon"></span>';
+esui.Pager.PREV_TEXT  =  '<span class="ui-pager-icon"></span><span class="ui-pager-pntext">上一页</span>';
 
-ui.Pager.prototype = {
+esui.Pager.prototype = {
 	/**
 	 * 获取当前页码
 	 * 
@@ -53,16 +60,14 @@ ui.Pager.prototype = {
     /**
      * 渲染控件
      * 
-     * @protected
-     * @param {HTMLElement} main 控件挂载的DOM
+     * @public
      */
-    render: function (main) {
+    render: function () {
         var me = this;
-        ui.Base.render.call(me, main, false);
+        esui.Control.prototype.render.call( me );
         
         me.total = parseInt(me.total, 10) || 0;
-    
-        me.page = parseInt(me.page, 10) || 0;
+        me.page  = parseInt(me.page, 10) || 0;
 
         // 绘制内容部分
         this._renderPages();
@@ -88,86 +93,98 @@ ui.Pager.prototype = {
             total     = me.total,
 			startNumber = this.startNumber,
             last      = total + startNumber - 1,
-            page      = me.page + startNumber,// 恶心
-            itemClass = me.__getClass('item'),
-            disClass  = me.__getClass('disabled'),
-			prevClass = me.__getClass('prev'),
-			nextClass = me.__getClass('next'),
-            omitWord  = me._getInfoHtml(me.omitText, me.__getClass('omit')),
+            page      = me.page + startNumber, // 恶心
+            itemClass = me.__getClass( 'item' ),
+            disClass  = me.__getClass( 'disabled' ),
+			prevClass = me.__getClass( 'prev' ),
+			nextClass = me.__getClass( 'next' ),
+            omitWord  = me._getInfoHtml( me.omitText, me.__getClass( 'omit' ) ),
             i, begin;
         
-        if (total <= 0) {
-            this._main.innerHTML = '';
+        if ( total <= 0 ) {
+            this.main.innerHTML = '';
             return;
         }
        		 
         // 计算起始页
-        if (page < me.showCount - 1) {
+        if ( page < me.showCount - 1 ) {
             begin = 0;
-        } else if (page > total - me.showCount) {
+        } else if ( page > total - me.showCount ) {
             begin = total - me.showCount;
         } else {
-            begin = page - Math.floor(me.showCount / 2);
+            begin = page - Math.floor( me.showCount / 2 );
         }
-        if (begin < 0) {
+
+        if ( begin < 0 ) {
             begin = 0
         }
         
         // 绘制前一页的link
         if (page > 0) {
-            html.push(me._getItemHtml(me.prevText,
-									 prevClass,
-                                     me.__getStrCall('select', page - 1)
-                                     )
-					  );
+            html.push( 
+                me._getItemHtml(
+                    me.prevText,
+					prevClass,
+                    me.__getStrCall( '_setPage', page - 1 )
+                ) );
         } else {
-            html.push(me._getInfoHtml(me.prevText, prevClass + ' ' + disClass));
+            html.push( me._getInfoHtml( me.prevText, prevClass + ' ' + disClass ) );
         }
         
         // 绘制前缀
         if (begin > 0) {
-            html.push(me._getItemHtml(1,
-									 prevClass,
-                                     this.__getStrCall('select', 0)
-                                     ),
-                      omitWord);
+            html.push(
+                me._getItemHtml(
+                    1,
+					prevClass,
+                    this.__getStrCall( '_setPage', 0 )
+                ),
+                omitWord );
         }
 
         // 绘制中间的序号
-        for (i = 0; i < me.showCount && begin + i < total; i++) {
-            if (begin + i != page) {
-            html.push(me._getItemHtml(1 + begin + i,
-									 itemClass,
-                                     me.__getStrCall('select', begin + i))
-                      );
+        for ( i = 0; i < me.showCount && begin + i < total; i++ ) {
+            if ( begin + i != page ) {
+            html.push(
+                me._getItemHtml(
+                    1 + begin + i,
+					itemClass,
+                    me.__getStrCall( '_setPage', begin + i )
+                ) );
             } else {
-                html.push(me._getInfoHtml(1 + begin + i, itemClass + ' ' + me.__getClass('selected')));
+                html.push(
+                    me._getInfoHtml(
+                        1 + begin + i, 
+                        itemClass + ' ' + me.__getClass( 'selected' )
+                    ) );
             }
         }
         
         // 绘制后缀
-        if (begin < total - me.showCount) {
-            html.push(omitWord,
-                      me._getItemHtml(total,
-					  				 itemClass,
-                                     me.__getStrCall('select', last)
-                                     )
-                      );
+        if ( begin < total - me.showCount ) {
+            html.push(
+                omitWord,
+                me._getItemHtml(
+                    total,
+				    itemClass,
+                    me.__getStrCall( '_setPage', last )
+                ) );
         }
         
         
         // 绘制后一页的link
-        if (page < last) {
-            html.push(me._getItemHtml(me.nextText,
-									 nextClass,
-                                     me.__getStrCall('select', page + 1))
-					  );
+        if ( page < last ) {
+            html.push(
+                me._getItemHtml(
+                    me.nextText,
+                    nextClass,
+                    me.__getStrCall( '_setPage', page + 1) 
+                ) );
         } else {
-            html.push(me._getInfoHtml(me.nextText, nextClass + ' ' + disClass));
+            html.push( me._getInfoHtml( me.nextText, nextClass + ' ' + disClass ) );
         }
         
-        this._main.innerHTML = ui._format( me._tplMain,
-                                           html.join(''));
+        this.main.innerHTML = esui.util.format( me._tplMain, html.join('') );
     },
     
 	/**
@@ -180,17 +197,20 @@ ui.Pager.prototype = {
 	 * 
 	 * @return {String}
 	 */
-    _getItemHtml: function(sText, sClass, sClick) {
+    _getItemHtml: function( sText, sClass, sClick ) {
 	    var me          = this,
 	        strRef      = me.__getStrRef(),
 	        itemOver    = strRef + '._itemOverHandler(this)',
 	        itemOut     = strRef + '._itemOutHandler(this)';
-	        return ui._format(me._tplItem,
-	                            sText,
-	                            sClass,
-	                            sClick,
-	                            itemOver,
-	                            itemOut);
+	        
+        return esui.util.format(
+            me._tplItem,
+            sText,
+            sClass,
+            sClick,
+            itemOver,
+            itemOut
+        );
     },
 	
 	/**
@@ -202,8 +222,8 @@ ui.Pager.prototype = {
 	 * 
 	 * @return {String}
 	 */
-	_getInfoHtml: function (sText, sClass) {
-		return ui._format(this._tplItem, sText, sClass, '', '' ,'');
+	_getInfoHtml: function ( sText, sClass ) {
+		return esui.util.format( this._tplItem, sText, sClass, '', '' ,'' );
 	},
     
 	/**
@@ -221,28 +241,38 @@ ui.Pager.prototype = {
      * @public
      * @param {number} page 选中页数
      */
-    select: function (page) {
-        if (this.onchange(page) !== false) {
-            this.page = page;
-            this._renderPages();
+    _setPage: function ( page ) {
+        if ( this.onchange( page ) !== false ) {
+            this.setPage( page );
         }
+    },
+
+    /**
+     * 选择页码
+     * 
+     * @public
+     * @param {number} page 选中页数
+     */
+    setPage: function ( page ) {
+        this.page = page;
+        this._renderPages();
     },
     
 	/**
 	 * @ignore
 	 * @param {Object} item
 	 */
-    _itemOverHandler: function(item) {
-        baidu.addClass(item, this.__getClass('hover'));
+    _itemOverHandler: function( item ) {
+        baidu.addClass( item, this.__getClass( 'hover' ) );
     },
 
 	/**
 	 * @ignore
 	 * @param {Object} item
 	 */
-    _itemOutHandler: function(item) {
-        baidu.removeClass(item, this.__getClass('hover'));
+    _itemOutHandler: function( item ) {
+        baidu.removeClass( item, this.__getClass( 'hover' ) );
     }
 };
 
-ui.Base.derive(ui.Pager);
+baidu.inherits( esui.Pager, esui.Control );
