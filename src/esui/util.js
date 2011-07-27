@@ -233,7 +233,7 @@ esui.util = function () {
          * @param {boolean} disabled disable状态
          */
         setDisabledByContainer: function ( container, disabled ) {
-            var controls = esui.util.getControlMapByContainer( container );
+            var controls = esui.util.getControlsByContainer( container );
             var len = controls.length;
             var control;
                 
@@ -243,8 +243,6 @@ esui.util = function () {
                     control.setDisabled( disabled );
                 }
             }
-            
-            return controlMap;
         },
         
         /**
