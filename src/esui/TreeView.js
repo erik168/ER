@@ -41,10 +41,10 @@ esui.TreeView = function ( options ) {
 esui.TreeView.COLLAPSED = 0;
 
 // 配置点击是否展开
-esui.TreeView.CLICK_EXPAND = 0;
+esui.TreeView.CLICK_EXPAND = 1;
 
 // 配置是否展开选中的节点
-esui.TreeView.EXPAND_SELECTED = 1;
+esui.TreeView.EXPAND_SELECTED = 0;
 
 esui.TreeView.prototype = {
     /**
@@ -71,7 +71,7 @@ esui.TreeView.prototype = {
      * @return {string}
      */
     _getMainHtml: function () {
-        return this._getNodeHtml(this.datasource, !!this.collapsed, 0);
+        return this._getNodeHtml( this.datasource, !!this.collapsed, 0 );
     },
     
     /**
@@ -237,6 +237,10 @@ esui.TreeView.prototype = {
      * @private
      */
     _nodeOverHandler: function ( node ) {
+        if ( this.isDisabled() ) {
+            return;
+        }
+
         baidu.addClass( node, this.__getClass( 'node-hover' ) );
     },
     
@@ -246,6 +250,10 @@ esui.TreeView.prototype = {
      * @private
      */
     _nodeOutHandler: function ( node ) {
+        if ( this.isDisabled() ) {
+            return;
+        }
+
         baidu.removeClass( node, this.__getClass( 'node-hover' ) );
     },
     
@@ -255,6 +263,10 @@ esui.TreeView.prototype = {
      * @private
      */
     _iconClickHandler: function ( iconElement ) {
+        if ( this.isDisabled() ) {
+            return;
+        }
+
         var node = iconElement.parentNode;
         this._toggle( node );
         this._isPreventClick = 1;
@@ -266,11 +278,15 @@ esui.TreeView.prototype = {
      * @private
      */
     _nodeClickHandler: function ( node ) {
+        if ( this.isDisabled() ) {
+            return;
+        }
+
         var value = node.getAttribute( 'value' ),
             item  = this._dataMap[ value ];
         
-        if (!this._isPreventClick 
-            && this.onchange( value, item ) !== false
+        if ( !this._isPreventClick 
+             && this.onchange( value, item ) !== false
          ) {
             this.select( value );
             if ( this.expandSelected ) {
@@ -331,7 +347,6 @@ esui.TreeView.prototype = {
         var value = node.getAttribute( 'value' );
 
         if ( this.oncollapse( value ) !== false ) {
-            node.setAttribute( 'isExpanded', '' );
             this.collapse( value );
         }
     },
@@ -346,7 +361,6 @@ esui.TreeView.prototype = {
         var value = node.getAttribute( 'value' );
 
         if ( this.onexpand( value ) !== false ) {
-            node.setAttribute( 'isExpanded', '1' );
             this.expand( value );
         }
     },
@@ -361,9 +375,14 @@ esui.TreeView.prototype = {
      * @param {string} id
      */
     expand: function ( id ) {
-        var childWrap = baidu.g( this.__getId( 'children' + id ) );
-        childWrap && (childWrap.style.display = '');
-        baidu.addClass( this.__getId( 'node' + id ), this.__getClass( 'node-expanded' ) );
+        var node        = baidu.g( this.__getId( 'node' + id ) );
+        var childWrap   = baidu.g( this.__getId( 'children' + id ) );
+
+        if ( node ) {
+            node.setAttribute( 'isExpanded', '1' );
+            childWrap && (childWrap.style.display = '');
+            baidu.addClass( node, this.__getClass( 'node-expanded' ) );
+        }
     },
     
     /**
@@ -373,9 +392,14 @@ esui.TreeView.prototype = {
      * @param {string} id
      */
     collapse: function ( id ) {
-        var childWrap = baidu.g( this.__getId( 'children' + id ) );
-        childWrap && (childWrap.style.display = 'none');
-        baidu.removeClass( this.__getId( 'node' + id ), this.__getClass( 'node-expanded' ) );
+        var node        = baidu.g( this.__getId( 'node' + id ) );
+        var childWrap   = baidu.g( this.__getId( 'children' + id ) );
+        
+        if ( node ) {
+            node.setAttribute( 'isExpanded', '' );
+            childWrap && (childWrap.style.display = 'none');
+            baidu.removeClass( node, this.__getClass( 'node-expanded' ) );
+        }
     },
 	
     /**
@@ -410,7 +434,7 @@ esui.TreeView.prototype = {
             childrenEl  = baidu.g( childrenId ),
             leafClass   = me.__getClass( 'node-leaf' ),
             branchClass = me.__getClass( 'node-branch' ),
-            level       = parseInt( nodeEl.getAttribute( 'level' ), 10);
+            level       = parseInt( nodeEl.getAttribute( 'level' ), 10 );
         
         // 刷新节点文字
         this.repaintNodeText( dataItem );
@@ -477,7 +501,7 @@ esui.TreeView.prototype = {
      * @return {string}
      */
     getItemId: function ( item ) {
-        if ( esui.util.hasValue(item.id) ) {
+        if ( esui.util.hasValue( item.id ) ) {
             return item.id;
         }
 
