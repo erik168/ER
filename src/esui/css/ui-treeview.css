@@ -1,0 +1,67 @@
+/*
+ * ESUI (Enterprise Simple UI)
+ * Copyright 2010 Baidu Inc. All rights reserved.
+ * 
+ * path:    ui-treeview.css
+ * desc:    树控件
+ * author:  erik
+ * date:    $Date$
+ */
+
+.ui-treeview {
+    font-size:12px;
+}
+
+.ui-treeview-children {
+    padding:0 0 0 20px;
+    margin:0;
+}
+.ui-treeview li {
+    list-style:none;
+    padding:0;
+}
+
+.ui-treeview-node {
+    cursor:pointer;
+    height:22px;
+    line-height:22px;
+    padding:0 3px;
+    overflow:hidden;
+}
+
+.ui-treeview-node-type,
+.ui-treeview-node-root {display:none;}
+
+.ui-treeview-node-icon {
+    margin:3px 4px 0 0;
+    float:left;
+    width:15px;
+    height:14px;
+    overflow:hidden;
+    background:url(img/esui.png) -31px -100px;
+    display:none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.ui-treeview-node-level1 .ui-treeview-node-icon {
+    display:inline-block;
+    *display:inline;
+    zoom:1;
+}
+.ui-treeview-node-expanded .ui-treeview-node-icon {
+    background:url(img/esui.png) -16px -100px;
+}
+
+.ui-treeview-children-root {padding-left:0;}
+
+.ui-treeview-node-text {
+    display:inline;
+}
+
+.ui-treeview-node-selected .ui-treeview-node-text {
+    font-weight:bold;
+}
+.ui-treeview-node-hover {
+    background:#f3f8fc;
+}

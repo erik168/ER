@@ -1,0 +1,100 @@
+/*
+ * ESUI (Enterprise Simple UI)
+ * Copyright 2010 Baidu Inc. All rights reserved.
+ * 
+ * path:    ui-mcal.css
+ * desc:    多日期选择组件
+ * author:  erik
+ * date:    $Date$
+ */
+
+.ui-mcal {
+    background:#fff;
+    border:1px solid #a8adb6;
+    border-radius:3px;
+    -webkit-border-radius:3px;
+    -o-border-radius:3px;
+    -moz-border-radius:3px;
+    -ms-border-radius:3px;
+    width:270px;
+    height:28px;
+    line-height:28px;
+    font-size:12px;
+    display:inline-block;
+    *display:inline;
+    zoom:1;
+    cursor:pointer;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.ui-mcal-arrow {
+    margin:11px 5px 0 0;
+    float:right;
+    font-size:1px;
+    width:9px;
+    height:5px;
+    background:url(img/esui.png) -16px -93px;
+}
+.ui-mcal-active .ui-mcal-arrow {
+    background-position:-16px -88px;
+}
+.ui-mcal-text{
+    padding-left:4px;
+    width:180px;
+    float:left;
+    font-weight:bold;
+}
+.ui-mcal-shortcuttext {
+    padding-left:4px;
+    float:left;
+    font-weight:bold;
+    margin-right:10px;
+}
+.ui-mcal-layer {
+    padding:8px;
+    border:1px solid #a8adb6;
+    border-top:2px solid #394459;
+    background:#fff;
+    width:430px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.ui-mcal-side-title {font-size:12px;height:18px;padding-top:7px;}
+.ui-mcal-side-title b {padding-right:5px;}
+.ui-mcal-side-func {background:#ccced4;height:28px;}
+.ui-mcal-side-func table {width:210px;}
+
+.ui-mcal-begin,.ui-mcal-end {width:210px;float:left;}
+.ui-mcal-begin {margin-right:10px;}
+
+.ui-mcal-layer .ui-month {
+    border:1px solid #ccced4;
+    font-size:13px;
+}
+
+.ui-mcal-layer .ui-month table {
+    border:0;
+    border-top:1px solid #fff;
+    width:208px;
+}
+.ui-mcal-foot {clear:both;padding-top:8px;}
+.ui-mcal-foot .ui-button {margin-right:6px;}
+
+
+.ui-mmcal {
+    font-size:12px;
+    height:20px;
+    line-height:20px;
+}
+
+.ui-mmcal-option {
+    color: #03c;
+    cursor: pointer;
+}
+
+.ui-mmcal-option-selected {
+    color: #000;
+    cursor: default;
+}

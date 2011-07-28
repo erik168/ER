@@ -1,0 +1,223 @@
+/*
+ * ESUI (Enterprise Simple UI)
+ * Copyright 2010 Baidu Inc. All rights reserved.
+ * 
+ * path:    ui-select.css
+ * desc:    组合框样式
+ * author:  erik, zhaolei
+ * date:    $Date$
+ */
+
+.ui-select {
+    height:20px;
+    font-size:12px;
+    background:#fff;
+    border:1px solid #a8adb6;
+    font-family:STHeiti, SimSun;
+    line-height:21px;
+    cursor:pointer;
+    display:inline-block;
+    *display:inline;
+    zoom:1;
+}
+.ui-select-hover，.ui-select-active {border:1px solid #888f9b;}
+.ui-select-arrow {
+    float:right;
+    font-size:1px;
+    height:20px;
+    width:16px;
+    cursor:pointer;
+    background:url(img/esui.png) 0 -108px;
+}
+
+.ui-select-active .ui-select-arrow {background-position:0 -89px;}
+.ui-select-disabled {background:#f6f6f6;}
+.ui-select-text {
+    padding:0 2px;
+    text-indent:3px;
+    text-align:left;
+    color:#333;
+    cursor:pointer;
+    overflow:hidden;
+    float:left;
+    height:20px;
+}
+
+.ui-select-text-def {
+    color:#ccc;
+}
+
+.ui-select-layer {
+    text-align:left;
+    background:#fff;
+    border:1px solid #a8adb6;
+    font-size:12px;
+    font-family:STHeiti, SimSun;
+    overflow-y:auto;
+    overflow-x:hidden;
+}
+
+.ui-select-item {
+    padding:0 5px;
+    line-height:19px;
+    height:18px;
+    color:#666;
+    background:#fff;
+    cursor:pointer;
+    overflow:hidden;
+    _height:auto;
+}
+
+
+.ui-select-item-hover {
+    background:#edf1fa;
+}
+.ui-select-item-disabled {
+    color: #ccc;
+    cursor:default;
+}
+.ui-select-item-selected {
+    background:#e4eaf9;
+    color:#333;
+}
+
+/*
+ * menu型下拉菜单
+ */
+.skin-select-menu {
+    background:url(img/esui.png);
+    border-radius:2px;
+    -webkit-border-radius:2px;
+    -o-border-radius:2px;
+    -moz-border-radius:2px;
+    -ms-border-radius:2px;
+}
+
+.skin-select-menu-arrow {
+    width:15px;
+    background:url(img/esui.png) 0 -146px;
+}
+
+.skin-select-menu-hover,
+.skin-select-menu-active {
+    border:1px solid #888f9b;
+}
+.skin-select-menu-active {
+    background:url(img/esui.png) repeat-x 0 -20px;
+}
+.skin-select-menu-active .ui-select-text {
+    border-left:1px solid #fdb345;
+    background:url(img/esui.png) repeat-x 0 -20px;
+    padding-left:1px;
+}
+.skin-select-menu-active .ui-select-arrow {
+    border-width:1px 1px 1px 0;
+    border-style:solid;
+    border-color:#fdb345;
+    background:url(img/esui.png) repeat-x 0 -128px;
+    width:15px;
+    height:18px;
+}
+
+/*
+ * menu型下拉菜单2
+ */
+.skin-select-menu2 {
+    background:url(img/esui.png);
+    border-radius:2px;
+    -webkit-border-radius:2px;
+    -o-border-radius:2px;
+    -moz-border-radius:2px;
+    -ms-border-radius:2px;
+}
+
+.skin-select-menu2-active {
+    position:relative;
+    z-index:100000;
+    border-radius:2px 0;
+    -webkit-border-radius:2px 0;
+    -o-border-radius:2px 0;
+    -moz-border-radius:2px 0;
+    -ms-border-radius:2px 0;
+}
+.skin-select-menu2-text {
+    padding:0;
+    text-indent:2px;
+}
+.skin-select-menu2-arrow {
+    width:17px;
+    background:url(img/esui.png) -37px -144px;
+}
+
+.skin-select-menu2-hover {border:1px solid #888f9b;}
+.skin-select-menu2-active {border:1px solid #a8adb6;}
+
+.skin-select-menu2-active .ui-select-arrow {
+    background:url(img/esui.png) repeat-x -15px -144px;
+    height:21px;
+    width:19px;
+    position:absolute;
+    right:0;
+    top:0;
+    float:none;
+}
+
+/*
+ * button型下拉菜单
+ */
+.skin-select-button {
+    background:url(img/esui.png) 0 -166px;
+    border:1px solid #bdbdbd;
+    width:15px;
+    height:14px;
+    font-size:1px;
+    border-radius:2px;
+    -webkit-border-radius:2px;
+    -o-border-radius:2px;
+    -moz-border-radius:2px;
+    -ms-border-radius:2px;
+}
+
+.skin-select-button-text,
+.skin-select-button-arrow {
+    display:none;
+}
+
+.skin-select-button-hover {
+    background:url(img/esui.png) -15px -166px;
+    border:1px solid #888f9b;
+}
+.skin-select-button-active {
+    background:url(img/esui.png) -30px -166px;
+    border:1px solid #888f9b;
+}
+
+/*
+ * 大号button型下拉菜单
+ */
+.skin-select-largebutton {
+    background:url(img/esui.png) 0 -180px;
+    border:1px solid #bdbdbd;
+    width:20px;
+    height:20px;
+    font-size:1px;
+    border-radius:2px;
+    -webkit-border-radius:2px;
+    -o-border-radius:2px;
+    -moz-border-radius:2px;
+    -ms-border-radius:2px;
+}
+
+.skin-select-largebutton-text,
+.skin-select-largebutton-arrow {
+    display:none;
+}
+
+.skin-select-largebutton-hover {
+    background:url(img/esui.png) -20px -180px;
+    border:1px solid #888f9b;
+}
+.skin-select-largebutton-active {
+    background:url(img/esui.png) -40px -180px;
+    border:1px solid #888f9b;
+}

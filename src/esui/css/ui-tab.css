@@ -1,0 +1,42 @@
+/*
+ * ESUI (Enterprise Simple UI)
+ * Copyright 2010 Baidu Inc. All rights reserved.
+ * 
+ * path:    ui-tab.css
+ * desc:    tab标签组件
+ * author:  erik
+ * date:    $Date$
+ */
+
+.ui-tab {
+    padding-left:10px;
+    height:23px;
+    position:relative;
+    top:1px;
+}
+
+.ui-tab ul, .ui-tab li {margin:0; padding:0; list-style: none;}
+.ui-tab-item {
+    -webkit-border-radius:3px 3px 0 0;
+    -o-border-radius:3px 3px 0 0;
+    -ms-border-radius:3px 3px 0 0;
+    -moz-border-radius:3px 3px 0 0;
+    border-radius:3px 3px 0 0;
+    background:#5076DD;
+    color:#fff;
+    float:left;
+    height:22px;
+    line-height:22px;
+    margin-right:6px;
+    cursor:pointer;
+}
+.ui-tab-item em {font-style:normal;}
+.ui-tab .ui-tab-item {margin-right:6px;padding:0 10px;}
+.ui-tab .ui-tab-item-active {
+    border:1px solid #cdcdcd;
+    border-bottom:0;
+    background:#fff;
+    color:#666;
+    cursor:default;
+    padding:0 9px;
+}
