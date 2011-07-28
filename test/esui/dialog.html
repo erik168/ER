@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - Dialog</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-dialog.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-mask.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+include( 'esui.Button' );
+include( 'esui.Dialog' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - Dialog</div>
+<div class="main">
+	<table cellpadding="5" cellspacing="0" border="0"><tr>
+	<td><div ui="type:Button;id:testDialog">dialog</div></td>
+	<td><div ui="type:Button;id:testDialog2">dialog has mask</div></td>
+	<td><div ui="type:Button;id:testDialog3">dialog has white mask</div></td>
+	<td><div ui="type:Button;id:testDialog4">dialog dragable</div></td>
+	<td><div ui="type:Button;id:testDialog5">dialog auto position</div></td>
+	<td><div ui="type:Button;id:testDialog6">alert</div></td>
+	<td><div ui="type:Button;id:testDialog7">confirm</div></td>
+	</tr></table>
+	<br>长河落日圆
+<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆<br>长河落日圆
+
+</div>
+
+<script>
+esui.init();
+
+var myDialog = esui.util.create('Dialog', {
+	id		: 'myDialog',
+	title	: 'Title',
+	content	: 'Hello dialog!'
+});
+var maskDialog = esui.util.create('Dialog', {
+	id		: 'maskDialog',
+	title	: 'Title',
+	content	: 'Hello mask dialog!',
+	mask	: {level:0}
+});
+var whiteMaskDialog = esui.util.create('Dialog', {
+	id		: 'whiteMaskDialog',
+	title	: 'Title',
+	content	: 'Hello mask dialog!',
+	mask	: {level:0, type:'white'}
+});
+var dragableDialog = esui.util.create('Dialog', {
+	id		: 'dragableDialog',
+	title	: 'Title',
+	content	: 'Hello dragable dialog!',
+	dragable: 1
+});
+
+var autoDialog = esui.util.create('Dialog', {
+	id		: 'autoDialog',
+	title	: 'Title',
+	content	: 'Hello auto position dialog!',
+	autoPosition: 1
+});
+
+esui.get('testDialog').onclick = function () {
+	myDialog.show();
+};
+
+esui.get('testDialog2').onclick = function () {
+	maskDialog.show();
+};
+
+esui.get('testDialog3').onclick = function () {
+	whiteMaskDialog.show();
+};
+
+esui.get('testDialog4').onclick = function () {
+	dragableDialog.show();
+};
+
+esui.get('testDialog5').onclick = function () {
+	autoDialog.show();
+};
+
+esui.get('testDialog6').onclick = function () {
+	esui.Dialog.alert({
+		title: '通知',
+		content:'OK, 搞定!'
+	});
+};
+
+esui.get('testDialog7').onclick = function () {
+	esui.Dialog.confirm({
+		title: '你确定吗',
+		content:'我不确定你是不是要确定？',
+		oncancel: function () {
+			alert('你必须点确定');
+			return false;
+		}
+	});
+};
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>MonthView</title>
+
+<link rel="stylesheet" href="../css/ui-month.css" type="text/css" media="screen" />
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.js"></script>
+<script type="text/javascript" src="../../src/er.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAction.js"></script>
+<script type="text/javascript" src="../../src/extends/UIAdapter.js"></script>
+<script type="text/javascript" src="../../src/esui/ui.js"></script>
+<script type="text/javascript" src="../../src/esui/Base.js"></script>
+<script type="text/javascript" src="../../src/esui/MonthView.js"></script>
+<script>
+    // 加载和解析模板
+    er.oninit = function () {
+        er.template.parse('<!-- target:testTpl -->\n<div ui="type:MonthView;id:myMonth"></div>');
+    };
+
+    // 声明业务模块
+    var test = new er.Module({
+        config: {
+            'action': [
+                {
+                    path: '/',
+                    action: 'test.action'
+                }
+            ]
+        }
+    });
+    
+    test.action = new er.Action({
+        VIEW: 'testTpl',
+        
+        onentercomplete: function () {
+			ui.get('myMonth').onchange = this.changeHandler;
+		},
+
+		changeHandler: function (date) {
+			if (date.getDate() == 1) {
+				alert('cannot select the first day of month.');
+				return false;
+			}
+
+			alert(date);
+		}
+    });
+    
+    window.onload = function () {
+        er.init();
+    };
+</script>
+</head>
+<body>
+<h2>example:MonthView</h2>
+<div id="Main"></div>
+</body>
+</html>

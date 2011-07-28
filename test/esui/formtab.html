@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - FormTab</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-textinput.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-select.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+// 引入控件
+include( 'esui.Button' );
+include( 'esui.TextInput' );
+include( 'esui.CheckBox' );
+include( 'esui.Radio' );
+include( 'esui.Select' );
+include( 'esui.FormTab' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - FormTab</div>
+<div class="main">
+	<div style="padding-bottom:10px;">
+		<input type="radio" value="text" title="text" name="tab" ui="type:Radio;id:tab1" />
+		<input type="radio" value="button" title="button" name="tab" ui="type:Radio;id:tab2" />
+		<input type="radio" value="checkbox" title="checkbox" name="tab" ui="type:Radio;id:tab3" />
+		<input type="radio" value="select" title="select" name="tab" ui="type:Radio;id:tab4" />
+	</div>
+	<div id="panel1">
+		<input type="text" ui="type:TextInput;id:myText" />
+	</div>
+	<div id="panel2">
+		<div ui="type:Button;id:myButton">button</div>
+	</div>
+	<div id="panel3">
+		<input type="checkbox" value="1" name="cb" ui="type:CheckBox;id:myCb1" />
+		<input type="checkbox" value="2" name="cb" ui="type:CheckBox;id:myCb2" />
+		<input type="checkbox" value="3" name="cb" ui="type:CheckBox;id:myCb3" />
+		<input type="checkbox" value="4" name="cb" ui="type:CheckBox;id:myCb4" />
+		<input type="checkbox" value="5" name="cb" ui="type:CheckBox;id:myCb5" />
+	</div>
+	<div id="panel4">
+		<div ui="type:Select;id:mySelect;width:60"></div>
+	</div>
+</div>
+<script>
+var propMap = {
+	mySelect: {
+		datasource: [
+			{name:'one',value:1},
+			{name:'two',value:2},
+			{name:'three',value:3}
+		],
+
+		value: 3
+	},
+
+	myText: {
+		placeholder: 'please input ...'
+	}
+};
+esui.init( document.body, propMap );
+var formTab = new esui.FormTab({
+	tabs: [
+		{panel: 'panel1', radio: 'tab1'},
+		{panel: 'panel2', radio: 'tab2'},
+		{panel: 'panel3', radio: 'tab3'},
+		{panel: 'panel4', radio: 'tab4'}
+	]
+});
+formTab.init();
+</script>
+</body>
+</html>
+
+

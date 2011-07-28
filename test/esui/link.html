@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - Link</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+include( 'esui.Link' );
+</script>
+<style>
+a:link { font-size:14px; color:blue; text-decoration:none; }
+a:visited { color:blue; }
+a:hover{ text-decoration:underline; color:red; }
+</style>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - Link</div>
+<div class="main">
+	<a href="https://github.com/erik168/ER" target="_blank" ui="type:Link;id:myLink">ER Github</a>
+</div>
+
+<script>
+var ctrl = 0;
+esui.util.init();
+esui.get( 'myLink' ).onclick = function () {
+	var canJump = !( ctrl % 2 );
+	ctrl ++;
+
+	if ( canJump ) {
+		this.setText( 'ER Gibhub (将不跳转)' );
+	} else {
+		this.setText( 'ER Gibhub' );
+	}
+
+	return canJump;
+};
+</script>
+</body>
+</html>

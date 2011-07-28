@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - CheckBox and Radio</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+include( 'esui.CheckBox' );
+include( 'esui.Radio' );
+include( 'esui.Button' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - CheckBox and Radio</div>
+<div class="main">
+	<table cellpadding="5" cellspacing="0" border="0">
+		<tr>
+			<td><input type="checkbox" value="1" ui="type:CheckBox;id:cb1" title="one" name="num"/></td>
+			<td><input type="checkbox" value="2" ui="type:CheckBox;id:cb2" title="two" name="num"/></td>
+			<td><input type="checkbox" value="3" ui="type:CheckBox;id:cb3" title="three" name="num"/></td>
+			<td><div ui="type:Button;id:currCb">当前选中</div></td>
+			<td><div ui="type:Button;id:selAll">全选</div></td>
+			<td><div ui="type:Button;id:selInv">反选</div></td>
+		</tr>
+		<tr>
+			<td><input type="radio" value="1" ui="type:Radio;id:r1" title="one" name="num2"/></td>
+			<td><input type="radio" value="2" ui="type:Radio;id:r2" title="two" name="num2"/></td>
+			<td><input type="radio" value="3" ui="type:Radio;id:r3" title="three" name="num2"/></td>
+			<td colspan="3"><div ui="type:Button;id:currRadio">当前选中</div></td>
+		</tr>
+	</table>
+</div>
+
+<script>
+esui.util.init();
+
+esui.get('currCb').onclick = function () {
+	alert( 'checked one:' + esui.get('cb1').isChecked() );
+	alert( 'checked two:' + esui.get('cb2').isChecked() );
+	alert( 'checked three:' + esui.get('cb3').isChecked() );
+	alert( 'group value:' + esui.get('cb3').getGroup().getValue() );
+};
+
+esui.get('selAll').onclick = function() {
+	esui.get('cb1').getGroup().selectAll();
+};
+esui.get('selInv').onclick = function() {
+	esui.get('cb1').getGroup().selectInverse();
+};
+
+esui.get('currRadio').onclick = function () {
+	alert( 'checked one:' + esui.get('r1').isChecked() );
+	alert( 'checked two:' + esui.get('r2').isChecked() );
+	alert( 'checked three:' + esui.get('r3').isChecked() );
+	alert( 'group value:' + esui.get('r3').getGroup().getValue() );
+};
+</script>
+</body>
+</html>
+

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - TreeView</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-treeview.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+// 引入控件
+include( 'esui.TreeView' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - TreeView</div>
+<div class="main">
+	<div ui="type:TreeView;id:myTree;width:400"></div>
+</div>
+<script>
+esui.init( document.body, {
+	myTree: {
+		datasource: {
+			id: 1,
+			text: "中国",
+			children: [
+				{
+					id: 10,
+					text: "北京",
+					children: [
+						{
+							id: 100,
+							text: "东城区"
+						},
+						{
+							id: 101,
+							text: "西城区"
+						},
+						{
+							id: 102,
+							text: "海淀区"
+						}
+					]
+				},
+				{
+					id: 20,
+					text: "上海"
+				},
+				{
+					id: 31,
+					text: "海南",
+					children: [
+						{
+							id: 600,
+							text: "海口"
+						},
+						{
+							id: 601,
+							text: "三亚"
+						},
+						{
+							id: 602,
+							text: "五指山"
+						}
+					]
+				}
+			]
+		}
+	}
+} );
+
+</script>
+</body>
+</html>
+

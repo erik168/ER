@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - Schedule</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-schedule.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+include( 'esui.Schedule' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - Schedule</div>
+<div class="main">
+	<table cellpadding="5" cellspacing="0" border="0">
+		<tr>
+			<td>可选择状态</td>
+			<td><div ui="type:Schedule;id:mySchedule"></div></td>
+		</tr>
+		<tr>
+			<td>禁用状态</td>
+			<td><div ui="type:Schedule;id:mySchedule2;disabled:1"></div></td>
+		</tr>
+	</table>
+</div>
+
+<script>
+esui.init();
+</script>
+</body>
+</html>
+

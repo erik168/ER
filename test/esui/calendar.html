@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - Calendar</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-cal.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-month.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-select.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+include( 'esui.Calendar' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - Calendar</div>
+<div class="main">
+	<div ui="type:Calendar;id:myCal"></div>
+</div>
+
+<script>
+esui.init();
+esui.get( 'myCal' ).onchange = function ( date ) {
+	var today = new Date();
+	if ( today.getFullYear() == date.getFullYear()
+		 && today.getMonth() == date.getMonth()
+		 && today.getDate() == date.getDate() + 1
+	) {
+		alert('就不让你选昨天');
+		return false;
+	}
+	
+	alert( date );
+};
+
+</script>
+</body>
+</html>

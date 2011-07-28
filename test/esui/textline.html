@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - TextLine</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-textinput.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-textline.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+// 引入控件
+include( 'esui.TextLine' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - TextLine</div>
+<div class="main">
+	<div ui="type:TextLine;id:myText;width:400;height:200;"></div>
+</div>
+<script>
+esui.init( document.body, {
+	myText: {
+		value: 'one\ntwo\nthree'
+	}
+} );
+</script>
+</body>
+</html>

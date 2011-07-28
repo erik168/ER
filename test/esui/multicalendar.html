@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - MultiCalendar</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-mcal.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-month.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-select.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+include( 'esui.MultiCalendar' );
+</script>
+<script type="text/javascript" src="/er/src/esui/Calendar.js"></script>
+<script type="text/javascript" src="/er/src/esui/MonthView.js"></script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - MultiCalendar</div>
+<div class="main">
+	<table cellpadding="5" cellspacing="0" border="0">
+		<tr>
+			<td>Mini版</td>
+			<td><div ui="type:MiniMultiCalendar;id:myMiniCal"></div></td>
+		</tr>
+		<tr>
+			<td>正常版</td>
+			<td><div ui="type:MultiCalendar;id:myCal"></div></td>
+		</tr>
+	</table>
+	<br>
+</div>
+
+<script>
+esui.init();
+esui.get( 'myCal' ).onchange = esui.get( 'myMiniCal' ).onchange = function ( value ) {
+	alert( [
+		'begin: ' + baidu.date.format( value.begin, 'yyyy-MM-dd' ),
+		'end: ' + baidu.date.format( value.end, 'yyyy-MM-dd' )
+	] );
+};
+
+</script>
+</body>
+</html>

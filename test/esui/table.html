@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - Table</title>
+<style>
+html{overflow-y:scroll;}
+</style>
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-table.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-textinput.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+// 引入控件
+include( 'esui.Table' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - Table</div>
+<div class="main">
+	<h3>普通</h3>
+	<div ui="type:Table;id:myTable;"></div>
+	<h3>列内容允许换行</h3>
+	<div ui="type:Table;id:myTable2;"></div>
+	<h3>列允许拖拽</h3>
+	<div ui="type:Table;id:myTable3;dragable:1"></div>
+	<h3>表头跟随</h3>
+	<div ui="type:Table;id:myTable4;dragable:1;followHead:1"></div>
+	<h3>可排序并可选择的表格</h3>
+	<div ui="type:Table;id:myTable5;dragable:1;sortable:1;select:multi"></div>
+	<h3>带附加行的表格</h3>
+	<div ui="type:Table;id:myTable6;dragable:1;subrow:1"></div>
+	<h3>可编辑并带注脚的表格</h3>
+	<div ui="type:Table;id:myTable7;editable:1;foot:*foot;dragable:1"></div>
+</div>
+<script>
+var data = [
+        {id:1, name: 'erik', sex: 1},
+        {id:2, name: '庞飞帅', sex: 0},
+        {id:3, name: '曹特磊', sex: 1},
+        {id:4, name: '欧阳先伟', sex: 1},
+        {id:5, name: '樊总', sex: 1},
+        {id:6, name: '铮哥', sex: 1}
+    ];
+
+esui.init( document.body, {
+	myTable: {
+		datasource: data,
+		fields: [
+            {
+                title: '编号',
+                sortable: true,
+                stable: true,
+                width: 50,
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                title: '姓名',
+                sortable: true,
+                width: 300,
+                content: function (item) {
+                    return item.name;
+                }
+            }
+        ]
+	},
+	myTable2: {
+		datasource: data,
+		fields: [
+            {
+                field: 'id',
+                title: '编号',
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名（给点力啊）',
+                width: 40,
+				dragable: 1,
+				breakLine:1,
+				align: 'right',
+                content: function ( item ) {
+					var html = []
+					for ( var i = 0; i < 20; i++ ) {
+						html.push( item.name );
+					}
+					return html.join( ',' );
+				}
+            },
+            {
+                field: 'sex',
+                title: '性别',
+                width: 50,
+				dragable: 1,
+				align: 'left',
+                content: function (item) {
+					return ['女', '男'][item.sex || 0];
+				}
+            }
+        ]
+	},
+	myTable3: {
+		datasource: data,
+		fields: [
+            {
+                field: 'id',
+                title: '编号',
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+                width: 300,
+				minWidth:100,
+				dragable: 1,
+				align: 'right',
+                content: 'name'
+            },
+            {
+                field: 'sex',
+                title: '性别',
+                width: 50,
+				dragable: 1,
+				align: 'left',
+                content: function (item) {
+					return ['女', '男'][item.sex || 0];
+				}
+            }
+        ]
+	},
+	myTable4: {
+		datasource: data,
+		fields: [
+            {
+                field: 'id',
+                title: '编号',
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+                width: 300,
+				minWidth:100,
+				dragable: 1,
+				align: 'right',
+                content: 'name'
+            },
+            {
+                field: 'sex',
+                title: '性别',
+                width: 50,
+				dragable: 1,
+				align: 'left',
+                content: function (item) {
+					return ['女', '男'][item.sex || 0];
+				}
+            }
+        ]
+	},
+	myTable5: {
+		datasource: data,
+		fields: [
+            {
+                field: 'id',
+                title: '编号',
+                sortable: true,
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+                sortable: true,
+                width: 300,
+				align: 'right',
+                content: 'name'
+            }
+        ]
+	},
+	myTable6: {
+		datasource: data,
+		fields: [
+            {
+                field: 'id',
+                title: '编号',
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+				subEntry: 1,
+                width: 300,
+                content: function (item) {
+					return item.name
+				}
+            },
+            {
+                field: 'sex',
+                title: '性别',
+                width: 50,
+				dragable: 1,
+				align: 'left',
+                content: function (item) {
+					return ['女', '男'][item.sex || 0];
+				}
+            }
+        ]
+	},
+	myTable7: {
+		datasource: data,
+		fields: [
+            {
+                field: 'id',
+                title: '编号',
+                sortable: true,
+                stable: true,
+                width: 50,
+                editable: 1,
+                edittype: 'int',
+                align: 'center',
+				dragable:1,
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+                sortable: true,
+                editable: 1,
+                edittype: 'string',
+                align: 'right',
+                width: 300,
+				dragable:1,
+                content: function (item) {
+                    return item.name
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名2',
+                sortable: true,
+				dragable:1,
+                width: 300,
+                content: function (item, rowIndex, columnIndex) {
+                    return getNameFieldHtml.call(this, item.name, rowIndex, columnIndex);
+                }
+            }
+        ],
+		foot: [
+            {	colspan: 3,
+                content: function () {
+                    return 10000;
+                }
+            },
+            {
+                
+				align: 'right',
+                content: function () {
+                    return '我是一个脚';
+                }
+            }
+        ]
+	}
+} );
+
+function getNameFieldHtml(value, rowIndex, columnIndex) {
+	return baidu.format(
+					'<span onclick="#{1}" style="cursor:pointer;text-decoration:underline;">#{0}</span>',
+					value,
+					this.__getStrCall('startEdit', 'string', rowIndex, columnIndex));
+}
+
+esui.get( 'myTable7' ).onedit = function (value, options, editor) {
+	var table = this;
+	editor.wait();
+	// 模拟异步
+	setTimeout(function () {
+		var rowIndex = options.rowIndex;
+		var columnIndex = options.columnIndex;
+		table.setCellText(
+			getNameFieldHtml.call( table, value, rowIndex, columnIndex ), 
+			rowIndex, 
+			columnIndex);
+		table.datasource[rowIndex][options.field.field] = value;
+		editor.stop();
+	}, 1000);
+
+	return false;
+};
+
+esui.get( 'myTable6' ).onsubrowopen = function ( index, dataItem ) {
+	this.getSubrow( index ).innerHTML = '<span style="line-height:30px;">Hello ' + dataItem.name + '</span>';
+};
+
+esui.get( 'myTable5' ).onsort = function ( field, order ) {
+	var orderBy = field.field;
+	var listData = baidu.object.clone( data );
+	if (order) {
+		listData.sort( function (a, b) {
+			var compareResult;
+			
+			switch ( orderBy ) {
+			case 'id':
+				compareResult = a.id - b.id;
+				break;
+			case 'name':
+				compareResult = a.name.localeCompare( b.name );
+				break;
+			}
+			
+			if ( order == 'desc' ) {
+				compareResult = -compareResult;
+			}
+			
+			return compareResult;
+		} );    
+	}
+
+	this.datasource = listData;
+	this.render();
+};
+</script>
+</body>
+</html>
+

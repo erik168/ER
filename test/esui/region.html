@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - Region</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-region.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-select.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+include( 'esui.Region' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - Region</div>
+<div class="main">
+	<table cellpadding="5" cellspacing="0" border="0">
+		<tr>
+			<td>多选模式</td>
+			<td><div ui="type:Region;id:myRegion;" style="width:420px;"></div></td>
+		</tr>
+		<tr>
+			<td>单选模式</td>
+			<td><div ui="type:Region;id:myRegion2;mode:single;"></div></td>
+		</tr>
+	</table>
+</div>
+
+<script>
+esui.init( document.body, {
+	myRegion: {
+		valueAsRaw: ["3", "13", "26", "22", "21", "18", "15", "2", "19", "32", "9", "5", "20", "25", "14", "16", "17", "4", "8", "12", "33", "28", "10", "31", "29", "27", "11", "24", "23", "30", "34", "36", "35", "7", "37"]
+	},
+
+	myRegion2: {
+		value: "3"
+	}
+} );
+</script>
+</body>
+</html>
+

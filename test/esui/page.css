@@ -1,0 +1,25 @@
+/* css源文件 */
+
+body {
+    margin:0;
+    font-size:12px;
+}
+
+.header {
+    background      : #ececec;
+    border-bottom   : 2px solid #888;
+    color           : #666;
+    text-shadow     : 0 0 1px;
+    height          : 50px;
+    line-height     : 50px;
+    padding-left    : 20px;
+    font-size       : 24px;
+    font-weight     : bold;
+    font-family     : MetaBold, Trebuchet MS, sans-serif; 
+}
+
+.main {
+    min-width   : 980px;
+    padding     : 0 10px;
+    margin      : 10px auto;
+}

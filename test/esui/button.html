@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - Button</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script type="text/javascript" src="/er/src/esui/Layer.js"></script>
+<script>
+include( 'esui.Button' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - Button</div>
+<div class="main">
+	<table cellpadding="5" cellspacing="0" border="0">
+		<tr>
+			<td>小按钮</td>
+			<td><div ui="type:Button;id:myBtn;">请按我</div></td>
+		</tr>
+		<tr>
+			<td>小按钮（强调）</td>
+			<td><div ui="type:Button;id:myBtn2;skin:em">请按我</div></td>
+		</tr>
+		<tr>
+			<td>大按钮</td>
+			<td><div ui="type:Button;id:myBtn3;skin:large">请按我</div></td>
+		</tr>
+		<tr>
+			<td>大按钮（强调）</td>
+			<td><div ui="type:Button;id:myBtn4;skin:largeem">请按我</div></td>
+		</tr>
+	</table>
+</div>
+
+<script>
+esui.util.init();
+esui.get( 'myBtn' ).onclick = 
+esui.get( 'myBtn2' ).onclick = 
+esui.get( 'myBtn3' ).onclick = 
+esui.get( 'myBtn4' ).onclick = function () {
+	alert( '我是按钮：' + this.id );
+};
+</script>
+</body>
+</html>
