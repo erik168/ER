@@ -8,24 +8,28 @@
  * date:    $Date: 2010/12/16 13:04:00 $
  * 
  * 表格级属性：
- * 1.    dragable：‘true’ or ‘false’，默认为false，为true则开启列宽拖拽改变功能（计划、单元、关键词、创意中已修改为打开状态）
- * 2.    viewColumnCount：‘all’ or  ‘number’，默认为all，该值设置表格默认显示列数，all为全部显示，数字代表显示列数。表格会自动计算屏幕宽度和需要显示的列总宽，屏宽和表格显示列总宽的差值将被平均伸缩到指定的显示列中可被拉伸的列里。
- * 3.    followHead：‘true’ or ‘false’，默认为false，为true则开启纵向滚动表头悬停功能，如需添加表格外部元素与表头悬浮同时锁定，可在该元素上添加class：scroll_y_top_fixed，如目前表格上方的操作和总计区域，（计划、单元、关键词、创意中已修改为打开状态）
- * 4.    lockable：：‘true’ or ‘false’，默认为false，暂不开放使用，该属性开启表格自由锁定功能
+ * columnResizable：‘true’ or ‘false’，默认为false，为true则开启列宽拖拽改变功能（计划、单元、关键词、创意中已修改为打开状态）
+ * followHead：‘true’ or ‘false’，默认为false，为true则开启纵向滚动表头悬停功能，如需添加表格外部元素与表头悬浮同时锁定，可在该元素上添加class：scroll_y_top_fixed，如目前表格上方的操作和总计区域，（计划、单元、关键词、创意中已修改为打开状态）
  * 
  * 列级属性：
- * 1.    stable： true’ or ‘false’，默认为false，该值代表该列是否可伸缩，进入页面或屏宽改变时表格将自动计算用户可视区域宽度，并自动伸缩各列，当某列带stable为true时该列则别伸缩。这个值尽量少用，保存整个表格是灵活可伸缩效果最好，大家担心的列宽太窄影响显示的问题可以通过minWidth属性解决。
- * 2.    locked： true’ or ‘false’，默认为false，该值指定列锁定，锁定列在出现横向滚动条时不被滚动。
- * 3.    minWidth：number，默认自动计算为表头宽度（文字+排序图标），可设定该列被拖拽或被自适应拉伸时的最小宽度
- * 4.    dragable： true’ or ‘false’，默认为true，当表格属性dragable为true时该值才生效，代表该列是否开启拖拽改变列宽功能
+ * stable： true’ or ‘false’，默认为false，该值代表该列是否可伸缩，进入页面或屏宽改变时表格将自动计算用户可视区域宽度，并自动伸缩各列，当某列带stable为true时该列则别伸缩。这个值尽量少用，保存整个表格是灵活可伸缩效果最好，大家担心的列宽太窄影响显示的问题可以通过minWidth属性解决。
+ * locked： true’ or ‘false’，默认为false，该值指定列锁定，锁定列在出现横向滚动条时不被滚动。
+ * minWidth：number，默认自动计算为表头宽度（文字+排序图标），可设定该列被拖拽或被自适应拉伸时的最小宽度
+ * resizable： true’ or ‘false’，默认为true，当表格属性columnResizable为true时该值才生效，代表该列是否开启拖拽改变列宽功能
  */
+
+///import esui.Control;
+///import esui.Layer;
+///import esui.Button;
+///import esui.TextInput;
+///import baidu.lang.inherits;
 
 /**
  * 表格框控件
  * 
  * @param {Object} options 控件初始化参数
  */
-esui.Table = function (options) {
+esui.Table = function ( options ) {
     // 类型声明，用于生成控件子dom的id和class
     this._type = 'table';
     
@@ -34,17 +38,10 @@ esui.Table = function (options) {
 
     esui.Control.call( this, options );
     
-    // 初始化可显示的最大列数
-    var viewColumnCount = this.viewColumnCount;
-    if ( viewColumnCount ) {
-        this.viewColumnCount = parseInt( viewColumnCount, 10 );
-    }
-    
     this.__initOption( 'noDataHtml', null, 'NODATA_HTML' );
     this.__initOption( 'followHead', null, 'FOLLOW_HEAD' );
     this.__initOption( 'sortable', null, 'SORTABLE' );
-    this.__initOption( 'dragable', null, 'DRAGABLE' );
-    this.__initOption( 'lockable', null, 'LOCKABLE' );
+    this.__initOption( 'columnResizable', null, 'COLUMN_RESIZABLE' );
     this.__initOption( 'rowWidthOffset', null, 'ROW_WIDTH_OFFSET' );
     this.__initOption( 'subEntryOpenTip', null, 'SUBENTRY_OPEN_TIP' );
     this.__initOption( 'subEntryCloseTip', null, 'SUBENTRY_CLOSE_TIP' );
@@ -66,8 +63,7 @@ esui.Table = function (options) {
 esui.Table.NODATA_HTML          = '';
 esui.Table.FOLLOW_HEAD          = 0;
 esui.Table.SORTABLE             = 0;
-esui.Table.DRAGABLE             = 0;
-esui.Table.LOCKABLE             = 0;
+esui.Table.COLUMN_RESIZABLE     = 0;
 esui.Table.ROW_WIDTH_OFFSET     = -1;
 esui.Table.SUBENTRY_OPEN_TIP    = '点击展开';
 esui.Table.SUBENTRY_CLOSE_TIP   = '点击收起';
@@ -216,12 +212,11 @@ esui.Table.prototype = {
             followDoms = [];
             me._followDoms = followDoms;
 
-            var walker = me._main.parentNode.firstChild;
+            var walker = me.main.parentNode.firstChild;
             var dom;
             var i, len;
             var followWidths = me._followWidthArr;
             var followHeights = me._followHeightArr;
-            var sxHandleHeight = me._sxHandle ? me._sxHandle.offsetHeight : 0;
 
             // 缓存表格跟随的dom元素
             while ( walker ) {
@@ -246,7 +241,7 @@ esui.Table.prototype = {
                                   + getStyleNum( dom, 'padding-right' );             
                 followHeights[ i + 1 ] = followHeights[ i ] + dom.offsetHeight;
             }
-            followHeights[ i + 1 ] = followHeights[ i ] + sxHandleHeight;
+            followHeights[ i + 1 ] = followHeights[ i ];
             followHeights.lenght = i + 2;
         }
 
@@ -260,7 +255,7 @@ esui.Table.prototype = {
      * @public
      */
     render: function () {
-        var me = this,
+        var me   = this,
             main = me.main,
             i,
             len;
@@ -272,7 +267,7 @@ esui.Table.prototype = {
         
         esui.Control.prototype.render.call( this );
 
-        // 如果未绘制过，初始化main元素
+        // 如果未绘制过，初始化列宽
         if ( !me._isInited ) {
             me._initMinColsWidth();
         }
@@ -281,21 +276,11 @@ esui.Table.prototype = {
         me._width = me._getWidth();
         main.style.width = me._width + 'px';
         
-        if ( me._rawColsWidth 
-            && ( len = me._rawColsWidth.length ) > 0
-        ) {
-            //计算表格总宽度
-            for ( i = 0; i < len; i++ ) {
-                me._colsWidth[ i ] = me._rawColsWidth[i];
-            }
-        } else {
-            me._initColsWidth();
-        }
+        me._initColsWidth();
         
         // 停止编辑功能
         me.stopEdit();
 
-        me._renderXScroll();
         me._renderHead();   // 绘制表格头
         me._renderBody();   // 绘制列表
         me._renderFoot();   // 绘制表格尾
@@ -344,8 +329,8 @@ esui.Table.prototype = {
                 field = fields[ i ];
                 width = field.minWidth;
                 if ( !width && !field.breakLine ) {
-                    //20包括排序和外层padding
-                    width = fields[ i ].title.length * 13 + 20;
+                    // 20包括排序和外层padding
+                    width = field.title.length * 13 + 20;
                 }
 
                 result[i] = width;
@@ -368,8 +353,6 @@ esui.Table.prototype = {
         var me          = this,
             fields      = me._fields,
             len         = fields.length,
-            rawWidths   = me._rawColsWidth,
-            rawLen      = rawWidths instanceof Array && rawWidths.length,
             canExpand   = [],
             leaveAverage,
             leftWidth,
@@ -385,30 +368,19 @@ esui.Table.prototype = {
         // 减去边框的宽度
         leftWidth = me._width - 1;
         
-        //初始可显示的最大列数
-        if ( me.viewColumnCount ) {
-            maxCanExpandIdx = Math.min( me.viewColumnCount, len );
-        } else {
-            maxCanExpandIdx = len;
-        }
-        
+        maxCanExpandIdx = len;
+
         // 读取列宽并保存
         for ( i = 0; i < len; i++ ) {
-            field = fields[i];
+            field = fields[ i ];
             width = field.width;
             
-            if ( rawWidths && rawLen > i ) {
-                width = rawWidths[i];
-            } else {
-                width = (width ? parseInt(width, 10) : 0);
-            }
-            
+            width = (width ? parseInt( width, 10 ) : 0);
             me._colsWidth.push( width );
-            if ( i < maxCanExpandIdx ){
-                leftWidth -= width;
-                if ( !field.stable ) {
-                    canExpand.push( i );
-                }
+            leftWidth -= width;
+
+            if ( !field.stable ) {
+                canExpand.push( i );
             }
         }
         
@@ -417,7 +389,7 @@ esui.Table.prototype = {
         leaveAverage = Math.round( leftWidth / len );
         
         for ( i = 0; i < len; i++ ) {
-            index = canExpand[i];
+            index  = canExpand[ i ];
             offset = Math.abs( leftWidth ) < Math.abs( leaveAverage ) ? leftWidth : leaveAverage; 
             leftWidth -= offset;
             me._colsWidth[ index ] += offset;
@@ -433,8 +405,9 @@ esui.Table.prototype = {
         if ( leftWidth < 0 ) {// 如果空间不够分配，需要重新从富裕的列调配空间
             i = 0;
             while ( i < len && leftWidth != 0 ) {
-                index = canExpand[i];
-                minWidth = me._minColsWidth[index];
+                index    = canExpand[ i ];
+                minWidth = me._minColsWidth[ index ];
+
                 if ( minWidth < me._colsWidth[ index ] ) {
                     offset = me._colsWidth[ canExpand[ i ] ] - minWidth;
                     offset = offset > Math.abs( leftWidth ) ? leftWidth : -offset;
@@ -447,148 +420,6 @@ esui.Table.prototype = {
             me._colsWidth[ canExpand[ 0 ] ] += leftWidth;
         }
         
-        // 记录列原始宽度
-        me._rawColsWidth = [];    
-        
-        width = 0;
-        for ( i = 0, len = me._colsWidth.length;
-              i < len; 
-              i++
-        ) {
-            width += me._colsWidth[ i ];
-            me._rawColsWidth[ i ] = me._colsWidth[ i ];
-
-            // 将可视区域外的列隐藏
-            if ( i >= me.viewColumnCount ) {
-                me._colsWidth[ i ] = 0;
-            }
-        }
-        me._totalWidth = width;
-    },
-    
-    /**
-     * 绘制横向滚动条
-     *
-     * @private
-     * @author linzhifeng@baidu.com
-     */    
-    _renderXScroll : function() {
-        var me = this;
-
-        if ( !me.allowXScroll ) {
-            return;
-        }
-
-        if ( !me._sxHandle ) {
-            me._sxHandle = document.createElement('div');
-            me._sxHandle.className = me.__getClass('scroll-x');
-            me._sxContent = document.createElement( 'div' );
-            me._sxContent.style.fontSize = '1px';  
-            me._sxContent.innerHTML = '&nbsp;';
-            me._sxHandle.appendChild( me._sxContent );
-            me.main.appendChild(me._sxHandle);    
-            me._sxHandle.onscroll = me._getXScrollHandler();
-        }
-        
-        me._sxContent.style.width = me._totalWidth + 'px';
-        me._repaintXScroll();
-    },
-    
-    /**
-     * 重绘横向滚动条
-     *
-     * @private
-     */  
-    _repaintXScroll: function () {
-        if ( this.allowXScroll ) {
-            var sxHandle    = this._sxHandle;
-            var sxContent   = this._sxContent;
-            var fhArr       = this._followHeightArr;
-            var fhLen       = fhArr.length;
-            var lastHeight  = fhArr[ fhLen - 2 ];
-
-            sxHandle.style.width  = this._width + 'px';
-            sxContent.style.width = this._totalWidth + 'px'
-
-            if ( this._width >= this._totalWidth ) {
-                baidu.dom.hide( sxHandle );
-            } else {
-                baidu.dom.show( sxHandle );
-                lastHeight += sxHandle.offsetHeight;
-            }
-            
-            fhArr[ fhLen - 1 ] = lastHeight;
-            sxHandle.scrollLeft = 0;
-        }
-    },
-
-    /**
-     * 获取横向滚动的handler
-     *
-     * @private
-     * @return {Function}
-     */
-    _getXScrollHandler : function() {
-        var me = this;
-
-        return function () {
-            var fields      = me._fields,
-                sWidth      = me._sxHandle.scrollLeft,
-                sWidthBak   = sWidth,
-                len         = fields.length,
-                rawWidths   = me._rawColsWidth,
-                colsWidth   = me._colsWidth = rawWidths.slice(0),
-                width,
-                i,
-                j;
-
-            // 查找第一个未locked的列
-            for ( i = len - 1; i >= 0; i-- ) {
-                if (fields[ i ].locked) {
-                    break;
-                }
-            }
-
-            // 计算列宽：先处理需要根据滚动位置减少列宽的列
-            for ( i += 1; i < len; i++ ) {
-                width = rawWidths[ i ];
-                
-                if ( width > sWidth ) {
-                    colsWidth[ i ] = width - sWidth;
-                    break;
-                } else {
-                    sWidth -= width;
-                    colsWidth[ i ] = 0;
-                }
-            }
-
-            // 计算列宽：处理需要根据滚动位置增加列宽的列
-            i = Math.max( i + 1, me.viewColumnCount );
-            for ( ; i < len; i++ ) {
-                width = rawWidths[ i ];
-
-                if ( width >= sWidthBak ) {
-                    colsWidth[ i ] = sWidthBak;
-                    sWidthBak = 0;
-                    break;
-                } else {
-                    colsWidth[ i ] = width;
-                    sWidthBak -= width;
-                }
-            }
-            
-            // 处理剩余宽度
-            if ( sWidthBak > 0 ) {
-                colsWidth[ i ] += sWidthBak;
-            }
-            
-            // 将显示区域外的列宽度置0
-            for ( i += 1; i < len; i++ ) {
-                colsWidth[ i ] = 0;
-            }
-
-            me._resetColumns();
-        };
     },
     
     /**
@@ -611,7 +442,6 @@ esui.Table.prototype = {
                 foot.className = me.__getClass( type );
                 foot.setAttribute( 'controlTable', me.id );
                 
-                // 绑定拖拽的事件处理
                 me.main.appendChild( foot );
             }    
             
@@ -693,9 +523,9 @@ esui.Table.prototype = {
             head.id = id;
             head.className = me.__getClass( type );
             head.setAttribute( 'controlTable', me.id );
-            
+
             // 绑定拖拽的事件处理
-            if ( me.dragable ) {
+            if ( me.columnResizable ) {
                 head.onmousemove = me._getHeadMoveHandler();
                 head.onmousedown = me._getDragStartHandler();
             }
@@ -1327,15 +1157,16 @@ esui.Table.prototype = {
             editable,
             i;
             
-        html.push(esui.util.format(
-                    me._tplRowPrefix,
-                    me.__getId( 'row' ) + index,
-                    me.__getClass( 'row' ),
-                    me.__getStrCall( '_rowOverHandler', index ),
-                    me.__getStrCall( '_rowOutHandler', index ),
-                    ( me.selectMode == 'line' ? me.__getStrCall( '_rowClickHandler', index ) : '' )
-                 ),
-                 esui.util.format( me._tplTablePrefix, '100%', me.id ) );//me._totalWidth - 2
+        html.push(
+            esui.util.format(
+                me._tplRowPrefix,
+                me.__getId( 'row' ) + index,
+                me.__getClass( 'row' ),
+                me.__getStrCall( '_rowOverHandler', index ),
+                me.__getStrCall( '_rowOutHandler', index ),
+                ( me.selectMode == 'line' ? me.__getStrCall( '_rowClickHandler', index ) : '' )
+            ),
+            esui.util.format( me._tplTablePrefix, '100%', me.id ) );//me._totalWidth - 2
 
         for ( i = 0; i < fieldLen; i++ ) {
             tdClass     = [ tdCellClass ];
@@ -1739,7 +1570,7 @@ esui.Table.prototype = {
         me._initColsWidth();
         me._resetColumns();    
         if ( me.followHead ) {
-            walker  = me._main.parentNode.firstChild;
+            walker  = me.main.parentNode.firstChild;
             i       = 0;
             while ( walker ) {
                 if ( walker.nodeType == 1
@@ -1752,7 +1583,6 @@ esui.Table.prototype = {
             }
         }    
 
-        me._repaintXScroll();
         me._topReseter && me._topReseter();
     },
     
@@ -1767,8 +1597,7 @@ esui.Table.prototype = {
         }
 
         var me = this,
-            walker           = me._main.parentNode.firstChild,
-            sxHandle         = me._sxHandle,
+            walker           = me.main.parentNode.firstChild,
             domHead          = me.getHead(),
             followWidths     = me._followWidthArr,
             placeHolderId    = me.__getId( 'TopPlaceholder' ),
@@ -1781,14 +1610,13 @@ esui.Table.prototype = {
         domPlaceholder.style.width = '100%';
         domPlaceholder.style.display = 'none';
 
-        baidu.dom.insertBefore( domPlaceholder, ( sxHandle || me.main ) );
+        baidu.dom.insertBefore( domPlaceholder, me.main );
         domPlaceholder = null;
         
         // 写入表头跟随元素的宽度样式
         for ( i = 0, len = me._followDoms.length; i < len; i++ ) {
             me._followDoms[ i ].style.width = me._width - followWidths[ i ] + 'px';
         }
-        sxHandle && ( sxHandle.style.width = me._width + 'px' );
         domHead && ( domHead.style.width = me._width + 'px' );
                 
         me._topReseter = function () {
@@ -1819,7 +1647,6 @@ esui.Table.prototype = {
                         setPos( followDoms[ i ], posStyle, fhArr[ i ] + scrollTop );
                     }
 
-                    setPos( sxHandle, posStyle, fhArr[ fhLen - 2 ] + scrollTop );
                     setPos( domHead, posStyle, fhArr[ fhLen - 1 ] + scrollTop );
                 } else {
                     placeHolder.style.height  = 0;
@@ -1829,8 +1656,7 @@ esui.Table.prototype = {
                     for ( ; i < len; i++ ) {
                         setPos( followDoms[i], posStyle, 0 );
                     }
-                    
-                    setPos( sxHandle, posStyle, 0 );
+
                     setPos( domHead, posStyle, 0 );
                 }
             } else {
@@ -1842,8 +1668,7 @@ esui.Table.prototype = {
                     for ( ; i < len; i++ ) {
                         setPos( followDoms[ i ], posStyle, fhArr[ i ] );
                     }
-                    
-                    setPos( sxHandle, posStyle, fhArr[ fhLen - 2 ] );
+
                     setPos( domHead, posStyle, fhArr[ fhLen - 1 ] );
                 } else {
                     placeHolder.style.height  = 0;
@@ -1853,8 +1678,7 @@ esui.Table.prototype = {
                     for ( ; i < len; i++) {
                         setPos( followDoms[i], posStyle, 0 );
                     }
-                    
-                    setPos( sxHandle, posStyle, 0 );
+
                     setPos( domHead, posStyle, 0 );
                 }
             }
@@ -1877,7 +1701,7 @@ esui.Table.prototype = {
             len         = foot instanceof Array && foot.length,
             dLen        = datasource.length,
             tds         = me.getBody().getElementsByTagName( 'td' ),
-            tables      = me._main.getElementsByTagName( 'table' ),
+            tables      = me.main.getElementsByTagName( 'table' ),
             tdsLen      = tds.length,
             index       = 0,
             td,
@@ -1943,8 +1767,6 @@ esui.Table.prototype = {
         width       : 30,
         stable      : true,
         select      : true,
-        locked      : true,
-        dragable    : false,
         title       : function () {
             return '<input type="checkbox" id="' 
                     + this.__getId( 'selectAll' ) 
@@ -1970,7 +1792,6 @@ esui.Table.prototype = {
         stable  : true,
         title   : '&nbsp;',
         select  : true,
-        locked  : true,
         content : function ( item, index ) {
             var id = this.__getId( 'singleSelect' );
 
@@ -2143,7 +1964,7 @@ esui.Table.prototype = {
             len = ths.length,
             th;
             
-        while (len--) {
+        while ( len-- ) {
             th = ths[ len ];
             baidu.removeClass( th.firstChild, this.__getClass( 'thcell_sort' ) );
         }    
@@ -2233,15 +2054,6 @@ esui.Table.prototype = {
         
         // 释放表头跟随的元素引用
         this._followDoms = null;
-
-        // 释放自定义的横向滚动条
-        if ( this._sxHandle ) {
-            this._sxHandle.onscroll = null;
-            this._sxHandle.removeChild(this._sxContent);
-            this._main.removeChild(this._sxHandle);
-            this._sxHandle = null;
-            this._sxContent = null;
-        }
         
         // 停止编辑功能
         this.stopEdit();

@@ -26,15 +26,15 @@ include( 'esui.Table' );
 	<h3>列内容允许换行</h3>
 	<div ui="type:Table;id:myTable2;"></div>
 	<h3>列允许拖拽</h3>
-	<div ui="type:Table;id:myTable3;dragable:1"></div>
+	<div ui="type:Table;id:myTable3;columnResizable:1"></div>
 	<h3>表头跟随</h3>
-	<div ui="type:Table;id:myTable4;dragable:1;followHead:1"></div>
+	<div ui="type:Table;id:myTable4;columnResizable:1;followHead:1"></div>
 	<h3>可排序并可选择的表格</h3>
-	<div ui="type:Table;id:myTable5;dragable:1;sortable:1;select:multi"></div>
+	<div ui="type:Table;id:myTable5;columnResizable:1;sortable:1;select:multi"></div>
 	<h3>带附加行的表格</h3>
-	<div ui="type:Table;id:myTable6;dragable:1;subrow:1"></div>
+	<div ui="type:Table;id:myTable6;columnResizable:1;subrow:1"></div>
 	<h3>可编辑并带注脚的表格</h3>
-	<div ui="type:Table;id:myTable7;editable:1;foot:*foot;dragable:1"></div>
+	<div ui="type:Table;id:myTable7;editable:1;columnResizable:1"></div>
 </div>
 <script>
 var data = [
@@ -86,7 +86,7 @@ esui.init( document.body, {
                 field: 'name',
                 title: '姓名（给点力啊）',
                 width: 40,
-				dragable: 1,
+				resizable: 1,
 				breakLine:1,
 				align: 'right',
                 content: function ( item ) {
@@ -101,7 +101,7 @@ esui.init( document.body, {
                 field: 'sex',
                 title: '性别',
                 width: 50,
-				dragable: 1,
+				resizable: 1,
 				align: 'left',
                 content: function (item) {
 					return ['女', '男'][item.sex || 0];
@@ -127,7 +127,7 @@ esui.init( document.body, {
                 title: '姓名',
                 width: 300,
 				minWidth:100,
-				dragable: 1,
+				resizable: 1,
 				align: 'right',
                 content: 'name'
             },
@@ -135,7 +135,7 @@ esui.init( document.body, {
                 field: 'sex',
                 title: '性别',
                 width: 50,
-				dragable: 1,
+				resizable: 1,
 				align: 'left',
                 content: function (item) {
 					return ['女', '男'][item.sex || 0];
@@ -161,7 +161,7 @@ esui.init( document.body, {
                 title: '姓名',
                 width: 300,
 				minWidth:100,
-				dragable: 1,
+				resizable: 1,
 				align: 'right',
                 content: 'name'
             },
@@ -169,7 +169,7 @@ esui.init( document.body, {
                 field: 'sex',
                 title: '性别',
                 width: 50,
-				dragable: 1,
+				resizable: 1,
 				align: 'left',
                 content: function (item) {
 					return ['女', '男'][item.sex || 0];
@@ -227,7 +227,7 @@ esui.init( document.body, {
                 field: 'sex',
                 title: '性别',
                 width: 50,
-				dragable: 1,
+				resizable: 1,
 				align: 'left',
                 content: function (item) {
 					return ['女', '男'][item.sex || 0];
@@ -247,7 +247,7 @@ esui.init( document.body, {
                 editable: 1,
                 edittype: 'int',
                 align: 'center',
-				dragable:1,
+				resizable:1,
                 content: function (item) {
                     return item.id;
                 }
@@ -260,7 +260,7 @@ esui.init( document.body, {
                 edittype: 'string',
                 align: 'right',
                 width: 300,
-				dragable:1,
+				resizable:1,
                 content: function (item) {
                     return item.name
                 }
@@ -269,15 +269,15 @@ esui.init( document.body, {
                 field: 'name',
                 title: '姓名2',
                 sortable: true,
-				dragable:1,
+				resizable:1,
                 width: 300,
                 content: function (item, rowIndex, columnIndex) {
-                    return getNameFieldHtml.call(this, item.name, rowIndex, columnIndex);
+                    return "原:" + item.name;
                 }
             }
         ],
 		foot: [
-            {	colspan: 3,
+            {	colspan: 2,
                 content: function () {
                     return 10000;
                 }
@@ -308,7 +308,7 @@ esui.get( 'myTable7' ).onedit = function (value, options, editor) {
 		var rowIndex = options.rowIndex;
 		var columnIndex = options.columnIndex;
 		table.setCellText(
-			getNameFieldHtml.call( table, value, rowIndex, columnIndex ), 
+			value, 
 			rowIndex, 
 			columnIndex);
 		table.datasource[rowIndex][options.field.field] = value;
