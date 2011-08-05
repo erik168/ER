@@ -7,7 +7,7 @@
  * author:  erik, mytharcher
  */
 
-///import er;
+///import er.config;
 ///import baidu.string.encodeHTML;
 
 /**
@@ -40,13 +40,14 @@ er.template = function () {
      * @return {string}
      */
     function parseVariable( varName, filterName, privateContextId ) {
+        privateContextId = privateContextId || null;
         var match = varName.match( /:([a-z]+)$/ );
         var value = '';
 
         if ( match && match.length > 1 ) {
             value = parseVariableByType( varName.replace(/:[a-z]+$/i, ''), match[1] );
         } else {
-            var variable = er.context.get( varName, privateContextId );
+            var variable = er.context.get( varName, { contextId: privateContextId } );
             if ( er._util.hasValue( variable ) ) {
                 value = variable;
             }

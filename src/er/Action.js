@@ -8,7 +8,6 @@
  */
 
 ///import er.AbstractAction;
-///import er.context;
 ///import er._util;
 ///import baidu.lang.inherits;
 ///import baidu.object.extend;
@@ -117,7 +116,7 @@ er.Action = function () {
         },
 
         /**
-         * context初始化完成后的内部行为
+         * model加载完成后的内部行为
          *
          * @protected
          */      
@@ -126,7 +125,7 @@ er.Action = function () {
         },
 
         /**
-         * context初始化前的内部行为
+         * model加载前的内部行为
          *
          * @protected
          */      
@@ -220,10 +219,10 @@ er.Action = function () {
      * 扩展Action的功能
      * 
      * @public
-     * @param {Object} obj 扩展的功能对象
+     * @param {Object} ext 扩展的功能对象
      * @param {string} opt_name 扩展别名，不提供则扩展默认Action
      */
-    Action_.extend = function ( obj, opt_name ) {
+    Action_.extend = function ( ext, opt_name ) {
         var key, 
             base = Action_.prototype;
         
@@ -231,7 +230,7 @@ er.Action = function () {
             base = ActionBaseX_[ opt_name ];
             if ( !base ) {
                 base = new Function();
-                base.prototype = obj;
+                base.prototype = ext;
                 baidu.inherits( base, Action_ );
 
                 ActionBaseX_[ opt_name ] = base;
@@ -240,8 +239,8 @@ er.Action = function () {
             base = base.prototype;
         }
         
-        for ( key in obj ) {
-            base[ key ] = obj[ key ];
+        for ( key in ext ) {
+            base[ key ] = ext[ key ];
         }
     };
     

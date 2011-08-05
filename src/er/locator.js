@@ -11,7 +11,7 @@
 ///import baidu.browser.firefox;
 ///import baidu.json.parse;
 ///import baidu.json.stringify
-///import er.controller;
+///import er.router;
 
 /**
  * Hash定位器
@@ -24,17 +24,13 @@
  *      qchar   = char | "&" | "="
  */
 er.locator = function () {
-    var currentPath    ,
-        currentQuery   ,
-        currentLocation,
+    var currentLocation,
         IFRAME_CONTENT  = "<html><head></head><body><input type=\"text\" id=\"save\">"
             + "<script type=\"text/javascript\">"
-            + "var path = \"#{0}\";"
-            + "var query = #{1};"
-            + "var loc = \"#{2}\";"
+            + "var loc = \"#{0}\";"
             + "document.getElementById('save').value = loc;"
             + "parent.er.locator._updateHash(loc);"
-            + "parent.er.controller.forward(path, query, loc);"
+            + "parent.er.router(loc);"
             + "</script></body></html>";
     
     /**
@@ -72,10 +68,7 @@ er.locator = function () {
      * @param {string} loc
      */
     function updateLocation( loc ) {
-        var locResult   = parseLocation( loc ),
-            path        = locResult.path,
-            query       = locResult.query,
-            historyList,
+        var historyList,
             historyInput,
             isOldLoc,
             i, 
@@ -106,11 +99,7 @@ er.locator = function () {
                 }
 
                 if ( typeof isOldLoc != 'number' ) {
-                    historyList.push({
-                        path:path, 
-                        query:query, 
-                        loc:loc
-                    });
+                    historyList.push( loc );
                 } else {
                     uIdMap_[ RegExp.$2 ] = 1;
                 }
@@ -126,10 +115,7 @@ er.locator = function () {
             location.hash = loc;
         }
 
-        currentPath = path;
-        currentQuery = query;
         currentLocation = loc;
-
         return true;
     }
 
@@ -154,11 +140,6 @@ er.locator = function () {
             loc = er._util.getConfig( 'DEFAULT_INDEX' ); 
         }
 
-        // 未设置path时指向当前path
-        if ( /^~/.test( loc ) ) {
-            loc = currentPath + loc
-        }
-
         // 与当前location相同时不进行转向
         updateLocation( loc );
         /*if (!updateHash(loc)) {
@@ -170,30 +151,29 @@ er.locator = function () {
         er.locator.onredirect();
         
         // 权限判断以及转向
+        /*
         var loc302 = er.controller.authJudge( currentPath );
         if ( loc302 ) {
             er.locator.redirect( loc302 );
             return;
-        }
+        }*/
 
         // ie下使用中间iframe作为中转控制
         // 其他浏览器直接调用控制器方法
         if ( baidu.ie && baidu.ie < 8 ) {
-            ieForword( currentPath, currentQuery, loc );
+            ieRoute( loc );
         } else {
-            er.controller.forward( currentPath, currentQuery, loc );
+            er.router( loc );
         }
     }
     
     /**
-     * IE下调用控制器forword
+     * IE下调用router
      * 
      * @private
-     * @param {Object} path 路径
-     * @param {Object} query 查询条件
-     * @param {string} loc 定位器
+     * @param {string} loc 地址
      */
-    function ieForword( path, query, loc ) {
+    function ieRoute( loc ) {
         var iframe = baidu.g( er._util.getConfig( 'CONTROL_IFRAME_ID' ) ),
             iframeDoc = iframe.contentWindow.document;
 
@@ -201,8 +181,6 @@ er.locator = function () {
         iframeDoc.write(
             baidu.format(
                 IFRAME_CONTENT, 
-                escapeIframeContent( path ), 
-                (query ? '"' + escapeIframeContent( query ) + '"' : 'null'), 
                 escapeIframeContent( loc )
             ));
         iframeDoc.close();
@@ -218,78 +196,6 @@ er.locator = function () {
     function escapeIframeContent( source ) {
         return source.replace( /\\/g, "\\\\" ).replace( /\"/g, "\\\"" );
     }
-
-    /**
-     * 解析location
-     * 
-     * @private
-     * @param {Object} loc
-     */
-    function parseLocation( loc ) {
-        loc = loc.replace( /^#/, '' );
-        var pair = loc.match( /^([^~]*)(~(.*))?$/ ),
-            re = {};
-            
-        re.path  = pair[ 1 ] || getConfig( 'DEFAULT_INDEX' );
-        re.query = (pair.length == 4 ? pair[ 3 ] : '');
-        return re;
-    }
-    
-    /**
-     * 获取参数集合
-     * 
-     * @return {Object}
-     */
-    function getQueryMap() {
-        return parseQuery( currentQuery );
-    }
-    
-    /**
-     * 将参数解析为Map
-     * 
-     * @public
-     * @param {string} query 参数字符串
-     * @return {Object}
-     */
-    function parseQuery( query ) {
-        query = query || '';
-        var params      = {},
-            paramStrs   = query.split( '&' ),
-            len         = paramStrs.length,
-            item,
-            value;
-
-        while ( len-- ) {
-            item = paramStrs[ len ];
-            if ( !item ) {
-                continue;
-            }
-            
-            item = item.split( '=' );
-            value = decodeURIComponent( item[ 1 ] );
-            params[ item[ 0 ] ] = value;
-        }
-
-        return params;
-    }
-    
-    /**
-     * 获取location的path
-     * 
-     * @return {string}
-     */
-    function getPath() {
-        return currentPath;
-    }
-    
-    /**
-     * 获取location的query
-     * 
-     * @return {string}
-     */
-    function getQuery() {
-        return currentQuery;
-    }  
     
     /**
      * 初始化locator
@@ -340,17 +246,17 @@ er.locator = function () {
             }
         }
 
-        er.controller._enable( 0 );
+        er.router._enable( 0 );
         for ( i = 0; i < len; i++ ) {
             item = historyList[ i ];
-            if ( item.loc == currentLoc ) {
+            if ( item == currentLoc ) {
                 currentIndex = i;
-                (i == len - 1) && controller_._enable( 1 );
+                (i == len - 1) && er.router._enable( 1 );
             }
-            ieForword( item.path, item.query, item.loc );
+            ieRoute( item );
         }
 
-        controller_._enable( 1 );
+        er.router._enable( 1 );
         i -= ( currentIndex + 1 );
         i && history.go( -i );
     }
@@ -396,11 +302,7 @@ er.locator = function () {
     // 返回暴露的方法
     return {
         'redirect'          : redirect,
-        'getPath'           : getPath,
-        'getQuery'          : getQuery,
         'getLocation'       : getLocation,
-        'getQueryMap'       : getQueryMap,
-        'parseQuery'        : parseQuery,
         'init'              : init,
         '_updateHash'       : updateLocation,
         'onredirect'        : new Function()

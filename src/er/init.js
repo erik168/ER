@@ -15,6 +15,8 @@
  * 初始化ER框架
  */
 er.init = function () {
+    var isLoaded;
+
     /**
      * 初始化完成的处理函数
      *

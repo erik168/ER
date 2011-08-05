@@ -7,7 +7,7 @@
  * author:  erik
  */
 
-///import er.IAction;
+///import er.router;
 ///import er.Module;
 ///import er.permission;
 ///import baidu.sio.callByBrowser;
@@ -43,6 +43,35 @@ er.controller = function () {
 
         return null;
     }
+    
+    /**
+     * 将参数解析为Map
+     * 
+     * @inner
+     * @param {string} query 参数字符串
+     * @return {Object}
+     */
+    function _parseQuery( query ) {
+        query = query || '';
+        var params      = {},
+            paramStrs   = query.split( '&' ),
+            len         = paramStrs.length,
+            item,
+            value;
+
+        while ( len-- ) {
+            item = paramStrs[ len ];
+            if ( !item ) {
+                continue;
+            }
+            
+            item = item.split( '=' );
+            value = decodeURIComponent( item[ 1 ] );
+            params[ item[ 0 ] ] = value;
+        }
+
+        return params;
+    }
 
     /**
      * 跳转视图
@@ -52,7 +81,7 @@ er.controller = function () {
      * @param {Object} query 查询条件
      * @param {string} loc 定位器
      */
-    function forward( path, query, loc ) {
+    function forward( loc, path, query ) {
         if ( !_isEnable ) { 
             return; 
         }
@@ -65,7 +94,7 @@ er.controller = function () {
         var arg = {  // 组合所需的argument对象
                 type     : 'main',
                 referer  : currentLocation,
-                queryMap : er.locator.parseQuery( query ) || {},
+                queryMap : _parseQuery( query ) || {},
                 path     : path,
                 domId    : er._util.getConfig( 'MAIN_ELEMENT_ID' )
             },
@@ -209,6 +238,9 @@ er.controller = function () {
                 }
             }
         }
+
+        // 添加route规则
+        er.router.add( /^([\/a-zA-Z0-9_-]+)(?:~(.*))?$/, er.controller.forward );
     }
     
     /**

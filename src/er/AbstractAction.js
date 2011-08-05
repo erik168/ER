@@ -27,8 +27,8 @@ er.AbstractAction = function () {
             'enter'             : 1,
             'leave'             : 1,
             'entercomplete'     : 1,
-            'beforeinitmodel'   : 1,
-            'afterinitmodel'    : 1,
+            'beforeloadmodel'   : 1,
+            'afterloadmodel'    : 1,
             'beforerender'      : 1,
             'afterrender'       : 1,
             'beforerepaint'     : 1,
@@ -59,10 +59,11 @@ er.AbstractAction = function () {
          */
         enter: function ( arg ) {
             arg = arg || {};
-
+            
+            var me = this;
             var queryMap = arg.queryMap || {};
             var key;
-            var view;
+            var viewClazz;
             var templateName;
            
             // 保存arg    
@@ -75,36 +76,42 @@ er.AbstractAction = function () {
 
             // 初始化model
             if ( !this.hasOwnProperty( 'model' ) ) {
-                this.model = new (this.model || er.Model)();
-                this.model.construct( { guid: this.guid } );
+                this.model = new (this.model || new er.Model())();
+                this.model.construct( {
+                    guid    : this.guid,
+                    action  : this
+                } );
             }
 
             // 初始化视图生成器
-            if ( !this._view ) {
-                templateName = this.VIEW;
+            if ( !this.hasOwnProperty( 'view' ) ) {
+                templateName = this.view;
                 if ( typeof templateName == 'function' ) {
                     templateName = templateName.call( this );
                 }
-
-                view = this.view || er.View;
-                view = new view();
-                view.setTarget( arg.domId );
-                view.setTemplate( String( templateName ) );
-                view.setModel( this.model );
-
-                this._view = view;
+                
+                viewClazz = this.view;
+                if ( typeof viewClazz != 'function' ) {
+                    viewClazz = new er.View;
+                }
+                this.view = new viewClazz();
+                this.view.construct( {
+                    target      : arg.domId,
+                    template    : String( templateName ),
+                    model       : this.model
+                } );
             }
 
             this.__moveOntoPhase( 'enter' );
             
-            // 将query装填入context
+            // 将query装填入model
             for ( key in queryMap ) {
-                this.setContext( key, queryMap[ key ] );
+                this.model.set( key, queryMap[ key ] );
             }
 
             // 初始化context
             this.__moveOntoPhase( 'beforeloadmodel' );
-            this.model.load( callback );
+            this.model.load( callback );      
             
             /**
              * 初始化context后的回调，用于绘制主区域或重绘控件
@@ -115,15 +122,26 @@ er.AbstractAction = function () {
                 me.__moveOntoPhase( 'afterloadmodel' );
                 if ( arg.refresh ) {
                     me.__moveOntoPhase( 'beforerepaint' );
-                    me.repaint();
+                    me.view.repaint();
                     me.__moveOntoPhase( 'afterrepaint' );
                 } else {
                     me.__moveOntoPhase( 'beforerender' );
-                    me.render();
+                    me.view.render();
                     me.__moveOntoPhase( 'afterrender' );
                 }
                 me.__moveOntoPhase( 'entercomplete' );
             }
+        },
+        
+        /**
+         * 获取参数
+         * 
+         * @param {string} name 参数名
+         * @return {string}
+         */
+        getQuery: function ( name ) {
+            var queryMap = this.arg.queryMap || {};
+            return queryMap[ name ] || '';
         },
 
         /**
@@ -147,8 +165,8 @@ er.AbstractAction = function () {
             this.model = null;
             
             // 清空视图
-            this._view.clear();
-            this._view = null;
+            this.view.clear();
+            this.view = null;
         }
     };
 

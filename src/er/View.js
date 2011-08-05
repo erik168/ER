@@ -7,72 +7,105 @@
  * author:  erik
  */
 
-///import er.context;
-///import er.AbstractView;
-///import er.UIAdapter;
+///import er.Model;
+///import er.template;
 ///import baidu.object.extend;
 ///import baidu.lang.inherits;
 
 er.View = function () {
-    var AbstractView = er.AbstractView;
+    var ext_ = {};
 
     function View( options ) {
-        var construct = function () {
-            baidu.extend( this, options );
-        };
-    
-        construct.prototype = View.prototype;
+        var construct = new Function();
+
+        options && (construct.prototype = options);
+        baidu.extend( construct.prototype, ext_ );
+        baidu.inherits( construct, arguments.callee );
         return construct;
     }
 
     View.prototype = {
-        render: function () {
-            AbstractView.prototype.render.call( this );
-            this._controlMap = er.UIAdapter.init(
-                baidu.g( this.target ), 
-                this.UI_PROP_MAP, 
-                this.model.getGUID()
-            );
+        /**
+         * 构造view实例
+         *
+         * @public
+         * @param {Object} options 构造参数
+         */
+        construct: function ( options ) {
+            this.setTarget( options.target );
+            this.setTemplate( options.template );
+            this.setModel( options.model );
         },
-
-        repaint: function ( controlMap ) {
-            controlMap = controlMap || this._controlMap;
         
-            var key;
-            var control;
-            var uiAdapter = er.UIAdapter;
-           
-            for ( key in controlMap ) {
-                control = controlMap[ key ];
-                if ( control ) {
-                    // 重新灌入数据
-                    uiAdapter.injectData( control, this.model.getGUID() );
-                    
-                    // 重绘控件
-                    uiAdapter.repaint( control );     
-                }
-            }
+        /**
+         * 设置渲染目标
+         *
+         * @public
+         * @param {string|HTMLElement} target 目标元素或id
+         */
+        setTarget: function ( target ) {
+            this.target = target;
+        },
+        
+        /**
+         * 设置模板名
+         *
+         * @public
+         * @param {string} template 模板名
+         */
+        setTemplate: function ( template ) {
+            this.template = template;
+        },
+        
+        /**
+         * 设置数据模型
+         *
+         * @public
+         * @param {er.Model} model 数据模型
+         */
+        setModel: function ( model ) {
+            this.model = model;
+        },
+        
+        /**
+         * 渲染视图
+         *
+         * @public
+         */
+        render: function () {
+            var target = baidu.g( this.target );
+            er.template.merge( target, this.template, this.model.getGUID() );
+        },
+        
+        /**
+         * 重绘视图
+         *
+         * @public
+         */
+        repaint: function () {
+            this.render();
         },
 
+        /**
+         * 清空视图
+         *
+         * @public
+         */
         clear: function () {
-            var controlMap = this._controlMap;
-
-            if ( controlMap ) {
-                for ( key in controlMap ) {
-                    er.UIAdapter.dispose( key );
-                    delete controlMap[ key ];
-                }
-            }
-            
-            this._controlMap = null;
-            AbstractView.prototype.clear.call( this );
+            var target = baidu.g( this.target );
+            target && (target.innerHTML = '');
         }
     };
 
-    baidu.inherits( View, AbstractView );
-
+    /**
+     * 扩展渲染功能
+     *
+     * @static
+     * @public
+     * @param {Object} ext 扩展功能
+     */
     View.extend = function ( ext ) {
-        baidu.extend( View.prototype, ext || {} );
+        baidu.extend( ext_, ext );
     };
  
     return View;

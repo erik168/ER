@@ -43,6 +43,7 @@ er.context = function () {
             
             // 初始化event argument
             contextId && ( evtArg.contextId = contextId );
+            evtArg.name     = name;
             evtArg.oldValue = context[ name ] || null;
             evtArg.newValue = newValue;
             
@@ -76,7 +77,7 @@ er.context = function () {
          * @param {string} contextId 私有环境id
          */
         removePrivate: function ( contextId ) {
-            delete privateContext[ contextId ];
+            privateContext[ contextId ] = null; 
         },
         
         /**
@@ -98,7 +99,7 @@ er.context = function () {
                 
             if ( 'string' == typeof contextId ) { 
                 priv = privateContext[ contextId ];
-                value = priv[ name ];
+                value = priv && priv[ name ];
             }
             
             if ( er._util.hasValue( value ) ) {
