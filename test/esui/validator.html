@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>[ESUI EXAMPLE] - FormTab</title>
+
+<link rel="stylesheet" href="page.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
+<link rel="stylesheet" href="../../src/esui/css/ui-textinput.css" type="text/css" />
+<script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
+<script type="text/javascript" src="../../tool/include.js"></script>
+<script>
+// 引入控件
+include( 'esui.TextInput' );
+include( 'esui.Button' );
+include( 'esui.validator.RequiredRule' );
+include( 'esui.validator.MaxLengthRule' );
+include( 'esui.validator.PatternRule' );
+</script>
+</head>
+
+<body>
+<div class="header">[ESUI EXAMPLE] - validator</div>
+<div class="main">
+    <table cellpadding="5" cellspacing="0" border="0">
+        <tr>
+            <td>name(不能为空)</td>
+            <td><input type="text" ui="type:TextInput;id:myName" /></td>
+        </tr>
+        <tr>
+            <td>email(不能为空，并符合格式)</td>
+            <td><input type="text" ui="type:TextInput;id:myEmail" /></td>
+        </tr>
+        <tr>
+            <td>intro(不能超过10个字)</td>
+            <td><input type="text" ui="type:TextInput;id:myIntro" /></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td><div ui="type:Button;id:myButton">验证</div></td>
+    </table>
+</div>
+<script>
+esui.init( document.body, {
+    myName: {
+        rule: 'required',
+        title: '名字'
+    },
+    myEmail: {
+        rule: [ 
+            'required',
+            'pattern'
+        ],
+        pattern: /^[a-z0-9_-]+@[a-z0-9]+(\.[a-z0-9]+){1,}$/,
+        title: '电子邮件'
+    },
+    myIntro: {
+        rule: 'maxlength',
+        maxlength: 10,
+        title: '简介'
+    }
+} );
+
+esui.get( 'myButton' ).onclick = function () {
+    var nameCtrl = esui.get( 'myName' );
+    var emailCtrl = esui.get( 'myEmail' );
+    var introCtrl = esui.get( 'myIntro' );
+
+    nameCtrl.validate();
+    emailCtrl.validate();
+    introCtrl.validate();
+};
+</script>
+</body>
+</html>
+
+
