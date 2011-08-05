@@ -1,0 +1,10 @@
+/*
+ * ESUI (Enterprise Simple UI)
+ * Copyright 2010 Baidu Inc. All rights reserved.
+ * 
+ * path:    ui.css
+ * desc:    一些公共的样式
+ * author:  erik
+ */
+
+.ui-validator-message { color:red; }
