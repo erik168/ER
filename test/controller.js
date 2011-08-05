@@ -9,7 +9,7 @@ test("forward", function() {
         ok( 1 == 1, '未配置的path，forward时应throw error' ); 
     }
 
-    er.controller.forward("/hello", 'name=ER', "/hello~name=ER");
+    er.controller.forward("/hello~name=ER", "/hello", 'name=ER');
     same( baidu.g( 'Main' ).innerHTML, 'hello ER', "forward后，通过action，主区域被填充内容" );
 });
 

@@ -37,15 +37,18 @@ var myModule = new er.Module({
     }
 });
 
-myModule.test = new er.Action({
-    VIEW: 'hello',
+myModule.model = new er.Model( {
+    LOADER_LIST: ['nameLoader'],
+    
+    nameLoader: new er.Model.Loader( function () {
+        this.set( 'name', this.action.getQuery( 'name' ) || 'world' );
+    } )
+} );
 
-    CONTEXT_INITER_MAP: {
-        name: function (callback) {
-            this.setContext('name', this.arg.queryMap.name || 'world');
-            callback();
-        }
-    },
+myModule.test = new er.Action({
+    view: 'hello',
+
+    model: myModule.model,
 
     onCustomEvent: function ( evt ) {
         testVar[ evt ]++;
@@ -64,14 +67,9 @@ myModule.hello = new er.Action({
         er.Action.prototype.leave.apply(this, arguments);
     },
 
-    VIEW: 'hello',
+    view: 'hello',
 
-    CONTEXT_INITER_MAP: {
-        name: function (callback) {
-            this.setContext('name', this.arg.queryMap.name || 'world');
-            callback();
-        }
-    },
+    model: myModule.model,
 
     onCustomEvent: function ( evt ) {
         testVar[ evt ]++;
@@ -80,14 +78,10 @@ myModule.hello = new er.Action({
 
 
 myModule.ext = new er.Action({
-    VIEW: 'hello',
+    view: 'hello',
 
-    CONTEXT_INITER_MAP: {
-        name: function (callback) {
-            this.setContext('name', this.arg.queryMap.name || 'world');
-            callback();
-        }
-    }
+    model: myModule.model
+
 }, 'rename');
 
 er.template.parse('<!--target:hello-->hello ${name}');

@@ -50,7 +50,7 @@ test("merge", function() {
     er.context.set( 'myName', '?E&R' );
     er.template.merge( el, 'mergeTest3' );
     equals(el.innerHTML, 'hello %3FE%26R!', 'merge，过滤器的替换${name|url}。');
-
+    
     lang.myModule = {};
     lang.myModule.name = 'ER from lang.myModule.name';
 
