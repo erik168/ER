@@ -3,60 +3,88 @@
 <book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
     
     <bookinfo>
-        <title>ER (Enterprise RIA) 框架应用指南</title>
+        <title>ER (Enterprise RIA) 框架手册</title>
         <author>
             <firstname>erik<email>dongrui@baidu.com</email></firstname>
         </author>
     </bookinfo> 
     
     <chapter>
-        <title>简介</title>
-        <para>ER是一套用于支撑富客户端应用的框架。她实现了前进后退的历史管理、Hash定位器、path与action的映射、运行时的数据管理容器、简易的html模板、状态保持、权限管理等功能。通过er框架可以很方便地构建一个AJAX应用。</para>
-        <para>虽然众所周知，使用ajax技术构建网站能够带来较好的用户体验，减少冗余数据传输降低带宽消耗，但是开发与维护成本的增加以及版本管理与部署也比较麻烦。</para>
-        <para>er框架仅适用于整站式ajax应用系统。对于是否采用整站式ajax的方案不是本手册要讨论的。当然，er中的部分功能也能够直接使用，比如template等。</para>
+        <title>ER (Enterprise RIA)</title>
+
+		<section>
+			<title>什么是ER框架？</title>
+			<para>ER是一套用于支撑富客户端应用的框架。她实现了前进后退的历史管理、Hash定位器、path与action的映射、运行时的数据管理容器、简易的html模板、状态保持、权限管理等功能。通过er框架可以很方便地构建一个AJAX应用。</para>
+		</section>
+
+		<section>
+			<title>ER框架的适用于什么项目？</title>
+			<para>ER框架仅适用于整站式Ajax应用。</para>
+			<para>对于一些专属领域系统（如OA/ERP/CRM等），使用ajax技术构建网站能够带来较好的用户体验，提升系统相应速度，减少冗余数据传输降低带宽消耗。</para>
+			<tip><para>整站式Ajax应用不利于搜索引擎抓取。故ER框架不适用于内容提供的WEB站点。</para></tip>
+		</section>
+		
+		<section>
+			<title>ER框架解决了什么问题？</title>
+			<para>虽然众所周知Ajax技术给Web的体验带来了新的模式，但是开发与维护成本的增加是比较麻烦的。ER框架主要解决了如下核心问题：</para>
+			<orderedlist>
+                <listitem><para>封装了hash变更页面不刷新的特性，支持前进后退历史记录堆栈与URL敏感。</para></listitem>
+				<listitem><para>自动完成location到Javascript Function的映射，开发者只需要关心具体的逻辑处理。</para></listitem>
+				<listitem><para>在框架的业务支持层面实现了MVC封装，便于代码分离与多人协同开发。</para></listitem>
+				<listitem><para>通过ESUI组件库，提供对复杂交互的支持。</para></listitem>
+            </orderedlist>
+		</section>
+
+		<section>
+			<title>开始之前</title>
+			<para>虽然ER框架很大程度降低了开发的复杂度，但是开始使用ER框架之前，你应该了解一些基础知识。</para>
+			<orderedlist>
+                <listitem><para>了解MVC模式。</para></listitem>
+				<listitem><para>懂得使用HTML和CSS进行页面布局。</para></listitem>
+				<listitem><para>了解Javascript语言和基本的DOM操作。</para></listitem>
+				<listitem><para>了解JSON。</para></listitem>
+				<listitem><para>懂得使用任意一个Web Server。可以是apache、nginx、tomcat、lighttpd、IIS等。</para></listitem>
+            </orderedlist>
+		</section>
     </chapter>
     
     <chapter>
         <title>开始：Hello world！</title>
-        <para>本章按步骤教您建立一个简单的例子：Hello world！任何复杂的应用都会经过类似的简历过程。在这之前，请确保您拥有web server环境，可以是apache、nginx、tomcat等。</para>
+        <para>本章按步骤教您建立一个简单的例子：Hello world！任何复杂的应用都会经过类似的建立过程。</para>
         <section>   
             <title>第一步：建立html</title>
             <para>新建一个UTF-8编码的文本文件，命名为hello.html。</para>
-            <para>一个完整的标准的html包含了DOCTYPE、html、head以及body部分。er框架依赖于tangram，所以您需要在head中引入tangram以及er框架的javascript文件。</para>
+            <para>一个完整的标准的html包含了DOCTYPE、html、head以及body部分。ER框架依赖于tangram，所以您需要在head中引入tangram以及er框架的javascript文件。</para>
             <para>通常一个html需要在head部分的顶端指定content-type，定义内容类型以及字符集。UTF-8更适合于国际化。</para>
             <programlisting><![CDATA[<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>hello</title>
-<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.core.js"></script>
-<script type="text/javascript" src="../src/er.js"></script>
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.9.core.js"></script>
+<script type="text/javascript" src="../src/er-2.0.0.js"></script>
 </head>
 
 <body></body>
 </html>]]></programlisting>
         </section>
-        <section>   
-            <title>第二步：编写基本配置</title>
-            <para>配置以Javascript的方式书写，所以您需要在head中添加一个script块。您需要配置使用的模板列表。框架会自动帮您加载模板。</para>
-            <para>您获取的er中带有history.html文件。该文件用于ie下的跳转历史管理。如果您修改了她的位置，也需要配置她的路径。</para>
+		
+		<section>   
+            <title>第二步：编写页面框架</title>
+            <para>在body中添加一些html，使页面有内容。ER框架默认会自动渲染页面中的一个区域，我们把这个区域称为“主区域”。</para>
+            <programlisting><![CDATA[<body>
+<div>
+    <a href="#/hello~name=world">default</a> | <a href="#/hello~name=erik">erik</a> | <a href="#/hello~name=er">er</a>
+</div>
+<div id="Main"></div>
+</body>]]></programlisting>
+        </section>
+	<section>
+		<title>第三步：编写Module和Action</title>
+            <para>在body标签结束之前插入script块，编写Module和Action。您暂时不需要了解Module和Action的概念，后面的章节会有详细的说明。</para>
             <programlisting><![CDATA[<script>
-    // 配置历史记录html的地址，模板地址
-    er.config.CONTROL_IFRAME_URL = '../src/history.html';
-    er.config.TEMPLATE_LIST = ['tpl.html'];
-</script>]]></programlisting>
-        </section>
-        <section>   
-            <title>第三步：建立模板</title>
-            <para>新建一个UTF-8编码的文本文件，命名为tpl.html。该html不需要遵循标准html的形式，只需要填入如下内容：</para>
-            <programlisting><![CDATA[<!-- target:hello -->
-hello ${name}]]></programlisting>
-        </section>
-        <section>   
-            <title>第四步：编写Module和Action</title>
-            <para>这一步的内容，在第二部新建的script块中书写。您暂时不需要了解Module和Action的概念，我们的任务是后面的章节会有详细的说明。</para>
-            <programlisting><![CDATA[// 声明业务模块
-    var hello = new er.Module({
+    // 声明业务模块
+    var hello = new er.Module( {
         config: {
             'action': [
                 {
@@ -65,28 +93,38 @@ hello ${name}]]></programlisting>
                 }
             ]
         }
-    });
+    } );
     
-    hello.action = new er.Action({
-        VIEW: 'hello',
-
-        CONTEXT_INITER_MAP: {
-            name: function (callback) {
-                this.setContext('name', this.arg.queryMap.name);
-                callback();
-            }
-        }
-    });]]></programlisting>
+    hello.action = new er.Action( {
+        view: 'hello'
+    } );
+</script>]]></programlisting>
+			<para>可以看到，我们干了两件事情：</para>
+			<orderedlist>
+                <listitem><para>在Module的声明中配置了Action，使得location为/hello时自动映射到Action对象hello.action进行处理。</para></listitem>
+				<listitem><para>在Action中声明了使用的视图“view”。</para></listitem>
+            </orderedlist>
         </section>
+
         <section>   
-            <title>第五步：完成</title>
-            <para>您需要在适当的时候让er框架开始工作。在script块中添加如下代码：</para>
-            <programlisting><![CDATA[window.onload = function () {
+            <title>第四步：建立视图模板文件</title>
+            <para>新建一个UTF-8编码的文本文件，命名为tpl.html。该html不需要遵循标准html，只需要填入如下内容：</para>
+            <programlisting><![CDATA[<!-- target:hello -->
+hello ${name}]]></programlisting>
+			<para>“<![CDATA[<!-- target:hello -->]]>”是ER框架默认支持的模板语法，后面的章节会有详细的说明。</para>
+			
+			<para>在第三步创建的script块中加入如下配置，ER框架会自动加载您配置的模板文件并解析。</para>
+			<programlisting><![CDATA[er.config.TEMPLATE_LIST = ['tpl.html'];]]></programlisting>
+        </section>  
+            
+        <section>   
+            <title>第五步：配置并完成</title>
+            <para>您需要在适当的时候让er框架开始工作，在window.onload时调用er的init方法。</para>
+            <programlisting><![CDATA[
+    window.onload = function () {
     er.init();
 };]]></programlisting>
-            <para>在body中添加一些html，使页面有内容：</para>
-            <programlisting><![CDATA[<a href="#/hello~name=world">default</a> | <a href="#/hello~name=erik">erik</a> | <a href="#/hello~name=er">er</a>
-<div id="Main"></div>]]></programlisting>
+            
         </section>
         <section>   
             <title>总结</title>
@@ -96,17 +134,19 @@ hello ${name}]]></programlisting>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>load_template</title>
+<title>hello</title>
+<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.9.core.js"></script>
+<script type="text/javascript" src="../src/er-2.0.0.js"></script>
+</head>
 
-<script type="text/javascript" src="http://img.baidu.com/js/tangram-1.3.1.core.js"></script>
-<script type="text/javascript" src="../src/er.js"></script>
+<body>
+<div>
+    <a href="#/hello~name=world">default</a> | <a href="#/hello~name=erik">erik</a> | <a href="#/hello~name=er">er</a>
+</div>
+<div id="Main"></div>
 <script>
-    // 配置历史记录html的地址，模板地址
-    er.config.CONTROL_IFRAME_URL = '../src/history.html';
-    er.config.TEMPLATE_LIST = ['tpl.html'];
-
     // 声明业务模块
-    var hello = new er.Module({
+    var hello = new er.Module( {
         config: {
             'action': [
                 {
@@ -115,593 +155,500 @@ hello ${name}]]></programlisting>
                 }
             ]
         }
-    });
+    } );
     
-    hello.action = new er.Action({
-        VIEW: 'hello',
+    hello.action = new er.Action( {
+        view: 'hello'
+    } );
 
-        CONTEXT_INITER_MAP: {
-            name: function (callback) {
-                this.setContext('name', this.arg.queryMap.name);
-                callback();
-            }
-        }
-    });
-    
+    er.config.TEMPLATE_LIST = ['tpl.html'];
     window.onload = function () {
         er.init();
     };
 </script>
-</head>
-<body>
-<a href="#/hello~name=world">default</a> | <a href="#/hello~name=erik">erik</a> | <a href="#/hello~name=er">er</a>
-<div id="Main">
-</div>
 </body>
 </html>]]></programlisting>
             <para>tpl.html</para>
             <programlisting><![CDATA[<!-- target:hello -->
 hello ${name}]]></programlisting>
-            <para>我们经过了5个步骤创建了这个应用，这个过程看来很多。但是在实际开发中，第一、第二、第五步、以及创建module等步骤都是可以省略的。通常我们创建一个功能界面单元，只要经过很方便的两到三步：</para>
+            <para>我们经过了5个步骤创建了这个应用。这个过程看来很多，但是在实际开发中，第一、第二、第五步、以及创建Module等步骤都是可以省略的。通常我们创建一个功能界面单元，只要经过很方便的两到三步：</para>
             <orderedlist>
                 <listitem><para>创建Action。</para></listitem>
-                <listitem><para>如果没有可以复用的template，创建一个模板。（可省略的步骤）</para></listitem>
-                <listitem><para>在Module中配置这个Action。</para></listitem>
+				<listitem><para>在Module中配置这个Action。</para></listitem>
+                <listitem><para>如果没有可以复用的模板视图，则创建一个模板。（可省略的步骤）</para></listitem>
             </orderedlist>
         </section>
     </chapter>
     
     <chapter>
-        <title>入门篇：使用er框架</title>
+        <title>入门篇：使用ER框架</title>
+		<section>   
+            <title>MVC</title>
+			<para>MVC(Model - View - Controller)是一种经典的软件设计模式，主要目的是将数据、逻辑控制与视图的职责分离，让他们各自处理自己的任务。</para>
+			<para>ER框架采用了这种被广泛应用在web中的模式，下面是ER框架的结构以及简单的workflow。</para>
+			<graphic fileref="er_package.jpg" format="JPG"/>
+			<graphic fileref="er_workflow_base.jpg" format="JPG"/>
+		</section> 
+
         <section>   
-            <title>浏览历史记录与url敏感</title>
-            <para>访问一个传统的网站，我们可以通过浏览器的前进后退键来访问我们曾访问过的历史页面，我们也可以在地址栏输入一个url到达特定的资源页面。而对于一个AJAX的应用，由于所有的操作都在一个页面完成，前进后退按钮通常无法回到之前的页面状态，而我们也没法通过输入url到达特定的地方。</para>
-            <para>er框架实现了浏览历史记录与url敏感的功能，让富客户端的AJAX应用在体验上与传统web应用保持一致，遵循用户的浏览习惯。</para>
-            <para>在浏览器中，更改url“#”号后面的hash内容时，页面不会发生跳转重新请求。er框架就是利用了这点，在hash中记录历史和实现url敏感。当然，我们屏蔽了浏览器之间的差异性。</para>
-            <para>er框架定义了“#”号后面的内容形式，并将她称作“HashLocation”。一个HashLocation由path和query两个部分组成，其中query是可以被省略的。她和一个普通的url很像，只是将连接query的“?”号变为波浪线“~”。下面是其格式定义：</para>
-            <programlisting><![CDATA[Locator = [ path ] [ ~ query ] 
+            <title>location</title>
+			<section>
+				<title>格式定义</title>
+				<para>ER框架定义了“#”号后面的内容形式，并将她称作“HashLocation”。一个HashLocation由path和query两个部分组成，其中query是可以被省略的。她和一个普通的url很像，只是将连接query的“?”号变为波浪线“~”。下面是其格式定义：</para>
+				<programlisting><![CDATA[Locator = [ path ] [ ~ query ] 
 path	= "/" [ *char *( "/" *char) ] 
 query	= *qchar 
 char	= ALPHA | DIGIT 
 qchar	= char | "&" | "="]]></programlisting>
-            <para>上面的格式定义有点抽象，我们来看一个具体的HashLocation的例子：</para>
-            <programlisting><![CDATA[/book/list~page=1&pageSize=15]]></programlisting>
-            <para>了解了HashLocation的概念，我们能够知道一些额外的事情：在Ajax应用中，跳转链接a标签的href属性应该写成“#location”的形式。而且我们很惊奇地发现，即使用户选择“在新窗口中打开”，我们依然能够到达正确的位置。这就是url敏感和链接的混合效应给我们带来的好处。</para>
+				<para>上面的格式定义有点抽象，我们来看一个具体的HashLocation的例子：</para>
+				<programlisting><![CDATA[/book/list~page=1&pageSize=15]]></programlisting>
+			</section>
+			<section>
+				<title>历史记录与URL敏感原理</title>
+				<para>访问一个传统的网站，我们可以通过浏览器的前进后退键来访问我们曾访问过的历史页面，我们也可以在地址栏输入一个url到达特定的资源页面。而对于一个AJAX的应用，由于所有的操作都在一个页面完成，前进后退按钮通常无法回到之前的页面状态，而我们也没法通过输入url到达特定的地方。</para>
+				<para>ER框架实现了浏览历史记录与url敏感的功能，让富客户端的AJAX应用在体验上与传统web应用保持一致，遵循用户的浏览习惯。</para>
+				<para>在浏览器中，更改url“#”号后面的hash内容时，页面不会发生跳转重新请求。ER框架就是利用了这点，在hash中记录历史和实现url敏感。当然，框架屏蔽了浏览器之间的差异性。</para>
+            
+				<tip><para>在Ajax应用中，跳转链接a标签的href属性应该写成“#location”的形式。而且我们可以发现，即使用户选择“在新窗口中打开”，依然能够到达正确的位置。这就是url敏感和链接的混合效应给我们带来的好处。</para></tip>
+			</section>  
+			<section>
+				<title>er.locator API参考</title>
+				<table frame="topbot" align="left">
+					<title>er.locator静态方法</title>
+					<tgroup cols="2">
+						<thead>
+							<row>
+								<entry>名称</entry>
+								<entry>描述</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>{string} getLocation( {void} )</entry>
+								<entry>获取当前的Location</entry>
+							</row>
+							<row>
+								<entry>{void} redirect( {string} loc )</entry>
+								<entry>转向到Location</entry>
+							</row>
+							<row>
+								<entry>{void} oninvalid( {validator.Validity} )</entry>
+								<entry>验证控件值不合法时触发。</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</section>
+        </section>
+
+		<section>   
+            <title>Model</title>
+			<para>Model作为数据模型，用于业务逻辑相关的数据保持与处理。</para>
+
+			<section>   
+				<title>Model声明</title>
+				<para>在ER中，Model为er.Model的实例。初始化的LOADER_LIST项用于配置加载器的列表。加载器是er.Model.Loader的实例。</para>
+				<para>加载中调用set方法向模型中填充数据。加载过程可能是异步的，比如通过XMLHttpRequest从server获取数据。可以通过stop和start方法控制加载动作。</para>
+				<programlisting><![CDATA[new er.Model( {
+    LOADER_LIST: [ 'fieldLoader', 'listLoader' ],
+    
+	// 同步加载过程，直接填充数据
+    fieldLoader: new er.Model.Loader( function () {
+        this.set( 'fields', [
+            {
+                title   : 'ID',
+                field   : 'id',
+                content : 'id',
+                width   : 30,
+                sortable: 1
+            },
+            {
+                title   : '名称',
+                field   : 'name',
+                width   : 950,
+                content : function ( item ) {
+                    return item.name;
+                }
+            }
+        ] );
+    },
+	
+    // 异步加载过程，调用stop和start方法
+    listLoader: new er.Model.Loader( function () {
+        this.stop();
+        var me = this;
+
+        baidu.ajax.get( 
+            'data.php?' + me.getQueryString( {
+                order   : 'order',
+                orderBy : 'orderBy'
+            } ), 
+            function ( xhr ) {
+                var data = baidu.json.parse( xhr.responseText );
+                me.set( 'list', data );
+                me.start();
+            }
+        );
+    } ) )
+} );]]></programlisting>
+			</section>
         </section>
         
+		<section>   
+            <title>模板</title>
+			<para>对于web系统的视图来说，浏览器解析html并展现。在ER中，html片段是通过模板文件来管理的。模板文件是一个html文本文件，可以在任何html编辑器中获得自动完成、语法高亮等功能的支持。</para>
+
+			<section>   
+				<title>模板加载</title>
+				<para>通过配置er.config.TEMPLATE_LIST，框架会自动加载模板文件并解析。</para>
+				<example><title>配置模板文件</title>
+				<programlisting><![CDATA[er.config.TEMPLATE_LIST = [ 'tpl1.html', 'tpl2.html' ];]]></programlisting></example>
+			</section>  
+
+			<section>   
+				<title>模板规则</title>
+				<para>ER的模板规则，是通过html注释声明的。最小粒度的html片段单位为target。模板支持常用的变量替换功能。</para>
+				<example><title>简单模板</title>
+				<programlisting><![CDATA[<!-- target: hello -->
+<span>Hello <em>${name}</em>!</span>]]></programlisting></example>
+
+				<para>通常为了安全性，我们需要对内容进行编码。可以通过“|”将变量内容传递给过滤器进行处理。原生支持的过滤器有html和url。</para>
+				<example><title>变量替换过滤器</title>
+				<programlisting><![CDATA[<!-- target: hello -->
+<span>Hello <a href="url?id=${id|url}" target="_blank">${name|html}</a>!</span>]]></programlisting></example>
+
+				<para>模板支持import规则，允许引入已经存在的target模板片段，无需编写多次。</para>
+				<example><title>通过import进行模板复用</title>
+				<programlisting><![CDATA[<!-- target: title -->
+<h2>${title|html}</h2>
+
+<!-- target: page1 -->
+<!-- import: title -->
+<div class="content">......</div>
+]]></programlisting></example>
+
+				<para>有时我们希望多个模板的布局是一样的，但是里面内容不一样。ER框架的模板提供了对母版功能的支持，能方便的做到这种复用。相关功能的标签有master、target、contentplaceholder、content。</para>
+				<example><title>通过master进行模板复用</title>
+				<programlisting><![CDATA[<!-- master: myMaster -->
+<h2>${title|html}</h2>
+<div class="content"><!-- contentplaceholder: content --></div>
+<div class="foot"><!-- contentplaceholder: foot --></div>
+
+<!-- target: page1(master=myMaster) -->
+<!-- content:content -->
+<span>Hello <a href="url?id=${id|url}" target="_blank">${name|html}</a>!</span>
+
+<!-- content:foot -->
+copyright &copy; erik
+]]></programlisting></example>
+			</section>
+
+			<section>
+				<title>er.template API参考</title>
+				<table frame="topbot" align="left">
+					<title>er.locator静态方法</title>
+					<tgroup cols="2">
+						<thead>
+							<row>
+								<entry>名称</entry>
+								<entry>描述</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>{string} get( {string} name )</entry>
+								<entry>获取指定模板target的HTML片段</entry>
+							</row>
+							<row>
+								<entry>{void} merge( {HTMLElement} output, {string} tplName, {string} opt_privateContextId )</entry>
+								<entry>合并模板与数据</entry>
+							</row>
+							<row>
+								<entry>{void} parse( {string} source )</entry>
+								<entry>解析模板</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</section>
+        </section>
+		
+		<section>   
+            <title>View</title>
+            <para>View负责视图的渲染，实现数据以特定方式显示。在ER中，View是er.View的实例，其通过模板渲染和填充html，并调用UI组件库的相应接口，实现UI组件的渲染。</para>
+            
+			<para>在通常情况下，er.View实例不用人工创建。</para>
+        </section>
+
         <section>   
-            <title>应用模块</title>
-            <para>在系统设计的时候，我们通常会把一类功能划分为一个单独的模块，比如某种资源的增删改查。而在er框架中，我们认为一类业务功能应该归属与一个模块，这就是er框架的“应用模块”概念。</para>
+            <title>Module</title>
+            <para>在系统设计的时候，我们通常会把具有一类抽象的功能集合划分到一个单独的模块，比如“book”的增删改查。而在ER框架中，我们认为一类业务功能应该归属与一个模块，这就是ER框架的“Module”概念。</para>
             <para>声明一个应用模块，需要传入一个Javascript Object。下面是模块声明的例子:</para>
-            <programlisting><![CDATA[// 声明业务模块
-    var member = new er.Module({
+			<example><title>er.Module: 声明业务模块</title>
+            <programlisting><![CDATA[var book = new er.Module( {
         config: {
             'action': [
                 {
-                    path: '/member',
-                    action: 'member.list'
+                    path   : '/book',
+                    action : 'book.list'
                 }
             ]
         }
-    });]]></programlisting>
-            <para>我们使用“new er.Module”的方法声明了一个模块，并传入一个带有config属性的Javascript Object。通常Module的config成员是必须的，config属性只能用于保存Module的配置信息。在这里，我们先不关心config属性的内容。我们知道，在Javascript中，我们可以使用Object表示一个module或一个namespace。在er框架中，“new er.Module”其实还是将传入的对象返回，只是在内部向控制器进行注册，而这种声明Module的方式更容易理解。所以，在上面的例子中，slot变量的引用其实就是我们传入的Javascript Object。</para>
-            <para>额外地说，对于整站式Ajax系统，一个页面中包含了很多Javascript脚本，在这个时候，如果每个功能在实现时都使用全局变量，会有冲突的危险，冲突造成的结果是无法预测的，并且很难追查。所以我们最好统一管理全局变量，进行模块划分，只有顶级模块使用全局变量。</para>
+    } );]]></programlisting></example>
+            <tip><para>我们使用“new er.Module”的方法声明了一个模块，并传入一个带有config属性的Javascript Object。通常Module的config成员是必须的，config属性只能用于保存Module的配置信息。在这里，我们先不关心config属性的内容。我们知道，在Javascript中，我们可以使用Object表示一个module或一个namespace。在er框架中，“new er.Module”其实还是将传入的对象返回，只是在内部向控制器进行注册，而这种声明Module的方式更容易理解。所以，在上面的例子中，book变量的引用其实就是我们传入的Javascript Object。</para></tip>
+            <caution><para>对于整站式Ajax系统，一个页面中包含了很多Javascript脚本，在这个时候，如果每个功能在实现时都使用全局变量，会有冲突的危险，冲突造成的结果是无法预测的，并且很难追查。所以我们最好统一管理全局变量，进行模块划分，只有顶级模块使用全局变量。</para></caution>
+
+			<section>
+				<title>er.Module API参考</title>
+				<table frame="topbot" align="left">
+					<title>er.Module初始化参数</title>
+					<tgroup cols="2">
+						<thead>
+							<row>
+								<entry>名称</entry>
+								<entry>描述</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>{Object} moduleObj</entry>
+								<entry>module对象，通常该对象包含一个具有action配置的config属性</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</section>
         </section>
         
         <section>   
             <title>Action</title>
-            <para>er框架定义了HashLocation用于浏览历史和实现url敏感。而Location发生跳转的时候，我们需要进行一些处理，比如读取数据、渲染页面等。处理这一系列事情的对象，我们称为“Action”。</para>
-            <para>在er框架中，处理Location的Action对象，是由Location中的path决定的。每一个path拥有一个处理的Action对象，这个对象负责在进入时初始化数据、渲染页面、初始化事件行为。下面我们对Action进行分析。</para>
+            <para>Action对模型与视图进行选择与匹配，完成用户行为的处理。通常他是er.Action的实例。</para>
             
             <section>
-                <title>创建与配置Action</title>
+                <title>创建Action</title>
                 <para>我们使用“new er.Action”的方法声明了一个Action对象，传入一个Javascript Object。框架会让我们的Action拥有初始化数据、渲染页面等功能。</para>
-                <programlisting><![CDATA[// 声明业务模块
-    var member.list = new er.Action({
-        ...
-    });]]></programlisting>
-                <para>通常我们将创建的Action对象作为所属模块的属性，这样利于对同一类资源的管理。对于创建的er.Module对象，我们可以把她看作是package。</para>
-                <para>创建完成后，我们需要在Module的config中配置她。config需要包含一个名称为“action”的配置项。action配置项是一个数组，用于配置模块下的所有Action。下面回顾一下之前模块创建的例子：</para>
-                <programlisting><![CDATA[// 声明业务模块
-    var member = new er.Module({
+                <example><title>er.Action: 声明Action</title>
+				<programlisting><![CDATA[
+    book.list = new er.Action( {
+        model: book.listModel,
+		view: 'book'
+    } );]]></programlisting></example>
+				<para>在上面的例子中我们创建了一个Action，并指定了model和view。model必须是一个er.Model的实例，view可以是er.View的实例，但更多时候我们指定string，框架会自动使用相应target的模板进行渲染。</para>
+                <tip><para>通常我们将创建的Action对象作为所属模块的属性，这样利于对同一类资源的管理。对于创建的er.Module对象，我们可以把其看作是package。</para></tip>
+			</section>
+			<section>
+                <title>配置Action</title>
+                <para>创建完成后，我们需要在Module的config中配置这个Action。config需要包含一个名称为“action”的配置项。action配置项是一个数组，用于配置模块下的所有Action。下面回顾一下之前模块创建的例子：</para>
+				<example><title>配置Action</title>
+                <programlisting><![CDATA[
+    var book = new er.Module({
         config: {
             'action': [
                 {
-                    path: '/member',
-                    action: 'member.list'
+                    path: '/book',
+                    action: 'book.list'
                 }
             ]
         }
-    });]]></programlisting>
-                <para>在这个例子的配置中，一个配置项是一个Object，包含了path和action两个属性。含义是：指定Location的path为/member时，框架将对访问的处理交给member.list这个Action。从这个例子里我们也能看出，不同的path可以使用同一个Action进行处理，但是一个path只能有一个处理Action。</para>
+    });]]></programlisting></example>
+                <para>在这个例子的配置中，一个配置项是一个Object，包含了path和action两个属性。含义是：指定Location的path为/book时，框架将对访问的处理交给book.list这个Action。从这个例子里我们也能看出，不同的path可以使用同一个Action进行处理，但是一个path只能有一个处理Action。</para>
             </section>
+
             <section>
-                <title>数据环境context与数据初始化</title>
-                <para>我们的应用需要一些数据。有的数据在页面打开的时候直接输出到页面中，可能是一个Javascript Object，或者存在于dom元素中，或者需要使用XMLHttpRequest对象通过异步或同步的方式获得。这些数据有的生命周期会伴随整个应用的打开到关闭，有的只存在于当前Location中。</para>
-                <para>er框架提供了一个context，作为数据存在的环境。她包含两个级别：public和private。public级别的context能够被自由的访问，private级别的context需要一个privateId才能进行访问。每个Action在运行时会拥有一个当前的id，伴随着会新建一个该id的context。private级别的context也可以用于保存模块私有数据。</para>
-                <para>声明Action时，传入的Javascript Object中的“CONTEXT_INITER_MAP”属性指的就是初始化context数据的函数列表。她是一个name/value形式的Javascript Object，name为context initer的名称，通常表示初始化的是什么context；value是一个Function，形参中有一个Function类型的callback参数，当前context初始化完毕时需要手工调用callback方法，通知框架当前context已经初始化完毕。因为context的数据可能来源于异步请求或当前某些环境的数据，框架不知道当前context何时初始化完成。</para>
-                <programlisting><![CDATA[// 声明业务模块
-    var member.list = new er.Action({
-        CONTEXT_INITER_MAP: {
-            list: function (callback) {
-                var me = this;
-                baidu.ajax.get(url, function (xhr) {
-                    me.setContext('list', baidu.json.parse(xhr.responseText));
-                    callback();
-                });
-            }
-        },
-        
-        ...
-    });]]></programlisting>
+                <title>Action的enter</title>
+				<para>当用户请求被转发给Aciton后，Action开始执行一系列动作，这个过程我们称为Action的enter。</para>
+                <para>框架为Action的enter分了两个阶段：加载model和更新view。下面是Action的enter过程图。</para>
+                <graphic fileref="er_action_enter.jpg" format="JPG"/>
+				<para>ER框架更新视图有两种模式：render和repaint。正常情况下，使用render模式更新视图，使用VIEW指定的html模板片段刷新整个视图区域。当来源Location的path与当前path相同时，ER框架认为仍处于当前Action环境中，采用repaint模式更新视图。这种机制利于数据变化时局部刷新的实现。</para>
             </section>
-            <section>
-                <title>状态保持</title>
-                <para>有时候我们离开了某个页面，下次回到这个页面时，希望恢复上次浏览的状态，比如页码，搜索关键字等。er框架提供了一个状态保持的功能，能够为每个path保持之前浏览时的状态。状态保持相当于不指定query时，默认恢复上次浏览当前path时带有的query。</para>
-                <para>要使用状态保持的功能，需要在创建Action传入的Object中，添加STATE_MAP属性。该属性是一个Javascriopt Object，name为要保持的状态，value为状态的默认值，默认值会在第一次访问时使用。下面是一个状态保持的Action例子：</para>
-                <programlisting><![CDATA[// 声明业务模块
-    var member.list = new er.Action({
-        STATE_MAP: {
-            page: 0,
-            pageSize: 30
-        },
-        
-        ...
-    });]]></programlisting>
-                <para>为Action指定属性“IGNORE_STATE”可以关闭状态保持的功能。</para>
-                <programlisting><![CDATA[// 声明业务模块
-    var member.list = new er.Action({
-        IGNORE_STATE: 1,
-        
-        ...
-    });]]></programlisting>
-                <para>在Location的query中传入参数“ignoreState”也可以让当前Action关闭状态保持的功能。从特殊来源页面跳转，不希望使用之前状态时，可以使用此方法。</para>
-            </section>
-            <section>
-                <title>简易模板语言与视图更新</title>
-                <para>在Ajax应用中，通常视图是一段html，通过Javascript输出到相应的dom元素中。在Javascript中书写html是一件很不愉快的事情，换行和转义的限制让开发人员非常不自由。</para>
-                <para>er框架提供了一个简易的模板解析器。她的语法基于html注释，让我们书写过程能够和平时编辑html文本一样，并能得到各种ide与编辑器的支持。她只支持两种tag（target，import），非常简单。她能够方便的引用Context和Javascript Object中的数据。下面是一个模板书写的例子：</para>
-                <programlisting><![CDATA[<!-- target:test -->
-<div id=”test”><!-- import:text --></div>
-<!-- target:text -->
-hello world]]></programlisting>
-                <para>声明Action时，传入的Javascript Object中的“VIEW”属性指的就是视图，她可以是一个表示模板target的字符串，也可以是一个返回字符串的函数。在初始化context数据完毕后，框架会自动更新视图。</para>
-                <programlisting><![CDATA[var member.list = new er.Action({
-        VIEW: 'test',
-        
-        ...
-    });]]></programlisting>
-                <para>er框架更新视图有两种模式：render和repaint。正常情况下，使用render模式更新视图，使用VIEW指定的html模板片段刷新整个视图区域。当来源Location的path与当前path相同时，er框架认为仍处于当前Action环境中，采用repaint模式更新视图。这种机制利于数据变化时局部刷新的实现。</para>
-            </section>
-            <section>
+
+			<section>
                 <title>行为初始化</title>
                 <para>对于一个富客户端应用来说，在丰富的交互下，我们需要为页面的dom元素绑定一些事件处理函数，或者为页面中的控件绑定一些自定义事件的处理函数。这些交互我们称为用户行为，而交互事件的绑定我们称为“行为初始化”。</para>
-                <para>er框架内置了一些事件，视图render的前后会分别触发onbeforerender和onafterrender事件，视图repaint的前后会分别触发onbeforerepaint和onafterrepaint事件，完成视图更新后最后会触发onentercomplete事件。行为初始化我们可以在恰当的事件中完成，常用的是onafterrender和onentercomplete。</para>
+                <para>ER框架内置了一些事件，视图render的前后会分别触发onbeforerender和onafterrender事件，视图repaint的前后会分别触发onbeforerepaint和onafterrepaint事件，完成视图更新后最后会触发onentercomplete事件。行为初始化我们可以在恰当的事件中完成，常用的是onafterrender和onentercomplete。</para>
             </section>
-            <section>
-                <title>权限控制与配置path权限</title>
-                <para>权限管理功能通常用于需要登录的系统中。er框架提供了一个简单的模块“er.permission”，用于权限管理。该模块提供了两个方法：init和isAllow。</para>
-                <para>我们认为，在系统设计时应该对功能进行抽象，每个抽象的功能具有相应的名称。er.permission提供了对功能是否具有权限的判断入口。</para>
-                <para>首先我们要通过init方法，传输一个Javascript Object，初始化当前拥有的权限。这个Object可以具有嵌套结构。</para>
-                <programlisting><![CDATA[er.permission.init({
-    slot: {slot_list: 1},
-    user: {user_list: 1, user_add: 1, user_del: 1, user_edit: 1},
-    sys_info: 1
+
+			<section>
+				<title>er.Action API参考</title>
+				<table frame="topbot" align="left">
+					<title>er.Action初始化 - option参数</title>
+					<tgroup cols="2">
+						<thead>
+							<row>
+								<entry>名称</entry>
+								<entry>描述</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>{string} BACK_LOCATION</entry>
+								<entry>当调用Action的back时，如果没有referer，则跳转到指定的BACK_LOCATION</entry>
+							</row>
+							<row>
+								<entry>{boolean} IGNORE_STATE</entry>
+								<entry>是否关闭状态保持的功能</entry>
+							</row>
+							<row>
+								<entry>{Object} STATE_MAP</entry>
+								<entry>要保持的状态集合。“状态名/状态默认值”形式的map</entry>
+							</row>
+							<row>
+								<entry>{er.Model} model</entry>
+								<entry>对应的数据模型对象</entry>
+							</row>
+							<row>
+								<entry>{string|er.View} view</entry>
+								<entry>模板名或对应的视图渲染对象</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+
+				<table frame="topbot" align="left">
+					<title>er.Action 实例方法</title>
+					<tgroup cols="2">
+						<thead>
+							<row>
+								<entry>名称</entry>
+								<entry>描述</entry>
+							</row>
+						</thead>
+						<tbody>
+							<row>
+								<entry>{void} refresh( {void} )</entry>
+								<entry>刷新当前action页面，只保存需要保持的state数据</entry>
+							</row>
+							<row>
+								<entry>{void} resetState( {string} opt_name )</entry>
+								<entry>重置状态值，无参数时重置所有状态</entry>
+							</row>
+							<row>
+								<entry>{Object} STATE_MAP</entry>
+								<entry>要保持的状态集合。“状态名/状态默认值”形式的map</entry>
+							</row>
+							<row>
+								<entry>{er.Model} model</entry>
+								<entry>对应的数据模型对象</entry>
+							</row>
+							<row>
+								<entry>{string|er.View} view</entry>
+								<entry>模板名或对应的视图渲染对象</entry>
+							</row>
+						</tbody>
+					</tgroup>
+				</table>
+			</section>
+        </section>
+
+		<section>
+			<title>权限控制与配置</title>
+			<para>权限管理功能通常用于需要登录的系统中。er框架提供了一个简单的模块“er.permission”，用于权限管理。该模块提供了两个方法：init和isAllow。</para>
+			<para>我们认为，在系统设计时应该对功能进行抽象，每个抽象的功能具有相应的名称。er.permission提供了对功能是否具有权限的判断入口。</para>
+			<para>首先我们要通过init方法，传输一个Javascript Object，初始化当前拥有的权限。这个Object可以具有嵌套结构。</para>
+			<programlisting><![CDATA[er.permission.init({
+slot: {slot_list: 1},
+user: {user_list: 1, user_add: 1, user_del: 1, user_edit: 1},
+sys_info: 1
 });]]></programlisting>
-                <para>通常，用于初始化的Object通过server端动态输出到页面中，或来自一个独立的xhr请求。经过上面的初始化，我们可以使用isAllow来判断是否具有权限。下面是一些对上面init的isAllow结果：</para>
-                <programlisting><![CDATA[er.permission.isAllow('sys_info'); // true
+			<para>通常，用于初始化的Object通过server端动态输出到页面中，或来自一个独立的xhr请求。经过上面的初始化，我们可以使用isAllow来判断是否具有权限。下面是一些对上面init的isAllow结果：</para>
+			<programlisting><![CDATA[er.permission.isAllow('sys_info'); // true
 er.permission.isAllow('slot_list'); // true
 er.permission.isAllow('slot_edit'); // false]]></programlisting>
-                <para>er框架为Location提供了一种权限机制：基于path指定一个权限，当前访问者不具有这个权限时，自动跳转到其他Location。使用这个功能需要在Action配置时添加权限信息。表示权限信息的属性有两个：authority和noAuthLocation。authority指定权限名，noAuthLocation指定没有权限时的自动跳转Location。</para>
-                <programlisting><![CDATA[{
-    path: '/member/add',
-    action: 'member.add',
-    authority: 'member_add',
-    noAuthLocation: '/member'
+			<para>ER框架为Location提供了一种权限机制：基于path指定一个权限，当前访问者不具有这个权限时，自动跳转到其他Location。使用这个功能需要在Action配置时添加权限信息。表示权限信息的属性有两个：authority和noAuthLocation。authority指定权限名，noAuthLocation指定没有权限时的自动跳转Location。</para>
+			<programlisting><![CDATA[{
+path: '/member/add',
+action: 'member.add',
+authority: 'member_add',
+noAuthLocation: '/member'
 }]]></programlisting>
-            </section>
-        </section>
+		</section>
+
+		<section>
+			<title>使用ESUI</title>
+			<section>
+				<title>ESUI简介</title>
+				<para>ESUI是一套简单的UI Library，提供一系列的控件，能满足基本页面交互功能。ESUI的api与默认视觉皮肤遵循BAIDU ECOMUI标准。下面是ESUI的结构图。</para>
+				<graphic fileref="esui_package.jpg" format="JPG"/>
+
+				<para>ER框架通过extend的方式实现UI控件的渲染支持。默认支持ESUI。</para>
+			</section>
+
+			<section>
+				<title>模板中的定义语法</title>
+				<para>ER框架能够渲染页面中具有特殊属性的dom元素，将其作为UI控件。下面是模板中声明UI控件的例子。</para>
+				<example><title>模板中声明UI组件</title>
+                <programlisting><![CDATA[<!-- target: list -->
+<div ui="type:Table;id:myTable;datasource:*list;fields:*fields"></div>
+    ]]></programlisting></example>
+				<para>上面的例子中，具有ui属性的div将被作为控件进行渲染。ui属性的值以类似css的方式定义。</para>
+				<programlisting><![CDATA[ key:value[;key:value] ]]></programlisting>
+				<para>在定义ui控件的属性时，必须定义控件类型type与控件标识id。</para>
+				<para>例子中“datasource:*list”是特殊的声明，意思是引用model中name为list的数据项。</para>
+			</section>
+
+			<section>
+				<title>在view中定义控件属性</title>
+				<para>有时在模板中定义ui属性时，值可能会比较长。这时候可以在view中通过UI_PROP_MAP项定义控件的属性。定义的值将通过id映射到控件。</para>
+				<example><title>在view中定义控件属性</title>
+                <programlisting><![CDATA[
+new er.View( {
+    UI_PROP_MAP: {
+        myTable: {
+            datasource : '*list',
+            fields     : '*fields'
+        }
+    }
+} );
+    ]]></programlisting></example>
+				
+				<tip><para>建议在模板中定义控件的id和type，控件的其他属性通过view的UI_PROP_MAP项定义。</para></tip>
+			</section>
+		</section>
+
+		<section>
+			<title>ER框架工作流程</title>
+			<para>在本章节开始的时候，我们看到了ER框架简单的工作流程。下面是ER框架完整的工作流程。</para>
+			<graphic fileref="er_workflow.jpg" format="JPG"/>
+		</section>
     </chapter>
+
     <chapter>
-        <title>进阶篇：深入了解er框架</title>
+        <title>进阶篇：扩展ER框架</title>
         <section>
-            <title>Action的运行过程</title>
-            <para>er框架支持的主要功能都贯穿于Action中。er框架开始运行后会监听HashLocation，当发生变化时controller会查找并运行相应的Action，Action在运行的过程中完成请求数据、渲染视图等任务。要了解er框架，就要了解Action的运行过程。Action的运行过程经过如下几步：</para>
-            <orderedlist>
-                <listitem><para>controller根据当前Location信息，运行Action。controller为Action的运行提供一个arg Object。</para></listitem>
-                <listitem><para>将query中的信息装填入context。</para></listitem>
-                <listitem><para>如果状态保持功能没被禁用，恢复之前保持的状态，装填到context。</para></listitem>
-                <listitem><para>初始化用户定义的context init过程。</para></listitem>
-                <listitem><para>根据是否refresh，判断更新视图的模式，并更新视图。</para></listitem>
-            </orderedlist>
-            <para>在这个过程中，伴随着一些事件的触发。下面的图直观地展现了Action的运行过程：</para>
-            <graphic fileref="er_action_enter.jpg" format="JPG"/>
+            <title>Action扩展</title>
+            <para>ER框架支持以两种方式扩展Action：通过extend和继承。</para>
+            <section>
+				<title>通过extend扩展Action</title>
+				<programlisting><![CDATA[ er.Action.extend( ext, opt_name ); ]]></programlisting>
+				<para>通过extend扩展Action，默认情况下扩展会影响到所有的Action。opt_name是可选的别名。当指定别名时，扩展不会影响所有的Action，只会影响实例化时指定了别名的Action，例子如下：</para>
+				<programlisting><![CDATA[ book.list = new er.Action( {...}, opt_name ); ]]></programlisting>
+			</section>
+
+			<section>
+				<title>通过继承扩展Action</title>
+				<para>ER框架默认依赖Tangram JSLibrary，推荐使用T.inherits构建继承关系。下面是简单的例子：</para>
+				<programlisting><![CDATA[ function ListAction() {
+	er.Action.apply( this, Array.prototype.slice.apply( arguments ) );
+	// 扩展属性初始化
+}
+
+ListAction.prototype = {
+	// 你的扩展方法
+};
+T.inherits( ListAction, er.Action );]]></programlisting>
+			</section>
+        </section>
+		<section>
+            <title>View扩展</title>
+            <para>ER框架仅支持通过extend方式扩展View，并且扩展会影响到所有的View。ER框架对UI控件渲染的支持就是通过View的extend实现的。</para>
+			<programlisting><![CDATA[ er.View.extend( ext ); ]]></programlisting>
         </section>
         <section>
-            <title>Action的UI控件支持</title>
-            <para>在最原生的开发中，对于用户交互的响应和处理，我们会查找相应的dom元素，添加事件监听器。而对于更大型的应用，相似的交互区域会比较多，手工为每个地方挂载事件是不明智，吃力不讨好的。</para>
-            <para>通常，在富浏览器端应用中，会使用到一些UI控件，比如自定义的combobox、日期选择、浮动对话框等。我们通过控件管理一个区域的交互，控件之间的交互与数据交换通过控件的自定义事件完成。</para>
-            <para>er框架提供一个最原始的Action，在render和repaint的模式下，都会重新渲染整个视图。额外地，er提供了UIAction的扩展。引入该扩展包后，render模式时会自动渲染UI控件，repaint模式时会repaint所有控件，但不更新整个视图区域的html。UIAction提供了表单验证、表单控件参数自动拼接，重绘控件等功能。</para>
-            <para>UIAction扩展包依赖于UIAdapter工作。UIAction抽象了常用的ui操作，这些操作都通过调用UIAdapter来完成。UIAdapter能够更方便地选择不同的ui库。UIAction和UIAdapter都在源码的extends目录下。</para>
-            <para>er框架提供了一个轻巧的UI控件库：ESUI，在获得er的时候会自动获得ESUI的源码。ECUI是更为强大的UI库，她接管了所有事件，实现了统一分发和渲染，并拥有强大的装饰功能。</para>
+            <title>增加route规则</title>
+            <para>ER框架允许增加自己的route规则，将location转发给相应的function进行处理。</para>
+            <para>通常，router将转发权交给Controller，Controller再转发给Action，Action负责处理具体请求以及Model、View的整合。增加自己的route规则和function可以抛弃ER框架提供的MVC模式，自定义自己的请求处理模式。</para>
+            <programlisting><![CDATA[ er.router.add( rule, func ); ]]></programlisting>
         </section>
     </chapter>
     
-    <appendix>
-        <title>er api一览表</title>
-        <section>
-            <title>er.Action初始化的属性参数</title>
-            <para>创建Action对象需要传入一个Object。下面的Object属性以及er.Action的成员方法，对er框架来说有特殊含义。其他属性可以自行扩展。</para>
-            <section>
-                <title>BACK_LOCATION</title>
-                <para>当调用Action的back时，如果没有referer，则跳转到指定的BACK_LOCATION。</para>
-                <para>类型：{string}</para>
-            </section>
-            <section>
-                <title>CONTEXT_INITER_MAP</title>
-                <para>初始化context的函数集合，name/value型Object。其value为Function的map，value Function被调用时this指针为Action本身。value Function的形参需要有一个callback参数，参数为Function类型，手工回调。</para>
-                <para>类型：{Object}</para>
-            </section>
-            <section>
-                <title>CONTEXT_QUERY_MAP</title>
-                <para>指定一个“参数名/context名”结构的map，在调用getQueryByContext方法时能自动从context中拼接请求的参数字符串。</para>
-                <para>类型：{Object}</para>
-            </section>
-            <section>
-                <title>FORM_QUERY_MAP （仅引入UIAction扩展时有效）</title>
-                <para>指定一个“控件的表单名/参数名”结构的map，在调用getQueryByForm方法时参数名能不使用默认的表单名，而使用映射名。</para>
-                <para>类型：{Object}</para>
-            </section>
-            <section>
-                <title>IGNORE_STATE</title>
-                <para>要关闭状态保持的功能。</para>
-                <para>类型：{boolean}</para>
-            </section>
-            <section>
-                <title>STATE_MAP</title>
-                <para>要保持的状态集合。“状态名/状态默认值”形式的map。</para>
-                <para>类型：{Object}</para>
-            </section>
-            <section>
-                <title>UI_PROP_MAP （仅引入UIAction扩展时有效）</title>
-                <para>在模板中写一长串的控件属性会难以理解。该属性能以“控件id/属性集合”的形式在外部书写控件属性，使格式更清晰。</para>
-                <para>类型：{Object}</para>
-            </section>
-            <section>
-                <title>USE_BACK_LOCATION</title>
-                <para>当指定USE_BACK_LOCATION时，调用back会始终跳转到指定的BACK_LOCATION，忽略referer。</para>
-                <para>类型：{boolean}</para>
-            </section>
-            
-            <section>
-                <title>VIEW</title>
-                <para>视图模板名，或返回视图模板名的函数。</para>
-                <para>类型：{string|Function}</para>
-            </section>
-        </section>
-        <section>
-            <title>er.Action成员方法</title>
-            <section>
-                <title>back</title>
-                <para>返回上一个Location</para>
-                <para>参数：无</para>
-                <para>返回值：无</para>
-            </section>
-            
-            <section>
-                <title>getContext</title>
-                <para>获取context中的环境数据。该方法能获得当前Action运行时的私有环境数据</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>name</entry>
-                                <entry>{string}</entry>
-                                <entry>上下文变量名</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：{Any}</para>
-            </section>
-            <section>
-                <title>getQueryByContext</title>
-                <para>从context中获取请求参数字符串。用于参数自动拼接。需要提供CONTEXT_QUERY_MAP表。</para>
-                <para>参数：无</para>
-                <para>返回值：{string}</para>
-            </section>
-            <section>
-                <title>getQueryByForm （UIAction扩展提供）</title>
-                <para>从表单控件中获取请求参数字符串。用于参数自动拼接。</para>
-                <para>参数：无</para>
-                <para>返回值：{string}</para>
-            </section>
-            <section>
-                <title>getSubmitCancel （UIAction扩展提供）</title>
-                <para>获取取消返回的按钮事件相应函数，该函数能使按钮点击后返回之前的页面。</para>
-                <para>参数：无</para>
-                <para>返回值：{Function}</para>
-            </section>
-            <section>
-                <title>getSubmitFinish （UIAction扩展提供）</title>
-                <para>获取提交成功的处理函数。该函数封装了后端错误的自动提示。</para>
-                <para>参数：无</para>
-                <para>返回值：{Function}</para>
-            </section>
-            <section>
-                <title>refresh</title>
-                <para>刷新当前action页面，只保存需要保持的state数据。</para>
-                <para>参数：无</para>
-                <para>返回值：无</para>
-            </section>
-            <section>
-                <title>resetState</title>
-                <para>重置状态值</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>opt_name</entry>
-                                <entry>{string}</entry>
-                                <entry>需要重置的状态名，不提供时重置所有状态</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：无</para>
-            </section>
-            <section>
-                <title>setContext</title>
-                <para>设置应用环境上下文。该方法将数据设置到Action运行的私有环境中。</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>name</entry>
-                                <entry>{string}</entry>
-                                <entry>上下文变量名</entry>
-                            </row>
-                            <row>
-                                <entry>value</entry>
-                                <entry>{Any}</entry>
-                                <entry>环境变量值</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：无</para>
-            </section>
-            <section>
-                <title>validateForm （UIAction扩展提供）</title>
-                <para>验证表单控件。</para>
-                <para>参数：无</para>
-                <para>返回值：{boolean}</para>
-            </section>
-        </section>
-        <section>
-            <title>er.context静态方法</title>
-            <section>
-                <title>get</title>
-                <para>获取context中的环境数据</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>name</entry>
-                                <entry>{string}</entry>
-                                <entry>上下文变量名</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：{Any}</para>
-            </section>
-            <section>
-                <title>set</title>
-                <para>设置应用环境上下文</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>name</entry>
-                                <entry>{string}</entry>
-                                <entry>上下文变量名</entry>
-                            </row>
-                            <row>
-                                <entry>value</entry>
-                                <entry>{Any}</entry>
-                                <entry>环境变量值</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：无</para>
-            </section>
-        </section>
-        <section>
-            <title>er.locator静态方法</title>
-            <section>
-                <title>getPath</title>
-                <para>获取当前path</para>
-                <para>参数：无</para>
-                <para>返回值：{string}</para>
-            </section>
-            <section>
-                <title>getLocation</title>
-                <para>获取当前的Location</para>
-                <para>参数：无</para>
-                <para>返回值：{string}</para>
-            </section>
-            <section>
-                <title>getQuery</title>
-                <para>获取当前的query</para>
-                <para>参数：无</para>
-                <para>返回值：{string}</para>
-            </section>
-            <section>
-                <title>getQueryMap</title>
-                <para>获取当前的query的Object形式</para>
-                <para>参数：无</para>
-                <para>返回值：{Object}</para>
-            </section>
-            <section>
-                <title>redirect</title>
-                <para>转向到Location</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>loc</entry>
-                                <entry>{string}</entry>
-                                <entry>要转向的location</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                
-                <para>返回值：无</para>
-            </section>
-        </section>
-        <section>
-            <title>er.Module初始化的属性参数</title>
-            <section>
-                <title>config</title>
-                <para>Module的配置对象。通常config会包含一个action配置。</para>
-                <para>类型：{Object}</para>
-            </section>
-        </section>
-        <section>
-            <title>er.template静态方法</title>
-            <section>
-                <title>get</title>
-                <para>获取指定模板target的HTML片段</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>target</entry>
-                                <entry>{string}</entry>
-                                <entry>模板target名</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：{string}</para>
-            </section>
-            <section>
-                <title>merge</title>
-                <para>合并模板与数据</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                   <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>output</entry>
-                                <entry>{HTMLElement}</entry>
-                                <entry>要输出到的容器元素</entry>
-                            </row>
-                            <row>
-                                <entry>tplName</entry>
-                                <entry>{string}</entry>
-                                <entry>视图模板名</entry>
-                            </row>
-                            <row>
-                                <entry>opt_privateContextId</entry>
-                                <entry>{string}</entry>
-                                <entry>私用context环境的id</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：{string}</para>
-            </section>
-            <section>
-                <title>parse</title>
-                <para>解析模板</para>
-                <para>参数：</para>
-                <table frame="topbot" align="left">
-                    <tgroup cols="3">
-                        <thead>
-                            <row>
-                                <entry>名称</entry>
-                                <entry>类型</entry>
-                                <entry>描述</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry>source</entry>
-                                <entry>{string}</entry>
-                                <entry>模板源字符串</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-                <para>返回值：无</para>
-            </section>
-        </section>
-    </appendix>
 </book>
