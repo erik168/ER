@@ -9,7 +9,7 @@
 
 ///import er.Action;
 ///import er.extend.ui;
-///import er.extend.actionEnhance;
+///import er.extend.action_enhance;
 
 er.extend.actionLikeForm = function () {
     var uiExtend = er.extend.ui;
@@ -29,11 +29,11 @@ er.extend.actionLikeForm = function () {
             for ( i = 0, len = inputList.length; i < len; i++ ) {
                 input = inputList[ i ];
 
-                if ( uiAdapter.isDisabled( input ) ) {
+                if ( uiExtend.adapter.isDisabled( input ) ) {
                     continue;
                 }
                 
-                if ( !uiAdapter.validate( input ) ) {
+                if ( !uiExtend.adapter.validate( input ) ) {
                     isValid = false;
                 }
             }
@@ -42,12 +42,12 @@ er.extend.actionLikeForm = function () {
         },
 
         /**
-         * 获取返回按钮的处理函数
+         * 获取返回的处理函数
          * 
          * @protected
          * return {Function}
          */
-        getSubmitCancel: function () {
+        getFormCanceler: function () {
             var me = this;
             
             return function () {
@@ -56,12 +56,12 @@ er.extend.actionLikeForm = function () {
         },
 
         /**
-         * 完成提交数据
+         * 获取完成提交数据的函数
          * 
          * @protected
          * return {Function}
          */
-        getSubmitFinish: function () {
+        getSubmitFinisher: function () {
             var me = this;
                 
             return function ( data ) {
@@ -74,13 +74,13 @@ er.extend.actionLikeForm = function () {
                 // 当后端验证失败时
                 // 处理后端验证结果
                 if ( data.status != 0 ) {
-                    errorMap = data.message.field;
+                    errorMap = data.statusInfo.field;
                     
                     for ( i = 0; i < len; i++ ) {
                         input = inputList[ i ];
-                        errorMessage = errorMap[ uiExtend.getInputName( input ) ];
+                        errorMessage = errorMap[ uiExtend.adapter.getInputName( input ) ];
                         if ( errorMessage ) {
-                            uiExtend.validateError( input, errorMessage );
+                            uiExtend.adapter.validateError( input, errorMessage );
                         }
                     }
 
@@ -103,10 +103,11 @@ er.extend.actionLikeForm = function () {
          * @param {Object} opt_queryMap 参数表
          * @return {string}
          */
-        getQueryByForm: function ( opt_inputList, opt_queryMap ) {
+        getQueryStringByForm: function ( opt_inputList, opt_queryMap ) {
             var queryMap    = opt_queryMap || this.INPUT_QUERY_MAP || {},
                 inputList   = opt_inputList || this.view.getInputList(),
                 finished    = {},
+                uiAdapter   = uiExtend.adapter,
                 i, len, 
                 input,
                 inputName, 
@@ -118,10 +119,10 @@ er.extend.actionLikeForm = function () {
                 input = inputList[i];
                 
 
-                if ( uiExtend.isInput( input ) 
-                     && !uiExtend.isDisabled( input )
+                if ( uiAdapter.isInput( input ) 
+                     && !uiAdapter.isDisabled( input )
                 ) {
-                    inputName = uiExtend.getInputName( input );
+                    inputName = uiAdapter.getInputName( input );
 
                     if ( inputName ) {
                         // 已拼接的参数不重复拼接
@@ -136,7 +137,7 @@ er.extend.actionLikeForm = function () {
                         inputName = queryMap[ inputName ] || inputName;
                         
                         // 获取input值
-                        if ( uiExtend.isInputBox( input ) ) {
+                        if ( uiAdapter.isInputBox( input ) ) {
                             value = input.getGroup().getValue().join(',');
                         } else {
                             value = input.getValue();

@@ -56,7 +56,7 @@ er.extend.actionEnhance = (function () {
          * @param {Object} opt_queryMap 参数表
          * @return {string}
          */
-        getQueryByModel: function ( opt_queryMap ) {
+        getQueryStringByModel: function ( opt_queryMap ) {
             var queryMap = opt_queryMap || this.MODEL_QUERY_MAP;
             return this.model.getQueryString( queryMap );
         },
@@ -99,7 +99,7 @@ er.extend.actionEnhance = (function () {
             }
             
             buffer.push( '_r=' + er._util.getUID() );
-            er.locator.redirect( '~' + buffer.join('&') );
+            er.locator.redirect( this.arg.path + '~' + buffer.join('&') );
         },
 
         /**
@@ -142,7 +142,7 @@ er.extend.actionEnhance = (function () {
             if ( !referer || this.USE_BACK_LOCATION ) {
                 referer = this.BACK_LOCATION;
             }
-            locator_.redirect( referer );
+            er.locator.redirect( referer );
         },
         
         /**

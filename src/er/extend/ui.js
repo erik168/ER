@@ -7,6 +7,7 @@
  * author:  erik
  */
 
+///import er.extend;
 ///import er.context;
 ///import er.Action;
 ///import er.View;
@@ -23,9 +24,10 @@ er.extend.ui = function () {
          */
         render: function () {
             er.View.prototype.render.call( this );
+
             this._controlMap = uiExtend.adapter.init(
                 baidu.g( this.target ), 
-                this.UI_PROP_MAP, 
+                this.UI_PROP, 
                 this.model.getGUID()
             );
         },
@@ -66,7 +68,7 @@ er.extend.ui = function () {
                 inputList  = [],
                 key, control;
                 
-            // 统计form控件列表
+            // 统计input控件列表
             for ( key in controlMap ) {
                 control = controlMap[ key ];
                 if ( uiExtend.adapter.isInput( control ) ) {
@@ -107,7 +109,7 @@ er.extend.ui = function () {
          * @param {string} privateContextId
          * @return {Object} 
          */
-        init: function ( wrap, propMap, privateContextId ) { 
+        init: function ( wrap, propMap, privateContextId ) {
             var referMap = {}, k, main, refer, uiMap;
 
             function attrReplacer( attrMap ) {
@@ -119,7 +121,7 @@ er.extend.ui = function () {
                 for ( key in attrMap ) {
                     attrValue = attrMap[ key ];
                     if ( typeof attrValue == 'string' && attrValue.indexOf('*') === 0 ) {
-                        attrMap[ key ] = er.context.get( attrValue.substr(1), privateContextId );
+                        attrMap[ key ] = er.context.get( attrValue.substr(1), { contextId: privateContextId } );
                         refer.push( key + ':' + attrValue );
                     }
                 }
@@ -151,10 +153,16 @@ er.extend.ui = function () {
          * 验证控件
          * 
          * @virtual
-         * @param {Object} control
+         * @param {Object} input
          * @return {boolean}
          */
-        validate: function ( control ) { },
+        validate: function ( input ) {
+            if ( input instanceof esui.InputControl ) {
+                return input.validate();
+            }
+
+            return true;
+        },
         
         /**
          * 验证控件并返回错误
@@ -249,7 +257,10 @@ er.extend.ui = function () {
             refers = refer.split( ';' );
             for ( i = 0, len = refers.length; i < len; i++ ) {
                 attrSeg = refers[ i ].split(':');
-                control[ attrSeg[ 0 ] ] = er.context.get( attrSeg[1].substr(1), privateContextId );
+                control[ attrSeg[ 0 ] ] = er.context.get( 
+                    attrSeg[1].substr(1), 
+                    { contextId: privateContextId } 
+                );
             }
         },
         
