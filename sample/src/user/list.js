@@ -67,10 +67,8 @@ user.list = new er.Action( {
         
         return function ( field, order ) {
             var orderBy = field.field;
-            console.log(orderBy);
             action.model.set( 'order', order );
             action.model.set( 'orderBy', orderBy );
-            console.log( action );
             action.refresh();
         };
     }

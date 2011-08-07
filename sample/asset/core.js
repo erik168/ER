@@ -20,7 +20,7 @@ document.write( '<script src="../src/er/Action.js" type="text/javascript"></scri
 document.write( '<script src="../src/er/init.js" type="text/javascript"></script>' );
 document.write( '<script src="../src/er/extend.js" type="text/javascript"></script>' );
 document.write( '<script src="../src/er/extend/ui.js" type="text/javascript"></script>' );
-document.write( '<script src="../src/er/extend/EnhanceAction.js" type="text/javascript"></script>' );
+document.write( '<script src="../src/er/extend/action_enhance.js" type="text/javascript"></script>' );
 
 
 document.write( '<script src="../src/esui.js" type="text/javascript"></script>' );
