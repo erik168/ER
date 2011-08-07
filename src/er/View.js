@@ -32,9 +32,11 @@ er.View = function () {
          * @param {Object} options 构造参数
          */
         construct: function ( options ) {
-            this.setTarget( options.target );
-            this.setTemplate( options.template );
-            this.setModel( options.model );
+            if ( options && typeof options == 'object' ) {
+                this.setTarget( options.target );
+                this.setTemplate( options.template );
+                this.setModel( options.model );
+            }
         },
         
         /**
@@ -44,7 +46,7 @@ er.View = function () {
          * @param {string|HTMLElement} target 目标元素或id
          */
         setTarget: function ( target ) {
-            this.target = target;
+            target && (this.target = target);
         },
         
         /**
@@ -54,7 +56,7 @@ er.View = function () {
          * @param {string} template 模板名
          */
         setTemplate: function ( template ) {
-            this.template = template;
+            template && ( this.template = template );
         },
         
         /**

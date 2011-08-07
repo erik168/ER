@@ -13,39 +13,6 @@
 ///import baidu.object.extend;
 
 er.Action = function () {
-    /**
-     * 状态保持器
-     * 
-     * @desc
-     *      状态保持器能根据path保持相关Context狀態
-     */
-    var stateHolder_ = (function () {
-        var stateMap = {};
-
-        return {
-            /**
-             * 获取状态
-             * 
-             * @public
-             * @param {string} path 状态名
-             * @return {Object}
-             */
-            'get': function ( path ) {
-                return stateMap[ path ] || null;
-            },
-            
-            /**
-             * 设置状态
-             * 
-             * @public
-             * @param {string} key 状态名
-             * @param {Object} state 状态對象
-             */
-            'set': function ( path, state ) {
-                stateMap[ path ] = state;
-            }
-        };
-    })();
     
     // 声明Action扩展对象
     var ActionBaseX_ = {};
@@ -130,35 +97,15 @@ er.Action = function () {
          * @protected
          */      
         __beforeloadmodel: function () {
-            var arg         = this.arg;
-            var path        = arg.path;
-            var queryMap    = arg.queryMap;
-            var stateMap    = this.STATE_MAP || {};
-            var stateSaved  = stateHolder_.get( path ) || {};
-            var ignoreState = this.IGNORE_STATE || (queryMap && queryMap.ignoreState);
-
+            var arg = this.arg;
+            var queryMap = arg.queryMap;
             var key, value;
-            var state = {};
-            
-            // 状态恢复与保存
-            if ( !ignoreState ) {
-                for ( key in stateMap ) {
-                    value = queryMap[ key ];
-                    if ( !er._util.hasValue( value ) ) {
-                        value = stateSaved[ key ];
 
-                        if ( !er._util.hasValue( value ) ) {
-                            value = stateMap[ key ];
-                        }
-                    }
-
-                    state[ key ] = value;
-                    this.model.set( key, value );
-                }
-
-                stateHolder_.set( path, state );
+            for ( key in queryMap ) {
+                value = queryMap[ key ];
+                this.model.set( key, value );
             }
-
+            
             this.__fireEvent( 'beforeloadmodel' );
         },
 

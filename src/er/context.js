@@ -97,7 +97,7 @@ er.context = function () {
             var value;
             var priv;
                 
-            if ( 'string' == typeof contextId ) { 
+            if ( 'string' == typeof contextId ) {
                 priv = privateContext[ contextId ];
                 value = priv && priv[ name ];
             }

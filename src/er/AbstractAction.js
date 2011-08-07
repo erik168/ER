@@ -93,6 +93,9 @@ er.AbstractAction = function () {
                 viewClazz = this.view;
                 if ( typeof viewClazz != 'function' ) {
                     viewClazz = new er.View;
+                } else {
+                    // 如果自己初始化了View对象，则模板在初始化时指定
+                    templateName = '';
                 }
                 this.view = new viewClazz();
                 this.view.construct( {
