@@ -18,9 +18,9 @@
  * @private
  */
 esui.util = function () {
-    var container    = {};
-    var componentMap = {};
-    var guid         = 0;
+    var ctrlContainer = {};
+    var componentMap  = {};
+    var guid          = 0;
 
     return {
         /**
@@ -116,7 +116,7 @@ esui.util = function () {
          * @return {esui.Control}
          */
         get: function ( id ) {
-            return container[ id ] || null;
+            return ctrlContainer[ id ] || null;
         },
 
         /**
@@ -153,17 +153,21 @@ esui.util = function () {
         dispose: function ( ctrl ) {
             if ( ctrl ) {
                 var control = ctrl;
+                var id;
+
                 if ( typeof ctrl == 'string' ) {
-                    control = container[ ctrl ];
+                    control = ctrlContainer[ ctrl ];
+                    
                 }
                 
                 if ( control && control instanceof esui.Control ) {
                     id = control.id;
+                    
                     control.__dispose();
-                    delete container[ id ];
+                    delete ctrlContainer[ id ];
                 }
             } else {
-                for ( var key in container ) {
+                for ( var key in ctrlContainer ) {
                     esui.util.dispose( key );
                 }
             }
@@ -252,7 +256,7 @@ esui.util = function () {
          * @param {ecui.Control} control 控件实例
          */
         construct: function ( control ) {
-            container[ control.id ] = control;
+            ctrlContainer[ control.id ] = control;
             control.__construct();
         },
 

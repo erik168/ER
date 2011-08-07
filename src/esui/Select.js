@@ -369,8 +369,12 @@ esui.Select.prototype = {
      * @public
      * @return {string}
      */
-    getValue: function( opt_index ) {
-        return this.value || null;
+    getValue: function() {
+        if ( esui.util.hasValue( this.value ) ) {
+            return String( this.value );
+        }
+
+        return '';
     },
     
     /**

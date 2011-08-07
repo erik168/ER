@@ -10,6 +10,8 @@
 ///import esui.util;
 ///import esui.get;
 ///import esui.init;
+///import esui.create;
+///import esui.dispose;
 ///import baidu.dom.addClass;
 ///import baidu.dom.removeClass;
 

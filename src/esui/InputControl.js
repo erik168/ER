@@ -75,6 +75,16 @@ esui.InputControl.prototype = {
         this.name = this.main.getAttribute( 'name' );
         esui.Control.prototype.render.call( this );
     },
+    
+    /**
+     * 获取控件的name
+     *
+     * @public
+     * @return {string}
+     */
+    getName: function () {
+        return this.name;
+    },
 
     /**
      * 获取控件的值
