@@ -24,12 +24,42 @@ er.extend.ui = function () {
          */
         render: function () {
             er.View.prototype.render.call( this );
+            var dataControl = {};
+            var controlData = {};
+            var contextId   = this.model.getGUID();;
 
+            function attrReplacer( attrMap ) {
+                var key;
+                var attrValue;
+                var dataName;
+                var controlId = attrMap.id;
+
+                for ( key in attrMap ) {
+                    attrValue = attrMap[ key ];
+                    if ( typeof attrValue == 'string' && attrValue.indexOf('*') === 0 ) {
+                        dataName = attrValue.substr( 1 );
+
+                        // 存储数据的控件引用
+                        !dataControl[ dataName ] && ( dataControl[ dataName ] = [] );
+                        dataControl[ dataName ].push( controlId + ':' + key );
+
+                        // 存储控件的数据引用
+                        !controlData[ controlId ] && ( controlData[ controlId ] = [] );
+                        controlData[ controlId ].push( key + ':' + dataName );
+
+                        attrMap[ key ] = er.context.get( dataName, { contextId: contextId } );
+                    }
+                }
+            }
+            
+            this._dataControl = dataControl;
+            this._controlData = controlData;
             this._controlMap = uiExtend.adapter.init(
                 baidu.g( this.target ), 
                 this.UI_PROP, 
-                this.model.getGUID()
+                attrReplacer
             );
+            //console.log(
         },
         
         /**
@@ -43,16 +73,62 @@ er.extend.ui = function () {
         
             var key;
             var control;
+            var refer;
+            var referTmp;
+            var referName;
+            var referRef;
+            var i;
+            var len;
             var uiAdapter = uiExtend.adapter;
+            var ctrlData  = this._controlData;
            
             for ( key in opt_controlMap ) {
                 control = opt_controlMap[ key ];
-                if ( control ) {
+                refer = ctrlData[ key ];
+
+                if ( control && refer ) {
                     // 重新灌入数据
-                    uiAdapter.injectData( control, this.model.getGUID() );
+                    for ( i = 0, len = refer.length; i < len ; i++ ) {
+                        referTmp = refer[ i ].split( ':' );
+                        uiAdapter.setControlAttribute( 
+                            control, 
+                            referTmp[ 0 ],
+                            this.model.get( referTmp[ 1 ] )
+                        );
+                    }
                     
                     // 重绘控件
                     uiAdapter.repaint( control );     
+                }
+            }
+        },
+
+        /**
+         * 根据Model重绘视图
+         *
+         * @public
+         * @param {string} name model数据的名称
+         * @param {Any} value model新数据的值
+         */
+        repaintByModel: function ( name, value ) {
+            var controls  = this._dataControl[ name ];
+            var uiAdapter = uiExtend.adapter;
+            var temp;
+            var i;
+            var len;
+            var control;
+
+            if ( controls ) {
+                for ( i = 0, len = controls.length; i < len; i++ ) {
+                    temp = controls[ i ].split( ':' );
+                    control = uiAdapter.get( temp[ 0 ] );
+                    uiAdapter.setControlAttribute( 
+                        control, 
+                        temp[ 1 ],
+                        value
+                    );
+
+                    uiAdapter.repaint( control );
                 }
             }
         },
@@ -95,7 +171,85 @@ er.extend.ui = function () {
             }
             
             this._controlMap = null;
+            this._dataControl = null;
+            this._controlData = null;
             er.View.prototype.clear.call( this );
+        }
+    } );
+
+    er.Action.extend( {
+        MODEL_SILENCE: true,
+
+        /**
+         * 移除model数据变化的监听器
+         *
+         * @protected
+         */
+        __removeModelChangeListener: function () {
+            if ( this._modelChangeListener && this.model ) {
+                this.model.removeChangeListener( this._modelChangeListener );
+            }
+        },
+        
+        /**
+         * 添加model数据变化的监听器
+         *
+         * @protected
+         */
+        __addModelChangeListener: function () {
+            if ( this.MODEL_SILENCE ) {
+                return;
+            }
+
+            if ( !this._modelChangeListener ) {
+                this._modelChangeListener = this.__getModelChangeListener();
+            }
+
+            this.model.addChangeListener( this._modelChangeListener );
+        },
+        
+        /**
+         * 获取model数据变化的监听器
+         *
+         * @protected
+         * @return {Function}
+         */
+        __getModelChangeListener: function () {
+            var me = this;
+
+            return function ( eventArg ) {
+                me.view.repaintByModel( eventArg.name, eventArg.newValue );
+            };
+        },
+
+        /**
+         * enter时的内部行为
+         *
+         * @protected
+         */ 
+        __enter: function () {
+            this.__removeModelChangeListener();
+            this.__fireEvent( 'enter' );
+        },
+        
+        /**
+         * enter完成的内部行为
+         *
+         * @protected
+         */
+        __entercomplete: function () {
+            this.__fireEvent( 'entercomplete' );
+            this.__addModelChangeListener();
+        },
+
+        /**
+         * leave的内部行为
+         *
+         * @protected
+         */
+        __leave: function () {
+            this.__fireEvent( 'leave' );
+            this.__removeModelChangeListener();
         }
     } );
 
@@ -105,38 +259,23 @@ er.extend.ui = function () {
          * 
          * @virtual
          * @param {HTMLElement} wrap
-         * @param {Object} propMap
-         * @param {string} privateContextId
+         * @param {Object}      propMap
+         * @param {Function}    attrReplacer
          * @return {Object} 
          */
-        init: function ( wrap, propMap, privateContextId ) {
-            var referMap = {}, k, main, refer, uiMap;
+        init: function ( wrap, propMap, attrReplacer ) {
+            return esui.init( wrap, propMap, attrReplacer );
+        },
 
-            function attrReplacer( attrMap ) {
-                var key;
-                var attrValue;
-                var refer = [];
-                referMap[ attrMap.id ] = refer;
-
-                for ( key in attrMap ) {
-                    attrValue = attrMap[ key ];
-                    if ( typeof attrValue == 'string' && attrValue.indexOf('*') === 0 ) {
-                        attrMap[ key ] = er.context.get( attrValue.substr(1), { contextId: privateContextId } );
-                        refer.push( key + ':' + attrValue );
-                    }
-                }
-            }
-            
-            uiMap = esui.init( wrap, propMap, attrReplacer );
-            for ( k in uiMap ) {
-                main = uiMap[ k ] && uiMap[ k ].main;
-                refer = referMap[ k ];
-                if ( main && refer ) {
-                    main.setAttribute( 'ctxrefer', refer.join( ';' ) );
-                }
-            }
-
-            return uiMap;
+        /**
+         * 根据id获取控件
+         * 
+         * @virtual
+         * @param {string} id
+         * @return {Control} 
+         */
+        get: function ( id ) {
+            return esui.get( id );
         },
         
         /**
@@ -232,36 +371,15 @@ er.extend.ui = function () {
         },
         
         /**
-         * 重新注入控件所需数据，通常repaint前用
+         * 设置控件所需属性
          * 
          * @virtual
          * @param {Object} control
-         * @param {string} privateContextId
+         * @param {string} name
+         * @param {Any} value
          */
-        injectData: function ( control, privateContextId ) { 
-            var main = control.main;
-            if ( !main ) {
-                return;
-            }
-
-            var refer = main.getAttribute( 'ctxrefer' ),
-                i,
-                len,
-                attrSeg,
-                refers;
-                
-            if ( !refer ) {
-                return;
-            }
-                
-            refers = refer.split( ';' );
-            for ( i = 0, len = refers.length; i < len; i++ ) {
-                attrSeg = refers[ i ].split(':');
-                control[ attrSeg[ 0 ] ] = er.context.get( 
-                    attrSeg[1].substr(1), 
-                    { contextId: privateContextId } 
-                );
-            }
+        setControlAttribute: function ( control, name, value ) { 
+            control[ name ] = value;
         },
         
         /**
@@ -299,6 +417,3 @@ er.extend.ui = function () {
     return uiExtend;
     
 }();
-
-
-

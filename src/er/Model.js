@@ -32,6 +32,7 @@ er.Model = function () {
             this._guid              = option.guid || er._util.getUID();
             this._container         = {};
             this._changeListener    = this.__getChangeListener();
+            this._changeListeners   = [];
             this.action             = option.action;
 
             er.context.addPrivate( this._guid, this._container );
@@ -45,8 +46,11 @@ er.Model = function () {
          * @param {string} name 数据名
          * @param {Any} value 数据值
          */
-        set: function ( name, value ) {
-            er.context.set( name, value, { contextId: this._guid } );
+        set: function ( name, value, opt_arg ) {
+            var arg = baidu.object.clone( opt_arg || {} );
+            arg.contextId = this._guid;
+
+            er.context.set( name, value, arg );
         },
         
         /**
@@ -99,6 +103,7 @@ er.Model = function () {
             this._finishedCallback = finishedCallback || new Function();
             this.__continue();
         },
+        
 
         /**
          * 继续加载model
@@ -124,6 +129,33 @@ er.Model = function () {
         },
         
         /**
+         * 添加数据变化的监听器
+         *
+         * @public
+         * @param {Function} listener 监听器
+         */
+        addChangeListener: function ( listener ) {
+            this._changeListeners.push( listener );
+        },
+        
+        /**
+         * 移除数据变化的监听器
+         *
+         * @public
+         * @param {Function} listener 监听器
+         */
+        removeChangeListener: function ( listener ) {
+            var changeListeners = this._changeListeners;
+            var len = changeListeners.length;
+
+            while ( len-- ) {
+                if ( listener === changeListeners[ len ] ) {
+                    changeListeners.splice( len, 1 );
+                }
+            }
+        },
+
+        /**
          * 释放model
          *
          * @public
@@ -135,6 +167,7 @@ er.Model = function () {
             this.action = null;
             this._container = null;
             this._changeListener = null;
+            this._changeListeners = null;
         },
         
         /**
@@ -186,11 +219,19 @@ er.Model = function () {
             var me = this;
             return function ( event ) {
                 if ( event.contextId == me._guid ) {
-                    me.onchange( {
+                    var evtArg = {
                         name    : event.name,
                         oldValue: event.oldValue,
                         newValue: event.newValue
-                    } );
+                    };
+                    var changeListeners = me._changeListeners;
+                    var i = 0;
+                    var len = changeListeners.length;
+
+                    me.onchange( evtArg );
+                    for ( ; i < len; i++ ) {
+                        changeListeners[ i ].call( me, evtArg );
+                    }
                 }
             };
         }
@@ -199,6 +240,11 @@ er.Model = function () {
     return Model;
 }();
 
+/**
+ * model加载器
+ *
+ * @class
+ */
 er.Model.Loader = function ( func, opt_option ) {
     this._func = func;
 };

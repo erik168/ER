@@ -98,8 +98,7 @@ er.extend.actionEnhance = (function () {
                 }
             }
             
-            buffer.push( '_r=' + er._util.getUID() );
-            er.locator.redirect( this.arg.path + '~' + buffer.join('&') );
+            er.locator.redirect( this.arg.path + '~' + buffer.join('&'), { enforce: true } );
         },
 
         /**

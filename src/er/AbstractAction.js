@@ -153,8 +153,7 @@ er.AbstractAction = function () {
          * @protected
          */
         leave: function () {
-            this.__fireEvent( 'leave' );
-            
+            this.__moveOntoPhase( 'leave' );
             this.dispose();
         },
         

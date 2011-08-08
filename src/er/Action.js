@@ -119,6 +119,15 @@ er.Action = function () {
         },
 
         /**
+         * leave的内部行为
+         *
+         * @protected
+         */
+        __leave: function () {
+            this.__fireEvent( 'leave' );
+        },
+
+        /**
          * 自定义事件触发
          *
          * @public

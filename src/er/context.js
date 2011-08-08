@@ -41,15 +41,17 @@ er.context = function () {
                 throw new Error('ER: private context "' + contextId + '" is not exist.');
             }
             
-            // 初始化event argument
-            contextId && ( evtArg.contextId = contextId );
-            evtArg.name     = name;
-            evtArg.oldValue = context[ name ] || null;
-            evtArg.newValue = newValue;
-            
-            // change事件触发
-            for ( i = 0, len = changeListeners.length; i < len; i++ ) {
-                changeListeners[ i ].call( er.context, evtArg );
+            if ( !opt_arg.silence ) {
+                // 初始化event argument
+                contextId && ( evtArg.contextId = contextId );
+                evtArg.name     = name;
+                evtArg.oldValue = context[ name ] || null;
+                evtArg.newValue = newValue;
+                
+                // change事件触发
+                for ( i = 0, len = changeListeners.length; i < len; i++ ) {
+                    changeListeners[ i ].call( er.context, evtArg );
+                }
             }
 
             context[ name ] = newValue;

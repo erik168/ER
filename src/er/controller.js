@@ -9,6 +9,7 @@
 
 ///import er.router;
 ///import er.Module;
+///import er.locator;
 ///import er.permission;
 ///import baidu.sio.callByBrowser;
     
@@ -21,29 +22,12 @@
 er.controller = function () {
     var contextContainer = {},
         configContainer  = {},
+        locationRule     = /^([\/a-zA-Z0-9_-]+)(?:~(.*))?$/,
         mainActionContext,
         currentPath,
         currentLocation,
         _isEnable = 1;
 
-    
-    function authJudge( path ) {
-        var actionConfig = getActionConfigByPath( path );
-        if ( !actionConfig ) {
-            throw new Error('ER: the path "' + path + '" cannot bind to action.');
-            return;
-        }
-        
-        var actionAuth = actionConfig.authority;
-        
-        // 权限判断
-        if ( actionAuth && !er.permission.isAllow( actionAuth ) ) {
-            return actionConfig.noAuthLocation || getConfig( 'DEFAULT_INDEX' );
-        }
-
-        return null;
-    }
-    
     /**
      * 将参数解析为Map
      * 
@@ -85,11 +69,13 @@ er.controller = function () {
         if ( !_isEnable ) { 
             return; 
         }
-        
+
+        /*
         // location相同时不做forward
         if ( loc == currentLocation ) {
             return;
         }
+        */
         
         var arg = {  // 组合所需的argument对象
                 type     : 'main',
@@ -240,9 +226,41 @@ er.controller = function () {
         }
 
         // 添加route规则
-        er.router.add( /^([\/a-zA-Z0-9_-]+)(?:~(.*))?$/, er.controller.forward );
+        er.router.add( locationRule, er.controller.forward );
+
+        // 添加权限验证器
+        er.locator.addAuthorizer( _authJudge );
     }
     
+    /**
+     * 权限验证函数，验证失败时返回自动转向地址
+     *
+     * @inner
+     * @param {string} loc location
+     * @return {string} 
+     */
+    function _authJudge( loc ) {
+        if ( !locationRule.test( loc ) ) {
+            return null;
+        }
+
+        var path = RegExp.$1;
+        var actionConfig = getActionConfigByPath( path );
+        if ( !actionConfig ) {
+            throw new Error('ER: the path "' + path + '" cannot bind to action.');
+            return;
+        }
+        
+        var actionAuth = actionConfig.authority;
+        
+        // 权限判断
+        if ( actionAuth && !er.permission.isAllow( actionAuth ) ) {
+            return actionConfig.noAuthLocation || getConfig( 'DEFAULT_INDEX' );
+        }
+
+        return null;
+    }
+
     /**
      * 查找获取Action对象
      * 
@@ -403,7 +421,6 @@ er.controller = function () {
     }
 
     return {
-        authJudge               : authJudge,
         forward                 : forward,
         init                    : init,
         _enable                 : enable,

@@ -2,7 +2,7 @@ er.template.parse( '<!-- target: uiview --><div ui="type:Button;id:myButton"></d
 er.template.parse( '<!-- target: uiviewsimple --><div ui="type:Button;id:myButton"></div><div ui="type:Select;id:mySelect;"></div>' );
 er.template.parse( '<!-- target: uiinputview --><div ui="type:Button;id:myButton"></div>' 
     + '<div ui="type:Select;id:mySelect;"></div>' 
-    + '<input type="text" ui="type:TextInput;id:myText;"/>'
+    + '<input type="text" ui="type:TextInput;id:myText;value:*textValue"/>'
     + '<span ui="type:Label;id:myLabel"></span>');
 er.template.parse( '<!-- target: uiclear -->just test' );
 
@@ -37,7 +37,12 @@ var testModule = new er.Module( {
             {
                 path   : '/input',
                 action : 'testModule.actioni'  
+            },
+            {
+                path   : '/inputnosilence',
+                action : 'testModule.actionii'  
             }
+
         ]
     }
 } );
@@ -56,11 +61,41 @@ testModule.actionc = new er.Action( {
 } );
 
 var inputList = null;
+var testInputText = null;
 testModule.actioni = new er.Action( {
     view: 'uiinputview',
     model: testUserModel,
     ontraceinput: function () {
         inputList = this.view.getInputList();
+    },
+
+    ontracevalue: function () {
+        testInputText = esui.get( 'myText' ).getValue();
+    },
+
+    oneditvalue: function ( value ) {
+        this.model.set( 'textValue', value );
+    }
+} );
+
+testModule.actionii = new er.Action( {
+    MODEL_SILENCE: false,
+    view: 'uiinputview',
+    model: testUserModel,
+    ontraceinput: function () {
+        inputList = this.view.getInputList();
+    },
+
+    ontracevalue: function () {
+        testInputText = esui.get( 'myText' ).getValue();
+    },
+
+    oneditvalue: function ( value ) {
+        this.model.set( 'textValue', value );
+    },
+
+    oneditvaluesilence: function ( value ) {
+        this.model.set( 'textValue', value, {silence: true} );
     }
 } );
 
@@ -151,3 +186,29 @@ test("getInputList", function() {
     same( esui.get('myLabel') instanceof esui.Control, true, "其他非input控件存在" );
 });
 
+test("auto repaint when set model", function() {
+    er.locator.redirect('/input');
+    er.controller.fireMain('tracevalue');
+
+    same( testInputText, '', "text控件初始值为空" );
+
+    er.controller.fireMain('editvalue', 'erik');
+    er.controller.fireMain('tracevalue');
+
+    same( testInputText, '', "默认情况不自动repaint控件" );
+
+    er.locator.redirect('/inputnosilence');
+    er.controller.fireMain('tracevalue');
+
+    same( testInputText, '', "text控件初始值为空" );
+    
+    er.controller.fireMain('editvalue', 'erik');
+    er.controller.fireMain('tracevalue');
+
+    same( testInputText, 'erik', "设置MODEL_SILENCE时，model的变更自动映射到控件" );
+
+    er.controller.fireMain('editvaluesilence', 'sea');
+    er.controller.fireMain('tracevalue');
+
+    same( testInputText, 'erik', "通过{silence:true}设置model，不会自动重绘并更新控件" );
+});

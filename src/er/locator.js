@@ -72,7 +72,8 @@ er.locator = function () {
             historyInput,
             isOldLoc,
             i, 
-            len;
+            len,
+            isChange;
         
         if ( baidu.ie && baidu.ie < 8 ) {
             //location.hash = loc;
@@ -108,6 +109,8 @@ er.locator = function () {
             }
         }
         
+        isChange = currentLocation != loc;
+
         // 存储当前信息
         // opera下，相同的hash重复写入会在历史堆栈中重复记录
         // 所以需要getLocation来判断
@@ -116,7 +119,7 @@ er.locator = function () {
         }
 
         currentLocation = loc;
-        return true;
+        return isChange;
     }
 
     /**
@@ -124,8 +127,11 @@ er.locator = function () {
      * 
      * @public
      * @param {string} loc location位置
+     * @param {Object} opt_option 转向参数
      */
-    function redirect( loc ) {
+    function redirect( loc, opt_option ) {
+        var opt = opt_option || {};
+
         // 非string不做处理
         if ( typeof loc != 'string' ) {
             return;
@@ -140,30 +146,39 @@ er.locator = function () {
             loc = er._util.getConfig( 'DEFAULT_INDEX' ); 
         }
 
-        // 与当前location相同时不进行转向
-        updateLocation( loc );
-        /*if (!updateHash(loc)) {
-            return;
-        }*/
+        // 与当前location相同时不进行route
+        var canRoute = updateLocation( loc );
+        if ( canRoute || opt.enforce ) {
+            loc = currentLocation;
 
-        loc = currentLocation;
-        // 触发onredirect事件
-        er.locator.onredirect();
-        
-        // 权限判断以及转向
-        /*
-        var loc302 = er.controller.authJudge( currentPath );
-        if ( loc302 ) {
-            er.locator.redirect( loc302 );
-            return;
-        }*/
+            // 触发onredirect事件
+            er.locator.onredirect();
+            
+            // 权限判断以及转向
+            var loc302 = authorize( loc );
+            if ( loc302 ) {
+                er.locator.redirect( loc302 );
+                return;
+            }
 
-        // ie下使用中间iframe作为中转控制
-        // 其他浏览器直接调用控制器方法
-        if ( baidu.ie && baidu.ie < 8 ) {
-            ieRoute( loc );
-        } else {
-            er.router( loc );
+            // ie下使用中间iframe作为中转控制
+            // 其他浏览器直接调用控制器方法
+            if ( baidu.ie && baidu.ie < 8 ) {
+                ieRoute( loc );
+            } else {
+                er.router( loc );
+            }
+        }
+    }
+    
+    /**
+     * 刷新当前地址
+     * 
+     * @public
+     */
+    function reload() {
+        if ( currentLocation ) {
+            er.locator.redirect( currentLocation, { enforce: true } );
         }
     }
     
@@ -298,14 +313,49 @@ er.locator = function () {
 
         document.body.appendChild(iframe);
     }
+    
+    var authorizers = [];
+
+    /**
+     * 增加权限验证器
+     *
+     * @public
+     * @param {Function} authorizer 验证器，验证失败时验证器返回转向地址
+     */
+    function addAuthorizer( authorizer ) {
+        if ( 'function' == typeof authorizer ) {
+            authorizers.push( authorizer );
+        }
+    }
+    
+    /**
+     * 权限验证
+     *
+     * @inner
+     * @return {string} 验证失败时验证器返回转向地址
+     */
+    function authorize( currLoc ) {
+        var i = 0;
+        var len = authorizers.length;
+        var loc;
+
+        for ( ; i < len; i++ ) {
+            loc = authorizers[ i ]( currLoc );
+            if ( loc ) {
+                return loc;
+            }
+        }
+    }
 
     // 返回暴露的方法
     return {
         'redirect'          : redirect,
+        'reload'            : reload,
         'getLocation'       : getLocation,
         'init'              : init,
         '_updateHash'       : updateLocation,
-        'onredirect'        : new Function()
+        'onredirect'        : new Function(),
+        'addAuthorizer'     : addAuthorizer
     };
 }();
 

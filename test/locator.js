@@ -53,3 +53,23 @@ asyncTest("back and forward", function() {
     }, 200);
 
 });
+
+//enforce 
+
+testVar.redirectCount = 0;
+er.router.add( /^:([a-z]+)$/, function ( loc, val ) {
+    testVar.redirectCount++;
+});
+
+test("reload & enforce redirect", function() {
+    er.locator.redirect(':erik');
+    er.locator.redirect(':erik');
+   
+    same( testVar.redirectCount, 1, "相同的location不应该重复route" );
+
+    er.locator.redirect(':erik', {enforce:1} );
+    same( testVar.redirectCount, 2, "强制选项允许重复route" );
+
+    er.locator.reload();
+    same( testVar.redirectCount, 3, "reload方法重新route当前location" );
+});
