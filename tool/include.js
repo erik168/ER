@@ -7,7 +7,7 @@ function include( pack ) {
     }
 
     __included__[ pack ] = 1;
-    baidu.ajax.request( __src_path__ + '/' + pack.replace( /\./g, '/' ) + '.js',
+    baidu.ajax.request( __src_path__ + '/' + pack.replace( /\./g, '/' ) + '.js?' + (new Date().getTime()),
         {
             method: 'get',
             async: false,
