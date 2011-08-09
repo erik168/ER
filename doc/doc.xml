@@ -231,10 +231,6 @@ qchar	= char | "&" | "="]]></programlisting>
 								<entry>{void} redirect( {string} loc )</entry>
 								<entry>转向到Location</entry>
 							</row>
-							<row>
-								<entry>{void} oninvalid( {validator.Validity} )</entry>
-								<entry>验证控件值不合法时触发。</entry>
-							</row>
 						</tbody>
 					</tgroup>
 				</table>
