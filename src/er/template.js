@@ -8,6 +8,7 @@
  */
 
 ///import er.config;
+///import er.init;
 ///import baidu.string.encodeHTML;
 
 /**
@@ -403,6 +404,69 @@ er.template = function () {
             }
         }
     }
+    
+    /**
+     * 加载模板
+     *
+     * @inner
+     */
+    function load() {
+        er.init.stop();
+
+        var list    = er._util.getConfig( 'TEMPLATE_LIST' ),
+            len     = list instanceof Array && list.length,
+            tplBuf  = [],
+            i       = 0;
+            
+        if ( len && !isLoaded ) {
+            isLoaded = 1;
+            loadTemplate();
+        } else {
+            er.init.start();
+        }
+        
+        /**
+         * 加载模板成功的回调函数
+         * 
+         * @inner
+         * @param {Object} xhr
+         */
+        function successCallback( xhr ) {
+            tplBuf.push( xhr.responseText );
+            loadedCallback();
+        }
+        
+        /**
+         * 每条模板加载完毕的处理函数
+         * 
+         * @inner
+         */
+        function loadedCallback() {
+            i++;
+            
+            if ( i >= len ) {
+                er.template.parse( tplBuf.join( '\n' ) );
+                er.init.start();
+            } else {
+                loadTemplate();
+            }
+        }
+        
+        /**
+         * 加载模板
+         * 
+         * @inner
+         */
+        function loadTemplate() {
+            baidu.ajax.request( list[ i ], {
+                'method'   : 'get',
+                'onsuccess': successCallback,
+                'onfailure': loadedCallback
+            });
+        }
+    }
+
+    er.init.addIniter( load, 0 );
 
     // 返回暴露的方法
     return {

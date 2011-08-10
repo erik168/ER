@@ -11,7 +11,9 @@
 ///import baidu.browser.firefox;
 ///import baidu.json.parse;
 ///import baidu.json.stringify
+///import er._util;
 ///import er.router;
+///import er.init;
 
 /**
  * Hash定位器
@@ -214,6 +216,8 @@ er.locator = function () {
     
     /**
      * 初始化locator
+     *
+     * @inner
      */
     function init() {
         /**
@@ -346,13 +350,15 @@ er.locator = function () {
             }
         }
     }
+    
+    // 注册初始化函数
+    er.init.addIniter( init );
 
     // 返回暴露的方法
     return {
         'redirect'          : redirect,
         'reload'            : reload,
         'getLocation'       : getLocation,
-        'init'              : init,
         '_updateHash'       : updateLocation,
         'onredirect'        : new Function(),
         'addAuthorizer'     : addAuthorizer

@@ -11,6 +11,7 @@
 ///import er.Module;
 ///import er.locator;
 ///import er.permission;
+///import er.init;
 ///import baidu.sio.callByBrowser;
     
 /**
@@ -419,10 +420,12 @@ er.controller = function () {
 
         return '';
     }
+    
+    // 注册初始化函数
+    er.init.addIniter( init );
 
     return {
         forward                 : forward,
-        init                    : init,
         _enable                 : enable,
         loadSub                 : loadSub,
         loadSubByPath           : loadSubByPath,

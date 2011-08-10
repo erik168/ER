@@ -8,7 +8,6 @@
  */
 
 ///import esui.config;
-///import esui.Control;
 ///import baidu.event.on;
     
 /**

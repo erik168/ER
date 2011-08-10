@@ -7,6 +7,7 @@
  * author:  erik
  */
 
+///import er.config;
 
 er._util = function () { 
     /**

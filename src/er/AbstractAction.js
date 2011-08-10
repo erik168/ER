@@ -85,22 +85,20 @@ er.AbstractAction = function () {
 
             // 初始化视图生成器
             if ( !this.hasOwnProperty( 'view' ) ) {
-                templateName = this.view;
+                templateName = this.template || this.view || '';
                 if ( typeof templateName == 'function' ) {
                     templateName = templateName.call( this );
                 }
                 
                 viewClazz = this.view;
-                if ( typeof viewClazz != 'function' ) {
+                if ( !viewClazz || !( viewClazz.prototype instanceof er.View ) ) {
                     viewClazz = new er.View;
-                } else {
-                    // 如果自己初始化了View对象，则模板在初始化时指定
-                    templateName = '';
                 }
+
                 this.view = new viewClazz();
                 this.view.construct( {
                     target      : arg.domId,
-                    template    : String( templateName ),
+                    template    : templateName,
                     model       : this.model
                 } );
             }

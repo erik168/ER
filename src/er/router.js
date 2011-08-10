@@ -7,6 +7,7 @@
  * author:  erik
  */
 
+///import er;
 
 er.router = function () {
     var routes = [];

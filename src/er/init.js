@@ -15,70 +15,75 @@
  * 初始化ER框架
  */
 er.init = function () {
-    var isLoaded;
-
     /**
-     * 初始化完成的处理函数
+     * 初始化函数
      *
      * @inner
      */
-    function initFinish() {
-        typeof er.oninit == 'function' && er.oninit();
-        er.controller.init();
-        er.locator.init();
+    function init() {
+        _continue();
     }
 
-    return function () {
-        var list    = er._util.getConfig( 'TEMPLATE_LIST' ),
-            len     = list instanceof Array && list.length,
-            tplBuf  = [],
-            i       = 0;
-            
-        if ( len && !isLoaded ) {
-            isLoaded = 1;
-            loadTemplate();
-        } else {
-            initFinish();
-        }
+    var initers = [];
+    var phase = 'ready';
+    var currIndex = 0;
+
+    function _continue() {
+        var initer;
         
-        /**
-         * 加载模板成功的回调函数
-         * 
-         * @inner
-         * @param {Object} xhr
-         */
-        function successCallback( xhr ) {
-            tplBuf.push( xhr.responseText );
-            loadedCallback();
-        }
-        
-        /**
-         * 每条模板加载完毕的处理函数
-         * 
-         * @inner
-         */
-        function loadedCallback() {
-            i++;
-            
-            if ( i >= len ) {
-                er.template.parse( tplBuf.join('') );
-                initFinish();
+        switch ( phase ) {
+        case 'ready':
+        case 'run':
+            if ( currIndex < initers.length ) { 
+                phase = 'run';
+                initer = initers[ currIndex++ ];
+                initer();
+                _continue();
             } else {
-                loadTemplate();
+                phase = 'inited';
+                typeof er.oninit == 'function' && er.oninit();
             }
+            break;
         }
-        
-        /**
-         * 加载模板
-         * 
-         * @inner
-         */
-        function loadTemplate() {
-            baidu.ajax.request(list[i], {
-                'method'   : 'get',
-                'onsuccess': successCallback,
-                'onfailure': loadedCallback
-            });
+    }
+
+    /**
+     * 添加初始化函数
+     *
+     * @public 
+     * @param {Function} initer 初始化函数
+     * @param {number} opt_index 初始化次序
+     */
+    init.addIniter = function ( initer, opt_index ) {
+        if ( typeof opt_index == 'number' ) {
+            initers.splice( opt_index, 0, initer );
+        } else {
+            initers.push( initer );
         }
     };
+
+    /**
+     * 停止初始化
+     *
+     * @public
+     */
+    init.stop = function () {
+        if ( phase == 'run' ) {
+            phase = 'stop';
+        }
+    };
+
+    /**
+     * 启动初始化
+     *
+     * @public
+     */
+    init.start = function () {
+        if ( phase == 'stop' ) {
+            phase = 'run';
+            _continue();
+        }
+    };
+
+    return init;
 }();

@@ -7,7 +7,6 @@
  * author:  zhaolei, erik
  */
 
-///import esui.BoxControl;
 ///import esui.util;
 
 /**
