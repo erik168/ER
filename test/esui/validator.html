@@ -8,16 +8,24 @@
 <link rel="stylesheet" href="../../src/esui/css/ui.css" type="text/css" />
 <link rel="stylesheet" href="../../src/esui/css/ui-button.css" type="text/css" />
 <link rel="stylesheet" href="../../src/esui/css/ui-textinput.css" type="text/css" />
+<!-- __debug__
+<link rel="stylesheet" href="../../release/$((esuicss)).css" type="text/css" />
+__debug__ -->
 <script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
-<script type="text/javascript" src="../../tool/include.js"></script>
-<script>
-// 引入控件
-include( 'esui.TextInput' );
-include( 'esui.Button' );
-include( 'esui.validator.RequiredRule' );
-include( 'esui.validator.MaxLengthRule' );
-include( 'esui.validator.PatternRule' );
-</script>
+<script type="text/javascript" src="../../tool/include.js"></script><!-- __debug__ -->
+<!-- __debug__
+     <script type="text/javascript" src="../../release/$((esui))"></script>
+     __debug__ -->
+
+
+<script>// __debug__
+// 引入控件// __debug__
+include( 'esui.TextInput' );// __debug__
+include( 'esui.Button' );// __debug__
+include( 'esui.validator.RequiredRule' );// __debug__
+include( 'esui.validator.MaxLengthRule' );// __debug__
+include( 'esui.validator.PatternRule' );// __debug__
+</script><!-- __debug__ -->
 </head>
 
 <body>

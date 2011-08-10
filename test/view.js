@@ -18,11 +18,7 @@ test("render, repaint and clear", function() {
     myView.render();
 
     same( baidu.g( 'Main' ).innerHTML, 'sea 22222', "render后，target被填充内容" );
-
-    model.set( 'modeltest', 66666 );
-    myView.repaint();
-    same( baidu.g( 'Main' ).innerHTML, 'sea 66666', "repaint后，target内容被刷新" );
-    
+   
     myView.clear();
     same( baidu.g( 'Main' ).innerHTML, '', "clear后，target内容被清空" );
 

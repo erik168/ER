@@ -18,6 +18,14 @@ var myModule = new er.Module({
                 action  : 'myModule.ext'
             },
             {
+                path    : '/tpl',
+                action  : 'myModule.tpl'
+            },
+            {
+                path    : '/tplbyview',
+                action  : 'myModule.tplbyview'
+            },
+            {
                 path    : '/auto',
                 action  : 'myModule.auto'
             },
@@ -54,6 +62,18 @@ myModule.test = new er.Action({
         testVar[ evt ]++;
     }
 });
+
+er.template.parse('<!--target:tpla-->im a<!--target:tplb-->im b');
+myModule.tpl = new er.Action({
+    template: function () {
+        return this.getQuery('tpl');
+    }
+} );
+myModule.tplbyview = new er.Action({
+    view: function () {
+        return this.getQuery('tpl');
+    }
+} );
 
 
 myModule.hello = new er.Action({

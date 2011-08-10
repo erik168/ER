@@ -41,6 +41,21 @@ test("extend", function () {
     same( testVar.actionext, 2, "actionext方法extend到带别名的Action中" );
 });
 
+test("choose template", function() {
+    er.locator.redirect( '/tpl~tpl=tpla' );
+    same( baidu.g( 'Main' ).innerHTML, 'im a', "通过template属性选中template tpla" );
+    
+    er.locator.redirect( '/tplbyview~tpl=tpla' );
+    same( baidu.g( 'Main' ).innerHTML, 'im a', "通过view属性选中template tpla" );
+    
+    er.locator.redirect( '/tpl~tpl=tplb' );
+    same( baidu.g( 'Main' ).innerHTML, 'im b', "通过template属性选中template tplb" );
+    
+
+    er.locator.redirect( '/tplbyview~tpl=tplb' );
+    same( baidu.g( 'Main' ).innerHTML, 'im b', "通过view属性选中template tplb" );
+});
+
 test("autoload", function() {
     er.locator.redirect( '/auto' );
     stop();

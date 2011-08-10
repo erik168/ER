@@ -6,12 +6,20 @@
 
 <link rel="stylesheet" href="page.css" type="text/css" />
 <link rel="stylesheet" href="../../src/esui/css/ui-tab.css" type="text/css" />
+<!-- __debug__
+<link rel="stylesheet" href="../../release/$((esuicss)).css" type="text/css" />
+__debug__ -->
 <script type="text/javascript" src="../../tool/tangram-1.3.9.js"></script>
-<script type="text/javascript" src="../../tool/include.js"></script>
-<script>
-// 引入控件
-include( 'esui.Tab' );
-</script>
+<script type="text/javascript" src="../../tool/include.js"></script><!-- __debug__ -->
+<!-- __debug__
+     <script type="text/javascript" src="../../release/$((esui))"></script>
+     __debug__ -->
+
+
+<script>// __debug__
+// 引入控件// __debug__
+include( 'esui.Tab' );// __debug__
+</script><!-- __debug__ -->
 <style>
 .panel {border:1px solid #cdcdcd;padding:5px;}
 </style>
