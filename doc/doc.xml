@@ -1047,10 +1047,7 @@ mv asset/mblog-c.js asset/mblog.js
             <section>
                 <title>通过继承扩展Action</title>
                 <para>ER框架默认依赖Tangram JSLibrary，推荐使用T.inherits构建继承关系。下面是简单的例子：</para>
-                <programlisting><![CDATA[ function ListAction() {
-    er.Action.apply( this, Array.prototype.slice.apply( arguments ) );
-    // 扩展属性初始化
-}
+                <programlisting><![CDATA[function ListAction() {}
 
 ListAction.prototype = {
     // 你的扩展方法
