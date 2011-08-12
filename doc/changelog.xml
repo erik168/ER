@@ -36,7 +36,7 @@
         <listitem><para>Action：增加Action自动加载的支持。</para></listitem>
         <listitem><para>Template：增加母版(master)功能的支持。</para></listitem>
         <listitem><para>Template：增加变量替换过滤器的支持( ${value|html} )，并提供html和url两种过滤器。</para></listitem>
-        <listitem><para>修复Firefox下location的query中包含"&"符号的解析截断问题。</para></listitem>
+        <listitem><para>修复Firefox下location的query中包含"&amp;"符号的解析截断问题。</para></listitem>
         <listitem><para>修复IE下权限验证失败自动转向时，浏览器崩溃的问题。</para></listitem>
         <listitem><para>修复opera下历史记录重复，影响前进后退的问题。</para></listitem>
     </orderedlist>
