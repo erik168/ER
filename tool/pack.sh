@@ -41,7 +41,6 @@ mkdir "${ER_DIR}/${TEMP_DIR}/release"
 # u should be use docbook
 echo "===== process: pack doc"
 cp -r "${ER_DIR}/doc" "${ER_DIR}/${TEMP_DIR}/doc"
-rm -f "${ER_DIR}/${TEMP_DIR}/doc/changelog.xml"
 rm -rf "${ER_DIR}/${TEMP_DIR}/doc/er.graffle"
 xsltproc     --stringparam  section.autolabel 1 \
              --stringparam  section.label.includes.component.label 1 \
@@ -115,6 +114,7 @@ packCss() {
 # pack src
 echo "===== process: pack src"
 cp -r "src" "${TEMP_DIR}/src"
+cp -r "src/esui/css/img" "${TEMP_DIR}/release/img"
 packJs "er-core"
 packJs "er"
 packJs "esui"
