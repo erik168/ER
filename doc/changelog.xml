@@ -12,6 +12,22 @@
     </author>
 </articleinfo> 
 
+<section>   
+    <title>2.0.0</title>
+
+    <orderedlist>
+        <listitem><para>Locator：增加reload功能，redirect增加options参数，支持enforce。</para></listitem>
+        <listitem><para>Router：引入router进行中间转发，允许用户自定义转发规则。</para></listitem>
+        <listitem><para>Model：新增Model类，用于管理数据模型，隔离Action与Context。</para></listitem>
+        <listitem><para>Context：增加了change事件机制。</para></listitem>
+        <listitem><para>View：新增View类，用于视图渲染。</para></listitem>
+        <listitem><para>Action：修改执行阶段名[beforeinitcontext -> beforeloadmodel, afterinitcontext -> afterloadmodel]。</para></listitem>
+        <listitem><para>Action：剥离IAction、AbstractAction。</para></listitem>
+        <listitem><para>Action：删除原initcontext相关支持。</para></listitem>
+        <listitem><para>Action：变更view相关支持，移动到er.View中。</para></listitem>
+        <listitem><para>ESUI：完成UI标准化的实现。</para></listitem>
+    </orderedlist>
+</section>
 
 <section>   
     <title>1.3.0</title>
