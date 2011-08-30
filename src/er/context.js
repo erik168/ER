@@ -8,7 +8,6 @@
  */
 
 ///import er;
-///import baidu.object.clone;
 
 /**
  * 运行时的上下文数据管理器
@@ -34,7 +33,7 @@ er.context = function () {
             var contextId   = opt_arg.contextId;  
             var context     = contextId ? privateContext[ contextId ] : publicContext;
             var evtArg      = {};
-            var newValue    = baidu.object.clone( value );
+            var newValue    = value;
             var i, len;
             
             if ( !context ) {
