@@ -70,48 +70,7 @@ er.locator = function () {
      * @param {string} loc
      */
     function updateLocation( loc ) {
-        var historyList,
-            historyInput,
-            isOldLoc,
-            i, 
-            len,
-            isChange;
-        
-        if ( baidu.ie && baidu.ie < 8 ) {
-            //location.hash = loc;
-            
-            historyInput = baidu.g( er._util.getConfig( 'CONTROL_INPUT_ID' ) );
-            if ( historyInput ) {
-                if ( !/(~|&)_ietag=([a-z0-9]+)(&|$)/.test( loc ) ) {
-                    if ( loc.indexOf('~') > 0 ) {
-                        loc += '&';
-                    } else {
-                        loc += '~';
-                    }
-                    
-                    loc += '_ietag=' + er._util.getUID();
-                }
-
-                historyList = baidu.json.parse( historyInput.value );
-
-                for ( i = 0, len = historyList.length; i < len; i++ ) {
-                    if ( historyList[ i ].loc == loc ) {
-                        isOldLoc = i;
-                        break;
-                    }
-                }
-
-                if ( typeof isOldLoc != 'number' ) {
-                    historyList.push( loc );
-                } else {
-                    uIdMap_[ RegExp.$2 ] = 1;
-                }
-
-                historyInput.value = baidu.json.stringify( historyList );
-            }
-        }
-        
-        isChange = currentLocation != loc;
+        var isChange = currentLocation != loc;
 
         // 存储当前信息
         // opera下，相同的hash重复写入会在历史堆栈中重复记录
@@ -149,30 +108,51 @@ er.locator = function () {
         }
 
         // 与当前location相同时不进行route
-        var canRoute = updateLocation( loc );
-        if ( canRoute || opt.enforce ) {
+        var isLocChanged = updateLocation( loc );
+        if ( isLocChanged || opt.enforce ) {
             loc = currentLocation;
 
             // 触发onredirect事件
             er.locator.onredirect();
             
-            // 权限判断以及转向
-            var loc302 = authorize( loc );
-            if ( loc302 ) {
-                er.locator.redirect( loc302 );
-                return;
-            }
-
-            // ie下使用中间iframe作为中转控制
-            // 其他浏览器直接调用控制器方法
-            if ( baidu.ie && baidu.ie < 8 ) {
-                ieRoute( loc );
-            } else {
+            // 当location未变化，强制刷新时，直接route
+            if ( !isLocChanged ) {
                 er.router( loc );
+            } else {
+                doRoute( loc );
             }
         }
     }
     
+    /**
+     * hash变化的事件监听器
+     *
+     * @private
+     */
+    function changeListener() {
+        var loc = getLocation();
+        if ( loc !== currentLocation ) {
+            doRoute( loc );
+        }
+    }
+
+    function doRoute( loc ) {
+        // 权限判断以及转向
+        var loc302 = authorize( loc );
+        if ( loc302 ) {
+            redirect( loc302 );
+            return;
+        }
+
+        // ie下使用中间iframe作为中转控制
+        // 其他浏览器直接调用控制器方法
+        if ( baidu.ie && baidu.ie < 8 ) {
+            ieRoute( loc );
+        } else {
+            er.router( loc );
+        }
+    }
+
     /**
      * 刷新当前地址
      * 
@@ -180,7 +160,7 @@ er.locator = function () {
      */
     function reload() {
         if ( currentLocation ) {
-            er.locator.redirect( currentLocation, { enforce: true } );
+            redirect( currentLocation, { enforce: true } );
         }
     }
     
@@ -213,87 +193,22 @@ er.locator = function () {
     function escapeIframeContent( source ) {
         return source.replace( /\\/g, "\\\\" ).replace( /\"/g, "\\\"" );
     }
-    
+
     /**
      * 初始化locator
      *
-     * @inner
+     * @private
      */
     function init() {
-        /**
-         * @inner
-         */
-        function changeListener() {
-            var loc = getLocation();
-            if ( loc !== currentLocation ) {
-                er.locator.redirect( loc );
-            }
-        }
-        
         if ( baidu.ie && baidu.ie < 8 ) {
-            ieIframeRecorderInit();
-            ieInputRecorderInit();
-        }
-        
-        setInterval( changeListener, 100 );
-    }
-    
-    /**
-     * ie下用于记录与历史数据的input初始化
-     *
-     * @private
-     */
-    function ieInputRecorderInit() {
-        var input      = baidu.g( er._util.getConfig( 'CONTROL_INPUT_ID' ) ),
-            currentLoc = location.hash.replace( /^#/, '' ),
-            currentIndex,
-            historyList,
-            i, len, item;
-
-        if ( !input ) {
-            return;
-        }
-        
-        input.value = input.value || '[]';
-        historyList = baidu.json.parse( input.value );
-        
-        // 记录一遍ietag
-        for ( i = 0, len = historyList.length; i < len; i++ ) {
-            item = historyList[ i ];
-            if ( /_ietag=([a-z0-9]+)(&|$)/.test( item.loc ) ) {
-                uIdMap_[ RegExp.$1 ] = 1;
-            }
-        }
-
-        er.router._enable( 0 );
-        for ( i = 0; i < len; i++ ) {
-            item = historyList[ i ];
-            if ( item == currentLoc ) {
-                currentIndex = i;
-                (i == len - 1) && er.router._enable( 1 );
-            }
-            ieRoute( item );
-        }
-
-        er.router._enable( 1 );
-        i -= ( currentIndex + 1 );
-        i && history.go( -i );
-    }
-
-    /**
-     * ie下用于记录与控制跳转的iframe初始化
-     *
-     * @private
-     */
-    function ieIframeRecorderInit() {
-        // 具有input记录历史信息的时候
-        // 历史行为iframe的id需要变更
-        // 避免先前的历史被保存
-        if ( baidu.g( er._util.getConfig( 'CONTROL_INPUT_ID' ) ) ) {
-            er.config.CONTROL_IFRAME_ID = er._util.getConfig('CONTROL_IFRAME_ID') + (new Date).getTime();
+            ieCreateIframeRecorder();
+            setInterval( changeListener, 100 );
         } 
-
-        ieIframeRecorderCreate();
+        else if ( 'onhashchange' in window ) {
+            window.onhashchange = changeListener;
+        } else {
+            setInterval( changeListener, 100 );
+        }
     }
     
     /**
@@ -301,7 +216,7 @@ er.locator = function () {
      *
      * @private
      */
-    function ieIframeRecorderCreate() {
+    function ieCreateIframeRecorder() {
         var iframe = document.createElement('iframe'),
             size   = 200,
             pos    = '-1000px';
