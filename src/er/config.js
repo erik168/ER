@@ -11,7 +11,6 @@
 
 er.config = {
     CONTROL_IFRAME_ID   : 'ERHistroyRecordIframe',
-    CONTROL_INPUT_ID    : 'ERHistoryRecordInput',
     DEFAULT_INDEX       : '/',
     MAIN_ELEMENT_ID     : 'Main',
     ACTION_ROOT         : '/asset/js',
