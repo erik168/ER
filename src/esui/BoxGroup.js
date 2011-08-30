@@ -121,7 +121,7 @@ esui.BoxGroup.prototype = {
         els = parent.getElementsByTagName( 'input' );
         len = els.length;
         for ( i = 0; i < len; i++ ) {
-            el = els[ i ],
+            el = els[ i ];
             control = esui.util.getControlByDom( el );
            
             if (control 

@@ -409,7 +409,7 @@ esui.TreeView.prototype = {
 	 * @param {Object} dataItem
 	 */
 	repaintNodeText: function( dataItem ) {
-		var me = this; 
+		var me          = this,
             itemId      = me.getItemId( dataItem ),
 			itemHtml    = me.getItemHtml( dataItem ),
             nodeEl      = baidu.g( me.__getId( 'node' + itemId ) );
@@ -426,7 +426,7 @@ esui.TreeView.prototype = {
 	 * @param {Object} dataItem
 	 */	
     repaintNode: function ( dataItem ) {
-        var me = this; 
+        var me          = this,
             itemId      = me.getItemId( dataItem ),
             children    = me.getChildren( dataItem ),
             nodeEl      = baidu.g( me.__getId( 'node' + itemId ) ),

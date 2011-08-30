@@ -91,7 +91,7 @@ esui.Link.prototype = {
      * @public
      * @param {string} target 链接target
      */
-    setTarget: function ( 链接target ) {
+    setTarget: function ( target ) {
         !target && ( target = '' );
         this.main.target = target;
     },
