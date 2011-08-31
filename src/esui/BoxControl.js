@@ -153,7 +153,7 @@ esui.BoxControl.prototype = {
         if ( !me._label ) {
             label = document.createElement( 'label' );
             label.className = me.__getClass( 'label' );
-            baidu.setAttr( label, 'for', me.__getId() );
+            baidu.setAttr( label, 'for', main.id );
 
             baidu.dom.insertAfter( label, main );
             me._label = label;

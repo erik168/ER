@@ -46,7 +46,7 @@ esui.Control.prototype = {
         var main = this.main;
 
         if ( !this._isRendered ) {
-            main.id = this.__getId();
+            !main.id && ( main.id = this.__getId() );
             main.setAttribute( 'data-control', this.id );
             baidu.addClass( main, this.__getClass() );
             
