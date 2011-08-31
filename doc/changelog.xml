@@ -13,6 +13,21 @@
 </articleinfo> 
 
 <section>   
+    <title>2.0.1</title>
+
+    <orderedlist>
+        <listitem><para>Locator：在支持的浏览器使用onhashchange替代轮询方案。</para></listitem>
+        <listitem><para>Locator：删除在老旧浏览器上使用input[type=text]跨页面前进后退的支持。</para></listitem>
+        <listitem><para>Context：删除set context对value的自动克隆。</para></listitem>
+        <listitem><para>ESUI：render时如果主元素有id，则不自动生成id。</para></listitem>
+        <listitem><para>ESUI - Link：修复语法错误。</para></listitem>
+        <listitem><para>ESUI - BoxGroup：修复语法错误。</para></listitem>
+        <listitem><para>ESUI - MultiCalendar：修复语法错误。</para></listitem>
+        <listitem><para>ESUI - TreeView：修复全局变量逃逸的错误。</para></listitem>
+    </orderedlist>
+</section>
+
+<section>   
     <title>2.0.0</title>
 
     <orderedlist>
