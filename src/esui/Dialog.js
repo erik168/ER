@@ -37,7 +37,7 @@ esui.Dialog = function ( options ) {
     this.__initOption('dragable', null, 'DRAGABLE');
 
     // 初始化关闭按钮参数
-    this.__initOption('closeButton', null, 'CLOSE_BUTTON')
+    this.__initOption('closeButton', null, 'CLOSE_BUTTON');
     
     // 初始化宽度
     this.__initOption('width', null, 'WIDTH');
