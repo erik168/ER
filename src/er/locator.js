@@ -129,7 +129,10 @@ er.locator = function () {
      */
     function changeListener() {
         var loc = getLocation();
-        if ( loc !== currentLocation ) {
+
+        if ( !loc ) {
+            redirect( '' );
+        } else if ( loc !== currentLocation ) {
             doRoute( loc );
         }
     }
@@ -204,6 +207,7 @@ er.locator = function () {
         } 
         else if ( 'onhashchange' in window ) {
             window.onhashchange = changeListener;
+            changeListener();
         } else {
             setInterval( changeListener, 100 );
         }
