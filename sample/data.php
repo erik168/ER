@@ -27,7 +27,7 @@ function sorter( $one, $other ) {
 
 // 循环生成简单的示例数据
 $data = array();
-for ( $i = 19; $i > 0; $i-- ) {
+for ( $i = 100; $i > 0; $i-- ) {
 	$user = new User( $i, "User$i" );
 	array_push( $data, $user );
 }
