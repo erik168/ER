@@ -5,5 +5,7 @@
 document.write( '<script src="src/sample.js" type="text/javascript"></script>' );
 
 document.write( '<script src="src/user.js" type="text/javascript"></script>' );
+document.write( '<script src="src/user/model.js" type="text/javascript"></script>' );
+document.write( '<script src="src/user/model/list.js" type="text/javascript"></script>' );
 document.write( '<script src="src/user/list.js" type="text/javascript"></script>' );
 
