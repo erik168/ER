@@ -8,20 +8,20 @@ __debug__ */
 
 document.write( '<script src="../src/er.js" type="text/javascript"></script>' );            // __debug__
 document.write( '<script src="../src/er/_util.js" type="text/javascript"></script>' );      // __debug__
+document.write( '<script src="../src/er/init.js" type="text/javascript"></script>' );       // __debug__
 document.write( '<script src="../src/er/config.js" type="text/javascript"></script>' );     // __debug__
 document.write( '<script src="../src/er/context.js" type="text/javascript"></script>' );    // __debug__
 document.write( '<script src="../src/er/permission.js" type="text/javascript"></script>' ); // __debug__
 document.write( '<script src="../src/er/Module.js" type="text/javascript"></script>' );     // __debug__
 document.write( '<script src="../src/er/template.js" type="text/javascript"></script>' );   // __debug__
 document.write( '<script src="../src/er/router.js" type="text/javascript"></script>' );     // __debug__
-document.write( '<script src="../src/er/locator.js" type="text/javascript"></script>' );    // __debug__
 document.write( '<script src="../src/er/controller.js" type="text/javascript"></script>' ); // __debug__
+document.write( '<script src="../src/er/locator.js" type="text/javascript"></script>' );    // __debug__
 document.write( '<script src="../src/er/Model.js" type="text/javascript"></script>' );      // __debug__
 document.write( '<script src="../src/er/View.js" type="text/javascript"></script>' );       // __debug__
 document.write( '<script src="../src/er/IAction.js" type="text/javascript"></script>' );    // __debug__
 document.write( '<script src="../src/er/AbstractAction.js" type="text/javascript"></script>' ); // __debug__
 document.write( '<script src="../src/er/Action.js" type="text/javascript"></script>' );     // __debug__
-document.write( '<script src="../src/er/init.js" type="text/javascript"></script>' );       // __debug__
 document.write( '<script src="../src/er/extend.js" type="text/javascript"></script>' );     // __debug__
 document.write( '<script src="../src/er/extend/ui.js" type="text/javascript"></script>' );  // __debug__
 document.write( '<script src="../src/er/extend/action_enhance.js" type="text/javascript"></script>' ); // __debug__
