@@ -28,7 +28,7 @@ esui.validator.MaxLengthRule.prototype = {
      * 
      * @public
      */
-    errorMessage : "${title}长度不能超过${maxlength}",
+    errorMessage : "${title}长度不能超过${maxlength}个字符",
 
     /**
      * 获取规则名称
