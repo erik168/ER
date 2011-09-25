@@ -1,11 +1,11 @@
 [js] er
+[js] er.template
+[js] er.controller
 [js] er.locator
 [js] er.router
-[js] er.template
 [js] er.Model
 [js] er.Action
 [js] er.View
-[js] er.controller
 [js] er.extend
 [js] er.extend.ui
 [js] er.extend.action_like_form
