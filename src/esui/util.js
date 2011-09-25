@@ -59,7 +59,7 @@ esui.util = function () {
                 if ( attrStr ) {
                     // 解析ui属性
                     attrs       = {};
-                    attrArr     = attrStr.split(';');
+                    attrArr     = attrStr.split( /;\s*/ );
                     attrArrLen  = attrArr.length;
 
                     while ( attrArrLen-- ) {
@@ -70,7 +70,7 @@ esui.util = function () {
                         } 
                         
                         // 获取属性
-                        attrSegment = attrItem.split( ':' );
+                        attrSegment = attrItem.split( /\s*:/ );
                         attr        = attrSegment[ 0 ];
                         attrValue   = attrSegment[ 1 ];
                         attrs[attr] = attrValue;
