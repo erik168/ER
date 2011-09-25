@@ -16,8 +16,10 @@
     <title>2.0.2</title>
 
     <orderedlist>
-        <listitem><para>Locator：修复在chrome、fx下无hash进入页面时，不自动跳转到DEFAULT_INDEX的问题。</para></listitem>
+        <listitem><para>Locator：修复在支持onhashchange的浏览器下无hash进入页面时，不自动跳转到DEFAULT_INDEX的问题。</para></listitem>
         <listitem><para>ESUI - util：init方法允许dom的ui attribute中“;”号后与“:”号前存在空白字符。</para></listitem>
+        <listitem><para>ESUI - BoxGroup：删除一个多余的var声明。（接受firede的修改）</para></listitem>
+        <listitem><para>ESUI - Dialog：补充构造函数语句中漏掉的一个“;”号。（接受firede的修改）</para></listitem>
         <listitem><para>ESUI - Schedule：删除数组后多余的“,”号。</para></listitem>
         <listitem><para>ESUI - MaxLengthRule：更新错误提示文字。</para></listitem>
         <listitem><para>示例项目：修正core引入src的依赖顺序问题；提取model到独立的文件。</para></listitem>
