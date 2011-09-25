@@ -45,7 +45,7 @@ esui.Schedule.DAY_WORDS = [
     '星期四',
     '星期五',
     '星期六',
-    '星期日',
+    '星期日'
 ];
 
 esui.Schedule.SHORTCUT = function () {
