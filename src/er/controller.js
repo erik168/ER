@@ -422,7 +422,7 @@ er.controller = function () {
     }
     
     // 注册初始化函数
-    er.init.addIniter( init );
+    er.init.addIniter( init, 1 );
 
     return {
         forward                 : forward,

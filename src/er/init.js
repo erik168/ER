@@ -37,7 +37,7 @@ er.init = function () {
             if ( currIndex < initers.length ) { 
                 phase = 'run';
                 initer = initers[ currIndex++ ];
-                initer();
+                (typeof initer == 'function') && initer();
                 _continue();
             } else {
                 phase = 'inited';

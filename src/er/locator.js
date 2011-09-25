@@ -269,7 +269,7 @@ er.locator = function () {
     }
     
     // 注册初始化函数
-    er.init.addIniter( init );
+    er.init.addIniter( init, 2 );
 
     // 返回暴露的方法
     return {
