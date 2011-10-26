@@ -798,11 +798,11 @@ noAuthLocation: '/member'
 
             <section>
                 <title>在view中定义控件属性</title>
-                <para>有时在模板中定义ui属性时，值可能会比较长。这时候可以在view中通过UI_PROP_MAP项定义控件的属性。定义的值将通过id映射到控件。这时候我们需要手工创建er.View实例。</para>
+                <para>有时在模板中定义ui属性时，值可能会比较长。这时候可以在view中通过UI_PROP项定义控件的属性。定义的值将通过id映射到控件。这时候我们需要手工创建er.View实例。</para>
                 <example><title>在view中定义控件属性</title>
                 <programlisting><![CDATA[
 new er.View( {
-    UI_PROP_MAP: {
+    UI_PROP: {
         myTable: {
             datasource : '*list',
             fields     : '*fields'
@@ -811,7 +811,7 @@ new er.View( {
 } );
     ]]></programlisting></example>
                 
-                <tip><para>建议在模板中定义控件的id和type，控件的其他属性通过view的UI_PROP_MAP项定义。</para></tip>
+                <tip><para>建议在模板中定义控件的id和type，控件的其他属性通过view的UI_PROP项定义。</para></tip>
             </section>
 
             <section>
