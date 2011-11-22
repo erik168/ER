@@ -695,7 +695,7 @@ esui.MultiCalendar.prototype = {
      * @param {number} year 选中的年
      * @return {Array}
      */
-    _getMonthOptions: function (year) {
+    _getMonthOptions: function ( year ) {
         var range   = this.range,
             ds      = [],
             i       = 0,
@@ -703,12 +703,17 @@ esui.MultiCalendar.prototype = {
         
         if ( year == range.begin.getFullYear() ) {
             i = range.begin.getMonth();
-        } else if ( year == range.end.getFullYear() ) {
+        } 
+        
+        if ( year == range.end.getFullYear() ) {
             len = range.end.getMonth();
         }
 
         for ( ; i <= len; i++ ) {
-            ds.push( {name: (i + 1), value:i} );
+            ds.push( {
+                name: (i + 1), 
+                value:i
+            } );
         }
 
         return ds;

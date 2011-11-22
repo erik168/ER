@@ -523,7 +523,9 @@ esui.Calendar.prototype = {
         
         if ( year == range.begin.getFullYear() ) {
             i = range.begin.getMonth();
-        } else if ( year == range.end.getFullYear() ) {
+        } 
+        
+        if ( year == range.end.getFullYear() ) {
             len = range.end.getMonth();
         }
 
