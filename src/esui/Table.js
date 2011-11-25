@@ -238,7 +238,9 @@ esui.Table.prototype = {
             for ( i = 0, len = followDoms.length; i < len; i++ ) {
                 dom = followDoms[ i ];
                 followWidths[ i ] = getStyleNum( dom, 'padding-left' ) 
-                                  + getStyleNum( dom, 'padding-right' );             
+                                  + getStyleNum( dom, 'padding-right' )  
+                                  + getStyleNum( dom, 'border-left' ) 
+                                  + getStyleNum( dom, 'border-right' ); 
                 followHeights[ i + 1 ] = followHeights[ i ] + dom.offsetHeight;
             }
             followHeights[ i + 1 ] = followHeights[ i ];
