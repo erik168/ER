@@ -139,7 +139,7 @@ er.template = function () {
      */
     function getContent( node, opt_target ) {
         if ( node && typeof node == 'object' ) { 
-            var list = node.content.slice(0);
+            var list = node.content.slice( 0 );
             var len  = list instanceof Array && list.length;
             var segment;
             var temp;
@@ -161,7 +161,7 @@ er.template = function () {
                         // 解析contentplaceholder
                         case 'contentplaceholder':
                             if ( opt_target ) {
-                                temp = opt_target.contentMap[ segment.id ].content.join('');
+                                temp = getContent( opt_target.contentMap[ segment.id ] );
                             }
                             break;
                         }
@@ -357,7 +357,9 @@ er.template = function () {
                     break;
 
                 case 'import':
-                    if ( currentNode ) {
+                    if ( currentContent ) {
+                        currentContent.content.push( node );
+                    } else if ( currentNode ) {
                         currentNode.content.push( node );
                     }
 
