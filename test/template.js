@@ -30,6 +30,20 @@ test("parse with Master", function() {
 		+ '<!-- master:masterTest2 -->'
 		+ '<!-- contentplaceholder:content1 -->def');
 	equals(er.template.get('contentTarget1'), 'abcdef', '指定了master的target，内容由master、contentplaceholder和content决定。');
+
+    er.template.parse(
+        '<!-- target:contentImport -->import!!'
+        + '<!-- master:masterTest3 --><!-- contentplaceholder:content3 -->'
+        + '<!-- target:contentTarget3(master=masterTest3) -->'
+        + '<!-- content:content3 -->hello <!--import:contentImport-->');
+    equals(er.template.get('contentTarget3'), 'hello import!!', '带master的target，content中允许使用import');
+
+    er.template.parse(
+        '<!-- target:contentImport2 -->import!!'
+        + '<!-- master:masterTest4 --><!-- contentplaceholder:content4 --><!--import:contentImport2-->'
+        + '<!-- target:contentTarget4(master=masterTest4) -->'
+        + '<!-- content:content4 -->hello ');
+    equals(er.template.get('contentTarget4'), 'hello import!!', 'master中允许使用import');
 });
 
 test("merge", function() {
