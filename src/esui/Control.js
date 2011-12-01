@@ -250,21 +250,26 @@ esui.Control.prototype = {
      * @return {string}
      */
     __getClass: function ( name ) {
-        var me = this,
-            type = me._type.toLowerCase(),
-            className = 'ui-' + type,
-            skinName = 'skin-' + type + '-' + me.skin;
+        var me          = this,
+            type        = me._type.toLowerCase(),
+            suffix      = (name ? '-' + name : ''),
+            className   = [ ('ui-' + type + suffix) ],
+            skinName    = me.skin,
+            i, len;
         
-        if ( name ) {
-            className += '-' + name;
-            skinName += '-' + name;
-        }    
-        
-        if ( me.skin ) {
-            className += ' ' + skinName;
+        // 将skin转换成数组
+        if ( skinName && typeof skinName == 'string' ) {
+            skinName = me.skin = skinName.split( /\s+/ );
         }
+
+
+        if ( skinName instanceof Array ) {
+            for ( i = 0, len = skinName.length; i < len; i++ ) {
+                className.push( 'skin-' + type + '-' + skinName[ i ] + suffix );
+            }
+        }  
         
-        return className;
+        return className.join( ' ' );
     },
     
     /**
