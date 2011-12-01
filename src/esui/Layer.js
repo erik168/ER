@@ -70,6 +70,18 @@ esui.Layer.prototype = {
     },
     
     /**
+     * 获取部件的css class
+     * 
+     * @override
+     * @return {string}
+     */
+    __getClass: function ( name ) {
+        name = name || this.partName;
+
+        return esui.Control.prototype.__getClass.call( this, name );
+    },
+    
+    /**
      * 获取鼠标移入的事件handler
      *
      * @private
