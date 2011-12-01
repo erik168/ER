@@ -137,7 +137,9 @@ esui.Select.prototype = {
             layer = esui.util.create( 'Layer', {
                     id      : layerId,
                     autoHide: 'click',
-                    retype  : 'select-layer'
+                    retype  : me._type,
+                    partName: 'layer',
+                    skin    : me.skin
                 } );
             layer.appendTo();
             me._controlMap[ 'layer' ] = layer;

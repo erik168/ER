@@ -454,7 +454,9 @@ esui.MultiCalendar.prototype = {
                 {
                     id       : layerId,
                     autoHide : 'click',
-                    retype   : 'mcal-layer'
+                    retype   : me._type,
+                    partName : 'layer',
+                    skin     : me.skin
                 } );
         
         me._controlMap.layer = layer;

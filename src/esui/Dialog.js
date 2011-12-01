@@ -224,7 +224,7 @@ esui.Dialog.prototype = {
         layer = esui.util.create( 'Layer', {
                 id      : me.__getId('layer'),
                 retype  : me._type,
-                skin    : me.dragable ? 'dragable' : '',
+                skin    : me.skin + (me.dragable ? ' dragable' : ''),
                 width   : me.width
             } );
         layer.appendTo();

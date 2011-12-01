@@ -269,7 +269,9 @@ esui.Calendar.prototype = {
             layer   = esui.util.create( 'Layer', {
                     id      : layerId,
                     autoHide: 'click',
-                    retype  : 'cal-layer'
+                    retype  : me._type,
+                    partName: 'layer',
+                    skin    : me.skin
                 } );
         
         me._controlMap.layer = layer;
