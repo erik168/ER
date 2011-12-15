@@ -367,6 +367,10 @@ esui.get( 'myTable6' ).onsubrowopen =
 esui.get( 'myTable7' ).onsubrowopen = function ( index, dataItem ) {
 	this.getSubrow( index ).innerHTML = '<span style="line-height:30px;">Hello ' + dataItem.name + '</span>';
 };
+esui.get( 'myTable6' ).onsubrowclose = 
+esui.get( 'myTable7' ).onsubrowclose = function ( index, dataItem ) {
+    this.getSubrow( index ).innerHTML = '';
+};
 
 esui.get( 'myTable5' ).onsort = function ( field, order ) {
 	var orderBy = field.field;

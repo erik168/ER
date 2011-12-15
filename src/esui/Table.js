@@ -1484,18 +1484,22 @@ esui.Table.prototype = {
     _closeSubrow: function ( index ) {
         var me          = this,
             entry       = baidu.g( me._getSubentryId( index ) );
-
-        me._entryOut( index );
-        me._subrowIndex = null;
         
-        baidu.removeClass( entry, me.__getClass( 'subentry-opened' ) );
-        baidu.removeClass( me._getRow( index ), me.__getClass( 'row-unfolded') );
+        if ( me.onsubrowclose( index, me.datasource[ index ] ) !== false ) {
+            me._entryOut( index );
+            me._subrowIndex = null;
+            
+            baidu.removeClass( entry, me.__getClass( 'subentry-opened' ) );
+            baidu.removeClass( me._getRow( index ), me.__getClass( 'row-unfolded') );
+            
+            entry.setAttribute( 'title', me.subEntryOpenTip );
+            entry.setAttribute( 'data-subrowopened', '' );
+            
+            baidu.hide( me._getSubrowId( index ) );
+            return true;
+        }
         
-        entry.setAttribute( 'title', me.subEntryOpenTip );
-        entry.setAttribute( 'data-subrowopened', '' );
-        
-        baidu.hide( me._getSubrowId( index ) );
-        return true;
+        return false;
     },
     
     onsubrowopen: new Function(),
@@ -1510,12 +1514,17 @@ esui.Table.prototype = {
     openSubrow: function ( index ) {
         var me           = this,
             currentIndex = me._subrowIndex,
-            entry        = baidu.g( me._getSubentryId( index ) );
+            entry        = baidu.g( me._getSubentryId( index ) ),
+            closeSuccess = 1;
         
         if ( esui.util.hasValue( currentIndex ) ) {
-            me._closeSubrow( currentIndex );
+            closeSuccess = me._closeSubrow( currentIndex );
         }
         
+        if ( !closeSuccess ) {
+            return;
+        }
+
         baidu.addClass( entry, me.__getClass( 'subentry-opened' ) );
         baidu.addClass( me._getRow( index ), me.__getClass( 'row-unfolded' ) );
         entry.setAttribute( 'title', me.subEntryCloseTip );
