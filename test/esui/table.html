@@ -39,10 +39,12 @@ include( 'esui.Table' );// __debug__
 	<div ui="type:Table;id:myTable4;columnResizable:1;followHead:1"></div>
 	<h3>可排序并可选择的表格</h3>
 	<div ui="type:Table;id:myTable5;columnResizable:1;sortable:1;select:multi"></div>
-	<h3>带附加行的表格</h3>
+	<h3>带附加行的表格(附加行互斥)</h3>
 	<div ui="type:Table;id:myTable6;columnResizable:1;subrow:1"></div>
+    <h3>带附加行的表格(附加行不互斥)</h3>
+	<div ui="type:Table;id:myTable7;columnResizable:1;subrow:1"></div>
 	<h3>可编辑并带注脚的表格</h3>
-	<div ui="type:Table;id:myTable7;editable:1;columnResizable:1"></div>
+	<div ui="type:Table;id:myTable8;editable:1;columnResizable:1"></div>
 </div>
 <script>
 var data = [
@@ -243,7 +245,42 @@ esui.init( document.body, {
             }
         ]
 	},
-	myTable7: {
+    myTable7: {
+        subrowMutex: 0,
+		datasource: data,
+		fields: [
+            {
+                field: 'id',
+                title: '编号',
+                stable: true,
+                width: 50,
+				align: 'center',
+                content: function (item) {
+                    return item.id;
+                }
+            },
+            {
+                field: 'name',
+                title: '姓名',
+				subEntry: 1,
+                width: 300,
+                content: function (item) {
+					return item.name
+				}
+            },
+            {
+                field: 'sex',
+                title: '性别',
+                width: 50,
+				resizable: 1,
+				align: 'left',
+                content: function (item) {
+					return ['女', '男'][item.sex || 0];
+				}
+            }
+        ]
+	},
+	myTable8: {
 		datasource: data,
 		fields: [
             {
@@ -326,7 +363,8 @@ esui.get( 'myTable7' ).onedit = function (value, options, editor) {
 	return false;
 };
 
-esui.get( 'myTable6' ).onsubrowopen = function ( index, dataItem ) {
+esui.get( 'myTable6' ).onsubrowopen = 
+esui.get( 'myTable7' ).onsubrowopen = function ( index, dataItem ) {
 	this.getSubrow( index ).innerHTML = '<span style="line-height:30px;">Hello ' + dataItem.name + '</span>';
 };
 

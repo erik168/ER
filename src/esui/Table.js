@@ -43,6 +43,7 @@ esui.Table = function ( options ) {
     this.__initOption( 'sortable', null, 'SORTABLE' );
     this.__initOption( 'columnResizable', null, 'COLUMN_RESIZABLE' );
     this.__initOption( 'rowWidthOffset', null, 'ROW_WIDTH_OFFSET' );
+    this.__initOption( 'subrowMutex', null, 'SUBROW_MUTEX' );
     this.__initOption( 'subEntryOpenTip', null, 'SUBENTRY_OPEN_TIP' );
     this.__initOption( 'subEntryCloseTip', null, 'SUBENTRY_CLOSE_TIP' );
     this.__initOption( 'subEntryWidth', null, 'SUBENTRY_WIDTH' );
@@ -65,6 +66,7 @@ esui.Table.FOLLOW_HEAD          = 0;
 esui.Table.SORTABLE             = 0;
 esui.Table.COLUMN_RESIZABLE     = 0;
 esui.Table.ROW_WIDTH_OFFSET     = -1;
+esui.Table.SUBROW_MUTEX         = 1;
 esui.Table.SUBENTRY_OPEN_TIP    = '点击展开';
 esui.Table.SUBENTRY_CLOSE_TIP   = '点击收起';
 esui.Table.SUBENTRY_WIDTH       = 18;
@@ -1451,7 +1453,7 @@ esui.Table.prototype = {
      */
     fireSubrow: function ( index ) {
         var me              = this,
-            currentIndex    = me._subrowIndex,
+            entryId         = me._getSubentryId( index ),
             datasource      = me.datasource,
             dataLen         = (datasource instanceof Array && datasource.length),
             dataItem;
@@ -1460,13 +1462,13 @@ esui.Table.prototype = {
             return;
         }
         
-        if ( currentIndex !== index ) {
+        if ( !baidu.g( entryId ).getAttribute( 'data-subrowopened' ) ) {
             dataItem = datasource[ index ];
             if ( me.onsubrowopen( index, dataItem ) !== false ) {
                 me.openSubrow( index );
             }
         } else {
-            me._closeSubrow( currentIndex );
+            me._closeSubrow( index );
         }
         
         me._entryOver( index );
@@ -1480,16 +1482,18 @@ esui.Table.prototype = {
      */
     _closeSubrow: function ( index ) {
         var me          = this,
-            subrowId    = me._getSubrowId( index ),
-            entryId     = me._getSubentryId( index );
+            entry       = baidu.g( me._getSubentryId( index ) );
 
         me._entryOut( index );
         me._subrowIndex = null;
-        baidu.removeClass( entryId, me.__getClass( 'subentry-opened' ) );
-        baidu.removeClass( me._getRow( index ), me.__getClass( 'row-unfolded') );
-        baidu.hide( subrowId );
-        baidu.setAttr( entryId, 'title', me.subEntryOpenTip );
         
+        baidu.removeClass( entry, me.__getClass( 'subentry-opened' ) );
+        baidu.removeClass( me._getRow( index ), me.__getClass( 'row-unfolded') );
+        
+        entry.setAttribute( 'title', me.subEntryOpenTip );
+        entry.setAttribute( 'data-subrowopened', '' );
+        
+        baidu.hide( me._getSubrowId( index ) );
         return true;
     },
     
@@ -1513,8 +1517,11 @@ esui.Table.prototype = {
         baidu.addClass( entry, me.__getClass( 'subentry-opened' ) );
         baidu.addClass( me._getRow( index ), me.__getClass( 'row-unfolded' ) );
         entry.setAttribute( 'title', me.subEntryCloseTip );
+        entry.setAttribute( 'data-subrowopened', '1' );
+        
         baidu.show( me._getSubrowId( index ) );
-        me._subrowIndex = index;
+        
+        me.subrowMutex && ( me._subrowIndex = index );
     },
     
     /**
