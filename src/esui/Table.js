@@ -1165,7 +1165,8 @@ esui.Table.prototype = {
             esui.util.format(
                 me._tplRowPrefix,
                 me.__getId( 'row' ) + index,
-                me.__getClass( 'row' ),
+                me.__getClass( 'row' ) + ' ' 
+                    + me.__getClass( 'row-' + ((index % 2) ? 'odd' : 'even') ),
                 me.__getStrCall( '_rowOverHandler', index ),
                 me.__getStrCall( '_rowOutHandler', index ),
                 ( me.selectMode == 'line' ? me.__getStrCall( '_rowClickHandler', index ) : '' )
@@ -1498,6 +1499,7 @@ esui.Table.prototype = {
     },
     
     onsubrowopen: new Function(),
+    onsubrowclose: new Function(),
     
     /**
      * 打开子行
