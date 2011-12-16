@@ -393,7 +393,7 @@ esui.Select.prototype = {
             i,
             item;
 
-        if ( value ) {
+        if ( esui.util.hasValue( value ) ) {
             for ( i = 0, len = items.length; i < len; i++ ) {
                 item = items[ i ].getAttribute( 'value' );
                 if ( item == value ) {
