@@ -239,10 +239,10 @@ esui.SideBar.prototype = {
             baidu.addClass( me._getNeighbor(), me.__getClass( 'neighbor' ) );
             
             // 初始化控制按钮，内容区域，mat和minibar
-            me._initCtrlBtn();
             me._initContent();
             me._renderMat();
             me._renderMiniBar();
+            me._initCtrlBtn();
             
             // 挂载resize和scorll的listener
             me.heightReseter = me._getHeightReseter();
