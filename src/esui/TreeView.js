@@ -86,7 +86,8 @@ esui.TreeView.prototype = {
     _getChildsHtml: function ( children, hideChildren, level ) {
         var me = this,
             htmlArr = [],
-            i;
+            i,
+            len;
 
         for ( i = 0, len = children.length; i < len; i++ ) {
             htmlArr.push(
