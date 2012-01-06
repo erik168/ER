@@ -24,7 +24,7 @@
     font-weight:bold;
 }
 
-.skin-dialog-dragable .ui-dialog-head-hover {
+.skin-dialog-draggable .ui-dialog-head-hover {
 	background:#394459 url('img/dragable.png') center 10px no-repeat;
     cursor:move;
 }

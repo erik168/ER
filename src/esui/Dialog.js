@@ -34,7 +34,7 @@ esui.Dialog = function ( options ) {
     this.__initOption('autoPosition', null, 'AUTO_POSITION');
     
     // 初始化可拖拽参数
-    this.__initOption('dragable', null, 'DRAGABLE');
+    this.__initOption('draggable', null, 'DRAGGABLE');
 
     // 初始化关闭按钮参数
     this.__initOption('closeButton', null, 'CLOSE_BUTTON');
@@ -89,7 +89,7 @@ esui.Dialog.prototype = {
         this._resizeHandler(); 
 
         // 拖拽功能初始化
-        if ( this.dragable ) {
+        if ( this.draggable ) {
             baidu.dom.draggable( main, {handler:this.getHead()} );
         }        
         
@@ -224,7 +224,7 @@ esui.Dialog.prototype = {
         layer = esui.util.create( 'Layer', {
                 id      : me.__getId('layer'),
                 retype  : me._type,
-                skin    : me.skin + (me.dragable ? ' dragable' : ''),
+                skin    : me.skin + ( me.draggable ? ' draggable' : '' ),
                 width   : me.width
             } );
         layer.appendTo();

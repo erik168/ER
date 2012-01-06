@@ -31,7 +31,7 @@ include( 'esui.Dialog' );// __debug__
 	<td><div ui="type:Button;id:testDialog">dialog</div></td>
 	<td><div ui="type:Button;id:testDialog2">dialog has mask</div></td>
 	<td><div ui="type:Button;id:testDialog3">dialog has white mask</div></td>
-	<td><div ui="type:Button;id:testDialog4">dialog dragable</div></td>
+	<td><div ui="type:Button;id:testDialog4">dialog draggable</div></td>
 	<td><div ui="type:Button;id:testDialog5">dialog auto position</div></td>
 	<td><div ui="type:Button;id:testDialog6">alert</div></td>
 	<td><div ui="type:Button;id:testDialog7">confirm</div></td>
@@ -61,11 +61,11 @@ var whiteMaskDialog = esui.util.create('Dialog', {
 	content	: 'Hello mask dialog!',
 	mask	: {level:0, type:'white'}
 });
-var dragableDialog = esui.util.create('Dialog', {
-	id		: 'dragableDialog',
-	title	: 'Title',
-	content	: 'Hello dragable dialog!',
-	dragable: 1
+var draggableDialog = esui.util.create('Dialog', {
+	id		 : 'draggableDialog',
+	title	 : 'Title',
+	content	 : 'Hello draggable dialog!',
+	draggable: 1
 });
 
 var autoDialog = esui.util.create('Dialog', {
@@ -88,7 +88,7 @@ esui.get('testDialog3').onclick = function () {
 };
 
 esui.get('testDialog4').onclick = function () {
-	dragableDialog.show();
+	draggableDialog.show();
 };
 
 esui.get('testDialog5').onclick = function () {
