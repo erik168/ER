@@ -39,6 +39,10 @@ include( 'esui.Button' );// __debug__
 			<td>大按钮（强调）</td>
 			<td><div ui="type:Button;id:myBtn4;skin:largeem">请按我</div></td>
 		</tr>
+        <tr>
+			<td>button 标签</td>
+			<td><button ui="type:Button;id:myBtn5;">请按我</button></td>
+		</tr>
 	</table>
 </div>
 
@@ -47,7 +51,8 @@ esui.util.init();
 esui.get( 'myBtn' ).onclick = 
 esui.get( 'myBtn2' ).onclick = 
 esui.get( 'myBtn3' ).onclick = 
-esui.get( 'myBtn4' ).onclick = function () {
+esui.get( 'myBtn4' ).onclick = 
+esui.get( 'myBtn5' ).onclick = function () {
 	alert( '我是按钮：' + this.id );
 };
 </script>

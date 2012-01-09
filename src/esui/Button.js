@@ -81,17 +81,23 @@ esui.Button.prototype = {
     render: function () {
         var me   = this;
         var main = me.main;
-        var innerDiv;
+        var father;
+        var temp;
         
         if ( !me._isRendered ) {
-            innerDiv = main.firstChild;
-            if (!me.content 
-                && innerDiv 
-                && innerDiv.tagName != 'DIV'
-            ) {
+            if ( !me.content ) {
                 me.content = main.innerHTML;
             }
             
+            // 如果是button的话，替换成一个DIV
+            if ( main.tagName == 'BUTTON' ) {
+                father = main.parentNode;
+                temp = document.createElement( 'div' );
+                father.insertBefore( temp, main );
+                father.removeChild( main );
+                main = me.main = temp;
+            }
+
             esui.Control.prototype.render.call( me );
             main.innerHTML = me._getMainHtml();
 
