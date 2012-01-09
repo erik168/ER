@@ -86,12 +86,7 @@ esui.Dialog.prototype = {
             baidu.on( window, 'resize', this._resizeHandler );
         }
         
-        this._resizeHandler(); 
-
-        // 拖拽功能初始化
-        if ( this.draggable ) {
-            baidu.dom.draggable( main, {handler:this.getHead()} );
-        }        
+        this._resizeHandler();     
         
         // 如果mask不是object，则会隐式装箱
         // 装箱后的Object不具有level和type属性
@@ -244,6 +239,11 @@ esui.Dialog.prototype = {
             layer._controlMap.close = closeBtn;
             closeBtn.onclick = me._getCloseHandler();
         }
+
+        // 拖拽功能初始化
+        if ( this.draggable ) {
+            baidu.dom.draggable( main, {handler:this.getHead()} );
+        }    
     },
     
     /** 
