@@ -483,6 +483,7 @@ esui.Table.prototype = {
             if ( 'function' == typeof contentHtml ) {
                 contentHtml = contentHtml.call( this );
             }
+            contentHtml = contentHtml || '&nbsp;';
 
             for ( j = 1; j < colspan; j++ ) {
                 colWidth += colsWidth[ fieldIndex + j ];
@@ -629,12 +630,12 @@ esui.Table.prototype = {
             }
             
             // 计算内容html
-            // 如果通过function制定title，则不绘制排序小图标
             if ( typeof title == 'function' ) {
                 contentHtml = title.call( me );
             } else {
-                contentHtml = title || '';
+                contentHtml = title;
             }
+            contentHtml = contentHtml || '&nbsp;';
             
                                         
             html.push('<th id="' + this._getTitleCellId( i ) + '" index="' + i + '"',
@@ -1183,9 +1184,9 @@ esui.Table.prototype = {
             editable    = me.editable && field.editable && field.edittype;
             
             // 生成可换行列的样式
-            if (esui.Table.BREAK_LINE 
-                || me.breakLine 
-                || field.breakLine
+            if ( esui.Table.BREAK_LINE 
+                 || me.breakLine 
+                 || field.breakLine
             ) {
                 tdClass.push( tdBreakClass );
             }
@@ -1216,7 +1217,7 @@ esui.Table.prototype = {
             contentHtml = '<div class="' + textClass.join( ' ' ) + '">'
                             + ('function' == typeof content 
                                 ? content.call( me, data, index, i ) 
-                                : data[content])
+                                : data[ content ])
                             + me._getEditEntryHtml( field, index, i )
                             + '</div>';
 
