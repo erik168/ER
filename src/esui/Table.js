@@ -34,7 +34,7 @@ esui.Table = function ( options ) {
     this._type = 'table';
     
     // 标识鼠标事件触发自动状态转换
-    this._autoState = 1;
+    this._autoState = 0;
 
     esui.Control.call( this, options );
     
