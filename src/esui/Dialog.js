@@ -48,18 +48,12 @@ esui.Dialog = function ( options ) {
     this._resizeHandler = this._getResizeHandler();
 };
 
-esui.Dialog.prototype = {    
-    /**
-     * 对话框主体和尾部的html模板
-     * @private
-     */
-    _tplBF: '<div class="{1}" id="{0}">{2}</div>',
-    
+esui.Dialog.prototype = {
     /**
      * 对话框头部的html模板
      * @private
      */
-    _tplHead: '<div id="{0}" class="{1}"><div id="{2}" class="{3}" onmouseover="{6}" onmouseout="{7}">{4}</div>{5}</div>',
+    _tplHead: '<div id="{0}" class="{1}" onmouseover="{4}" onmouseout="{5}">{2}</div>{3}',
     
     /**
      * 关闭按钮的html模板
@@ -205,11 +199,9 @@ esui.Dialog.prototype = {
      * @public
      */
     render: function () {
-        var me      = this,
-            layer   = me.getLayer(),
-            layerControl,
-            main,
-            closeBtn;
+        var me      = this;
+        var layer   = me.getLayer();
+        var main    = me.main;
         
         // 避免重复创建    
         if ( layer ) {
@@ -217,32 +209,23 @@ esui.Dialog.prototype = {
         }
         
         layer = esui.util.create( 'Layer', {
-                id      : me.__getId('layer'),
+                id      : me.__getId( 'layer' ),
                 retype  : me._type,
                 skin    : me.skin + ( me.draggable ? ' draggable' : '' ),
-                width   : me.width
+                width   : me.width,
+                main    : main
             } );
         layer.appendTo();
         me._controlMap.layer = layer;
         
         
-        // 写入结构
-        main = layer.main;
-        main.innerHTML = me._getHeadHtml()
-                            + me._getBFHtml( 'body' )
-                            + me._getBFHtml( 'foot' );
-
-        // 初始化关闭按钮
-        layerControl = esui.util.init( main );
-        closeBtn     = layerControl[ me.__getId( 'close' ) ];
-        if ( closeBtn ) {
-            layer._controlMap.close = closeBtn;
-            closeBtn.onclick = me._getCloseHandler();
-        }
+        // 初始化dialog结构
+        me._initStruct();
+        
 
         // 拖拽功能初始化
         if ( this.draggable ) {
-            baidu.dom.draggable( main, {handler:this.getHead()} );
+            baidu.dom.draggable( layer.main, {handler:this.getHead()} );
         }    
     },
     
@@ -254,6 +237,32 @@ esui.Dialog.prototype = {
     appendTo: function () {
         this.render();
     },
+    
+    /** 
+     * 初始化dialog的结构
+     *
+     * @private
+     */
+    _initStruct: function () {
+        var layer = this.getLayer();
+        var main = layer.main;
+        var childs = [], childCount;
+        var el;
+
+        el = main.firstChild;
+        while ( el ) {
+            if ( el.nodeType == 1 ) {
+                childs.push( el );
+            }
+
+            el = el.nextSibling;
+        }
+        childCount = childs.length;
+
+        this._initHead( childCount < 2, childs[ 0 ] );
+        this._initBody( childCount < 1, childs[ 1 ] || childs[ 0 ] );
+        this._initFoot( childCount < 3, childs[ 2 ] );
+    },
 
     /** 
      * dialog不需要创建main，方法置空
@@ -263,48 +272,89 @@ esui.Dialog.prototype = {
     __createMain: function () {},
     
     /**
-     * 获取对话框头部的html
-     * 
+     * 初始化dialog的head
+     *
      * @private
-     * @return {string}
+     * @param {boolean} needCreate 是否需要创建head元素
+     * @param {HTMLElement} head 现有的head元素
      */
-    _getHeadHtml: function () {
-        var me      = this,
-            head    = 'head',
-            title   = 'title';
+    _initHead: function ( needCreate, head ) {
+        var me      = this;
+        var layer   = me.getLayer();
+        var main    = layer.main;
+        var closeId = me.__getId( 'close' );
+        var layerControl, closeBtn;
+
+        if ( needCreate ) {
+            head = document.createElement( 'div' );
+            main.insertBefore( head, main.firstChild );
+        } else {
+            this.title = this.title || head.innerHTML;
+        }
         
-        return esui.util.format(
+        baidu.addClass( head, this.__getClass( 'head' ) );
+        head.id = this.__getId( 'head' );
+        head.innerHTML = esui.util.format(
             me._tplHead,
-            me.__getId( head ),
-            me.__getClass( head ),
-            me.__getId( title ),
-            me.__getClass( title ),
+            me.__getId( 'title' ),
+            me.__getClass( 'title' ),
             me.title,
             (!me.closeButton  ? '' :
                 esui.util.format(
                     me._tplClose,
-                    me.__getId( 'close' )
+                    closeId
             ) ),
             me.__getStrCall( '_headOver' ),
             me.__getStrCall( '_headOut' )
-        );                            
-    },
-    
-    /**
-     * 获取对话框主体和腿部的html
-     * 
-     * @private
-     * @param {string type 类型 body|foot
-     * @return {string}
-     */
-    _getBFHtml: function ( type ) {
-        var me = this;
-        return esui.util.format(
-            me._tplBF,
-            me.__getId( type ),
-            me.__getClass( type ),
-            type == 'body' ? me.content : ''
         );
+
+        // 初始化关闭按钮
+        layerControl = esui.util.init( main );
+        closeBtn     = layerControl[ closeId ];
+        if ( closeBtn ) {
+            layer._controlMap.close = closeBtn;
+            closeBtn.onclick = me._getCloseHandler();
+        }
+    },
+
+    /**
+     * 初始化dialog的body
+     *
+     * @private
+     * @param {boolean} needCreate 是否需要创建body元素
+     * @param {HTMLElement} body 现有的body元素
+     */
+    _initBody: function ( needCreate, body ) {
+        if ( needCreate ) {
+            body = document.createElement( 'div' );
+            this.getLayer().main.appendChild( body );
+        }
+        
+        baidu.addClass( body, this.__getClass( 'body' ) );
+        body.id = this.__getId( 'body' );
+
+        if ( this.content ) {
+            body.innerHTML = this.content;
+        } else {
+            this.content = body.innerHTML;
+        }
+    },
+
+    /**
+     * 初始化dialog的foot
+     *
+     * @private
+     * @param {boolean} needCreate 是否需要创建foot元素
+     * @param {HTMLElement} foot 现有的foot元素
+     */
+    _initFoot: function ( needCreate, foot ) {
+        if ( needCreate ) {
+            foot = document.createElement( 'div' );
+            this.getLayer().main.appendChild( foot );
+        }
+        
+        baidu.addClass( foot, this.__getClass( 'foot' ) );
+        foot.id = this.__getId( 'foot' );
     },
     
     /**
