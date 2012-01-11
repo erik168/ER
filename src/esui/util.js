@@ -215,11 +215,12 @@ esui.util = function () {
         getControlsByContainer: function ( container ) {
             var els = container.getElementsByTagName( '*' );
             var len = els.length;
+            var i = 0;
             var controlName;
             var result = [];
                 
-            while ( len-- ) {
-                controlName = els[ len ].getAttribute( 'data-control' );
+            for ( ; i < len; i++ ) {
+                controlName = els[ i ].getAttribute( 'data-control' );
                 if ( controlName ) {
                     result.push( esui.util.get( controlName ) );
                 }
