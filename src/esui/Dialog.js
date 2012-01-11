@@ -44,6 +44,7 @@ esui.Dialog = function ( options ) {
 
     // 初始化距离顶端的高度
     this.__initOption('top', null, 'TOP');
+    this.top = parseInt( this.top, 10 );
 
     this._resizeHandler = this._getResizeHandler();
 };
@@ -222,11 +223,10 @@ esui.Dialog.prototype = {
         // 初始化dialog结构
         me._initStruct();
         
-
         // 拖拽功能初始化
         if ( this.draggable ) {
             baidu.dom.draggable( layer.main, {handler:this.getHead()} );
-        }    
+        }
     },
     
     /** 
@@ -309,10 +309,10 @@ esui.Dialog.prototype = {
         );
 
         // 初始化关闭按钮
-        layerControl = esui.util.init( main );
+        layerControl = esui.util.init( head );
         closeBtn     = layerControl[ closeId ];
         if ( closeBtn ) {
-            layer._controlMap.close = closeBtn;
+            layer._controlMap._close = closeBtn;
             closeBtn.onclick = me._getCloseHandler();
         }
     },
@@ -348,15 +348,57 @@ esui.Dialog.prototype = {
      * @param {HTMLElement} foot 现有的foot元素
      */
     _initFoot: function ( needCreate, foot ) {
+        var layer = this.getLayer();
+        var controls;
+        var control;
+        var i = 0, len;
+        var index = 0;
+
         if ( needCreate ) {
             foot = document.createElement( 'div' );
-            this.getLayer().main.appendChild( foot );
+            layer.main.appendChild( foot );
         }
         
         baidu.addClass( foot, this.__getClass( 'foot' ) );
         foot.id = this.__getId( 'foot' );
+
+        if ( this.footContent ) {
+            foot.innerHTML = this.footContent;
+        }
+
+        // 初始化foot的按钮
+        esui.util.init( foot );
+        controls = esui.util.getControlsByContainer( foot );
+        this._commandHandler = this._getCommandHandler();
+        for ( len = controls.length; i < len; i++ ) {
+            control = controls[ i ];
+            if ( control instanceof esui.Button ) {
+                control.onclick = this._commandHandler;
+                control._dialogCmdIndex = index;
+                index++;
+            }
+
+            layer._controlMap[ control.id ] = control;
+        }
     },
     
+    /**
+     * 获取command handler
+     *
+     * @private
+     * @return {Function} 
+     */
+    _getCommandHandler: function () {
+        var me = this;
+        return function () {
+            if ( me.oncommand( { index: this._dialogCmdIndex } ) !== false ) {
+                me.hide();
+            }
+        };
+    },
+
+    oncommand: new Function(),
+
     /**
      * 获取对话框主体的dom元素
      * 
@@ -418,7 +460,8 @@ esui.Dialog.prototype = {
         if ( this.autoPosition ) {
             baidu.un( window, 'resize', this._resizeHandler );
         }
-
+        
+        this.oncommand = null;
         this._resizeHandler = null;
         esui.Control.prototype.__dispose.call( this );
     }
@@ -446,6 +489,9 @@ esui.Dialog.alert = (function () {
     var dialogPrefix = '__DialogAlert';
     var buttonPrefix = '__DialogAlertOk';
 
+    var tpl     = '<div class="ui-dialog-icon ui-dialog-icon-{0}"></div><div class="ui-dialog-text">{1}</div>';
+    var footTpl = '<button ui="type:Button;id:{0};skin:em">{1}</button>';
+
     /**
      * 获取按钮点击的处理函数
      * 
@@ -453,7 +499,7 @@ esui.Dialog.alert = (function () {
      * @param {Function} onok 用户定义的确定按钮点击函数
      * @return {Function}
      */
-    function getBtnClickHandler( onok, id ) {
+    function getDialogCommander( onok, id ) {
         return function() {
             var dialog = esui.util.get( dialogPrefix + id );
             var isFunc = ( typeof onok == 'function' );
@@ -465,9 +511,9 @@ esui.Dialog.alert = (function () {
 
                 esui.util.dispose( buttonPrefix + id );
                 esui.util.dispose( dialog.id );
-                
-                dialog = null;
             }
+
+            return false;
         };
     }
     
@@ -489,28 +535,21 @@ esui.Dialog.alert = (function () {
         var title   = args.title || '';
         var content = args.content || '';
         var type    = args.type || 'warning';
-        var onok    = args.onok;
-        var tpl     = '<div class="ui-dialog-icon ui-dialog-icon-{0}"></div><div class="ui-dialog-text">{1}</div>';
+        
         var dialog  = esui.util.create('Dialog', 
-                                  {
-                                      id            : dialogPrefix + index,
-                                      closeButton   : 0,
-                                      title         : '', 
-                                      width         : 440,
-                                      mask          : {level: 3 || args.level}
-                                  });
-        var button  = esui.util.create('Button', 
-                                  {
-                                      id        : buttonPrefix + index,
-                                      skin      : 'em',
-                                      content   : esui.Dialog.OK_TEXT
-                                  });
+                          {
+                              id            : dialogPrefix + index,
+                              closeButton   : 0,
+                              title         : '', 
+                              width         : 440,
+                              mask          : {level: 3 || args.level},
+                              footContent   : esui.util.format( footTpl, buttonPrefix + index, esui.Dialog.OK_TEXT )
+                          });
         
         dialog.show();
+        dialog.oncommand = getDialogCommander( args.onok, index );
         dialog.setTitle( title );
         dialog.getBody().innerHTML = esui.util.format( tpl, type, content );
-        button.onclick = getBtnClickHandler( onok, index );
-        button.appendTo( dialog.getFoot() ); 
     }
 
     return show;
@@ -524,29 +563,31 @@ esui.Dialog.confirm = (function () {
     var okPrefix        = '__DialogConfirmOk';
     var cancelPrefix    = '__DialogConfirmCancel';
 
+    var tpl = '<div class="ui-dialog-icon ui-dialog-icon-{0}"></div><div class="ui-dialog-text">{1}</div>';
+    var footTpl = '<button ui="type:Button;id:{0};skin:em">{1}</button><button ui="type:Button;id:{2};">{3}</button>';
+
     /**
      * 获取按钮点击的处理函数
      * 
      * @private
-     * @param {Function} eventHandler 用户定义的按钮点击函数
-     * @return {Functioin}
+     * @param {Function} onok 用户定义的确定按钮点击函数
+     * @param {Function} oncancel 用户定义的取消按钮点击函数
+     * @return {Function}
      */
-    function getBtnClickHandler( eventHandler, id ) {
-        return function(){
+    function getDialogCommander( onok, oncancel, id ) {
+        return function ( args ) {
             var dialog = esui.util.get( dialogPrefix + id );
+            var eventHandler = ( args.index === 0 ? onok : oncancel );
             var isFunc = (typeof eventHandler == 'function');
 
             if ( (isFunc && eventHandler( dialog ) !== false ) 
                  || !isFunc 
             ) {
                 dialog.hide();
-
-                esui.util.dispose( okPrefix + id );
-                esui.util.dispose( cancelPrefix + id );
                 esui.util.dispose( dialog.id );
-                
-                dialog = null;
             }
+
+            return false;
         };
     }
     
@@ -561,52 +602,34 @@ esui.Dialog.confirm = (function () {
      * @config {Function} oncancel 点击取消按钮的行为，默认为关闭提示框
      */
     function show ( args ) {
-        if (!args) {
+        if ( !args ) {
             return;
         }
         
         var index       = esui.Dialog._increment();
         var title       = args.title || '';
         var content     = args.content || '';
-        var oncancel    = args.oncancel;
         var type        = args.type || 'warning';
-        var onok        = args.onok;
-        var tpl = '<div class="ui-dialog-icon ui-dialog-icon-{0}"></div><div class="ui-dialog-text">{1}</div>';
+
         var dialog = esui.util.create('Dialog', 
-                                  {
-                                      id            : dialogPrefix + index,
-                                      closeButton   : 0,
-                                      title         :'', 
-                                      width         :440,
-                                      mask          : {level: 3 || args.level}
-                                  });
-                                  
-        var okBtn = esui.util.create('Button', 
-                                  {
-                                      id        : okPrefix + index,
-                                      skin      :'em',
-                                      content   : esui.Dialog.OK_TEXT
-                                  });
-                                  
-        var cancelBtn = esui.util.create('Button', 
-                                  {
-                                      id        : cancelPrefix + index,
-                                      content   : esui.Dialog.CANCEL_TEXT
-                                  });
+                          {
+                              id            : dialogPrefix + index,
+                              closeButton   : 0,
+                              title         : '', 
+                              width         : 440,
+                              mask          : {level: 3 || args.level},
+                              footContent   : esui.util.format( footTpl, 
+                                                                okPrefix + index, 
+                                                                esui.Dialog.OK_TEXT,
+                                                                cancelPrefix + index,
+                                                                esui.Dialog.CANCEL_TEXT)
+                          });
+
         dialog.show();
         dialog.setTitle( title );
         dialog.getBody().innerHTML = esui.util.format( tpl, type, content );
-        
-        var foot = dialog.getFoot();
-        okBtn.appendTo( foot );
-        cancelBtn.appendTo( foot );
-
-        
-        okBtn.onclick = getBtnClickHandler( onok, index );
-        cancelBtn.onclick = getBtnClickHandler( oncancel, index );
+        dialog.oncommand = getDialogCommander( args.onok, args.oncancel, index );
     }
     
     return show;
 })();
-
-
