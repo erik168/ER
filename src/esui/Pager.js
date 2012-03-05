@@ -132,11 +132,11 @@ esui.Pager.prototype = {
         }
         
         // 绘制前缀
-        if (begin > 0) {
+        if ( begin > 0 ) {
             html.push(
                 me._getItemHtml(
                     1,
-					prevClass,
+					itemClass,
                     this.__getStrCall( '_setPage', 0 )
                 ),
                 omitWord );
