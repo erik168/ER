@@ -13,6 +13,26 @@
 </articleinfo> 
 
 <section>   
+    <title>2.0.3</title>
+
+    <orderedlist>
+        <listitem><para>Template：修复content中的import内容未被替换的bug。</para></listitem>
+        <listitem><para>Extend UI：为UIAdapter添加uninit方法，用于在View的clear时调用。</para></listitem>
+        <listitem><para>ESUI：修复skin的class未被设置到浮层Layer的bug，包括Calendar、MultiCalendar、Select、Dialog控件。</para></listitem>
+        <listitem><para>ESUI - util：修正getControlsByContainer方法返回控件集合的顺序为正序（原为逆序）。</para></listitem>
+        <listitem><para>ESUI - Button：增加对页面中现有button元素的渲染支持；增加dispose时事件处理函数的自动释放。</para></listitem>
+        <listitem><para>ESUI - Calendar&amp;MultiCalendar：修复当range的begin和end year相等时显示年计算错误问题。</para></listitem>
+        <listitem><para>ESUI - Dialog：增加对现有dom元素的渲染支持；增加对foot中按钮自动渲染的支持；修改可拖动属性名（含css定义），原为dragable，现为draggable；修复多次open时拖动功能不正常的问题；修复top属性未转换成数值型的问题。</para></listitem>
+        <listitem><para>ESUI - Layer：增加partName的支持，用于其他应用Layer的控件提供部件名。</para></listitem>
+        <listitem><para>ESUI - Pager：修复当前页码大于5时第一页className设置有误导致的样式问题。</para></listitem>
+        <listitem><para>ESUI - Select：修复setValue时值为0或空字符串导致的设置失效。</para></listitem>
+        <listitem><para>ESUI - SideBar：修复渲染时序问题导致初始mode为fixed时渲染失效。</para></listitem>
+        <listitem><para>ESUI - Table：增加subrow打开是否允许互斥的功能支持；增加单双号行的样式定义支持；增加onsubrowclose事件；增加表格的头跟随元素左右border宽度的计算；修复head或foot内容为空时IE6下显示不正常的问题；修复autoState设置为1导致的性能损耗问题。</para></listitem>
+        <listitem><para>ESUI - TreeView：修复_getChildsHtml方法中全局变量逃逸问题。</para></listitem>
+    </orderedlist>
+</section>
+
+<section>   
     <title>2.0.2</title>
 
     <orderedlist>
