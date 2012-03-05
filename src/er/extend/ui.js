@@ -161,15 +161,7 @@ er.extend.ui = function () {
          * @public
          */
         clear: function () {
-            var controlMap = this._controlMap;
-
-            if ( controlMap ) {
-                for ( key in controlMap ) {
-                    uiExtend.adapter.dispose( key );
-                    delete controlMap[ key ];
-                }
-            }
-            
+            uiExtend.adapter.uninit( this._controlMap );
             this._controlMap = null;
             this._dataControl = null;
             this._controlData = null;
@@ -265,6 +257,21 @@ er.extend.ui = function () {
          */
         init: function ( wrap, propMap, attrReplacer ) {
             return esui.init( wrap, propMap, attrReplacer );
+        },
+        
+        /**
+         * 释放控件集合。通常用于释放init的返回控件集合
+         * 
+         * @virtual
+         * @param {Object} controlMap 要释放的控件集合
+         */
+        uninit: function ( controlMap ) {
+            if ( controlMap ) {
+                for ( var key in controlMap ) {
+                    uiExtend.adapter.dispose( key );
+                    delete controlMap[ key ];
+                }
+            }
         },
 
         /**
