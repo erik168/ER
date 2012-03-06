@@ -60,12 +60,11 @@ do
     filename=$(basename "${xml}" | awk -F'.' '{print $1 ".html"}')
     xsltproc    --stringparam  section.autolabel 1 \
 				--stringparam  section.label.includes.component.label 1 \
-				-o "${TEMP_DIR}/doc/${filename}" "${DOCTOOL}" "${xml}" 
+				-o "${TEMP_DIR}/doc/esui/${filename}" "${DOCTOOL}" "${xml}" 
 done
 rm -f "${TEMP_DIR}/doc/doc.xml"
-rm -rf "${TEMP_DIR}/doc/esui"
+rm -f "${TEMP_DIR}/doc/esui/*.xml"
 
-cd "${ER_DIR}"
 
 handleDebug() {
     cp "$1" "$1.pack"
@@ -172,7 +171,7 @@ done
 
 # pack
 cd "${TAR_DIR}"
-tar zfvc "${TAR_FILE}" "er-${VER}"
+tar zfvc "${TAR_DIR}/${TAR_FILE}" "er-${VER}"
 
 # remove temp dir
 echo "===== process: rm temp dir: ${TEMP_DIR}"
