@@ -131,8 +131,8 @@ packCss() {
 
 # pack src
 echo "===== process: pack src"
-cp -r "src" "${TEMP_DIR}/src"
-cp -r "src/esui/css/img" "${TEMP_DIR}/release/img"
+cp -r "${SOURCE_DIR}" "${TEMP_DIR}/src"
+cp -r "${SOURCE_DIR}/esui/css/img" "${TEMP_DIR}/release/img"
 packJs "er-core"
 packJs "er"
 packJs "esui"
