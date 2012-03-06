@@ -61,9 +61,9 @@ do
     xsltproc    --stringparam  section.autolabel 1 \
 				--stringparam  section.label.includes.component.label 1 \
 				-o "${TEMP_DIR}/doc/esui/${filename}" "${DOCTOOL}" "${xml}" 
+	rm -f "${xml}"
 done
 rm -f "${TEMP_DIR}/doc/doc.xml"
-rm -f "${TEMP_DIR}/doc/esui/*.xml"
 
 
 handleDebug() {
@@ -85,7 +85,7 @@ dependOn() {
         return 0;
     fi
     
-    echo "$1" | sed "s/\./\//g" | sed "s/^/${SOURCE_DIR}\//g" | sed "s/$/\.js/g" |  
+    echo "$1" | sed "s/\./\//g" | sed "s:^:${SOURCE_DIR}/:g" | sed "s/$/\.js/g" |  
         xargs grep "import e" > "$1.temp2"
 
     awk -F ' ' '$0~/import/{print $2;}' "$1.temp2" | sed "s/;[[:space:]]*$//g" > "$1.temp"
@@ -132,6 +132,7 @@ packCss() {
 echo "===== process: pack src"
 cp -r "${SOURCE_DIR}" "${TEMP_DIR}/src"
 cp -r "${SOURCE_DIR}/esui/css/img" "${TEMP_DIR}/release/img"
+rm -f "${TEMP_DIR}/release/img/*.psd"
 packJs "er-core"
 packJs "er"
 packJs "esui"
