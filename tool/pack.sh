@@ -1,14 +1,17 @@
 #/bin/sh
 
-CURR_DIR=$(dirname "$0")
-ER_DIR="${CURR_DIR}/.."
+
+TOOL_DIR=$(dirname "$0")
+ER_DIR="${TOOL_DIR}/.."
+SOURCE_DIR="${ER_DIR}/src"
 
 # read version
-while getopts v:d: opt
+while getopts v:d:t: opt
 do
     case $opt in
         v)  VER=$OPTARG ;;
         d)  DOCTOOL=$OPTARG ;;
+		t)  TAR_DIR=$OPTARG ;;
     esac
 done
 
@@ -18,15 +21,22 @@ then
     exit 1;
 fi
 
+TAR_FILE="er-${VER}.tar.gz"
 ER_FILE="er-${VER}.js"
 ESUI_FILE="esui-${VER}.js"
 ESUICSS_FILE="esui-${VER}.css"
 
-TEMP_DIR="release/er-${VER}"
-SOURCE_DIR="src"
-TOOL_DIR="tool"
+TEMP_DIR="${TAR_DIR}/er-${VER}"
 
-if [ -e "${ER_DIR}/release/er-${VER}.tar.gz" ] 
+
+if [ ! -d "${TAR_DIR}" ]
+then
+	echo "${TAR_DIR} is not exist!"
+	exit 1;
+fi
+
+
+if [ -e "${TAR_DIR}/${TAR_FILE}" ] 
 then
     echo "version ${VER} is exist!"
     exit 1;
@@ -34,18 +44,26 @@ fi
 
 # create temp dir
 echo "===== process: create temp dir: ${TEMP_DIR}"
-mkdir "${ER_DIR}/${TEMP_DIR}"
-mkdir "${ER_DIR}/${TEMP_DIR}/release"
+mkdir "${TEMP_DIR}"
+mkdir "${TEMP_DIR}/release"
 
 # pack doc
 # u should be use docbook
 echo "===== process: pack doc"
-cp -r "${ER_DIR}/doc" "${ER_DIR}/${TEMP_DIR}/doc"
-rm -rf "${ER_DIR}/${TEMP_DIR}/doc/er.graffle"
+cp -r "${ER_DIR}/doc" "${TEMP_DIR}/doc"
+rm -rf "${TEMP_DIR}/doc/er.graffle"
 xsltproc     --stringparam  section.autolabel 1 \
              --stringparam  section.label.includes.component.label 1 \
-             -o "${ER_DIR}/${TEMP_DIR}/doc/doc.html" "${DOCTOOL}" "${ER_DIR}/${TEMP_DIR}/doc/doc.xml" 
-rm -f "${ER_DIR}/${TEMP_DIR}/doc/doc.xml"
+             -o "${TEMP_DIR}/doc/doc.html" "${DOCTOOL}" "${TEMP_DIR}/doc/doc.xml" 
+for xml in $(ls ${TEMP_DIR}/doc/esui/*.xml)
+do
+    filename=$(basename "${xml}" | awk -F'.' '{print $1 ".html"}')
+    xsltproc    --stringparam  section.autolabel 1 \
+				--stringparam  section.label.includes.component.label 1 \
+				-o "${TEMP_DIR}/doc/${filename}" "${DOCTOOL}" "${xml}" 
+done
+rm -f "${TEMP_DIR}/doc/doc.xml"
+rm -rf "${TEMP_DIR}/doc/esui"
 
 cd "${ER_DIR}"
 
@@ -107,7 +125,7 @@ packJs() {
 
 packCss() {
     grep "[css]" "${TOOL_DIR}/$1-css.manifest" | cut -d " " -f2 > "$1-css.pack"
-    cat "$1-css.pack" | sed "s/^/src\/esui\/css\//g" | sed "s/$/\.css/g" | xargs cat > "${TEMP_DIR}/RELEASE/$1-${VER}.css" 
+    cat "$1-css.pack" | sed "s/^/src\/esui\/css\//g" | sed "s/$/\.css/g" | xargs cat > "${TEMP_DIR}/release/$1-${VER}.css" 
     rm -f "$1-css.pack"
 }
 
@@ -136,7 +154,7 @@ done
 #pack tool
 echo "===== process: pack tool"
 mkdir "${TEMP_DIR}/tool"
-cp "tool/tangram-1.3.9.js" "${TEMP_DIR}/tool/tangram-1.3.9.js"
+cp "${TOOL_DIR}/tangram-1.3.9.js" "${TEMP_DIR}/tool/tangram-1.3.9.js"
 
 
 # pack test
@@ -153,8 +171,8 @@ done
 
 
 # pack
-cd "release"
-tar zfvc "er-${VER}.tar.gz" "er-${VER}"
+cd "${TAR_DIR}"
+tar zfvc "${TAR_FILE}" "er-${VER}"
 
 # remove temp dir
 echo "===== process: rm temp dir: ${TEMP_DIR}"
