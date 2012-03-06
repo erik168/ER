@@ -115,7 +115,7 @@ packJs() {
         dependOn "$name" "$1.packlist" 
     done
     
-    sed '/^$/d' "$1.packlist" | sed '/^$/d' | sed 's/\./\//g' | sed 's/$/\.js/' | sed 's/^/src\//g' | 
+    sed '/^$/d' "$1.packlist" | sed '/^$/d' | sed 's/\./\//g' | sed 's/$/\.js/' | sed "s:^:${SOURCE_DIR}/:g" | 
          xargs cat > "${TEMP_DIR}/release/$1-${VER}.js"
     
     rm -f "$1.pack"
@@ -124,7 +124,7 @@ packJs() {
 
 packCss() {
     grep "[css]" "${TOOL_DIR}/$1-css.manifest" | cut -d " " -f2 > "$1-css.pack"
-    cat "$1-css.pack" | sed "s/^/src\/esui\/css\//g" | sed "s/$/\.css/g" | xargs cat > "${TEMP_DIR}/release/$1-${VER}.css" 
+    cat "$1-css.pack" | sed "s:^:${SOURCE_DIR}/esui/css/:g" | sed "s/$/\.css/g" | xargs cat > "${TEMP_DIR}/release/$1-${VER}.css" 
     rm -f "$1-css.pack"
 }
 
@@ -139,7 +139,7 @@ packCss "esui"
 
 #pack sample
 echo "===== process: pack sample"
-cp -r "sample" "${TEMP_DIR}/sample"
+cp -r "${ER_DIR}/sample" "${TEMP_DIR}/sample"
 for file in $(ls ${TEMP_DIR}/sample/asset/*.js | grep -v tangram)
 do
     handleDebug "$file"
@@ -158,7 +158,7 @@ cp "${TOOL_DIR}/tangram-1.3.9.js" "${TEMP_DIR}/tool/tangram-1.3.9.js"
 
 # pack test
 echo "===== process: pack test"
-cp -r "test" "${TEMP_DIR}/test"
+cp -r "${ER_DIR}/test" "${TEMP_DIR}/test"
 for file in $(ls ${TEMP_DIR}/test/*.html)
 do
     handleDebug "$file"
