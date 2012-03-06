@@ -171,7 +171,7 @@ done
 
 # pack
 cd "${TAR_DIR}"
-tar zfvc "${TAR_FILE}" "er-${VER}"
+tar zfc "${TAR_FILE}" "er-${VER}"
 
 # remove temp dir
 echo "===== process: rm temp dir: ${TEMP_DIR}"
