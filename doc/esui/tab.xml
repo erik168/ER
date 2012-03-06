@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - Tab</title>
+    </bookinfo> 
+    
+	<section>   
+        <title>继承层级</title>
+		<para>Tab - Control</para>
+	</section>
+	
+
+    <section>   
+        <title>说明</title>
+        <para>Tab控件可以用于标签页的切换。每个tab项可以对应一个容器元素，Tab控件自动控制容器的切换。</para>
+        <graphic fileref="img/tab.png" format="PNG"/>
+        <para>标签页的列表数据是一个数组。其中每一项是具有title和panel属性的Object。title属性为字符串，代表显示的标题。panel属性指定一个容器HTMLElement的id，为可选属性。</para>
+        <programlisting>[
+	{title:'one', panel:'panel1'},
+	{title:'two', panel:'panel2'},
+	{title:'three', panel:'panel3'},
+	{title:'four'}
+]</programlisting>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{number} activeIndex</entry>
+                        <entry>当前活动的标签页的索引。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} allowClose</entry>
+                        <entry>是否允许关闭标签。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>tab的不可用状态。处于不可用状态时无法切换tab。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{Array} tabs</entry>
+                        <entry>标签页的列表。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+					
+                    <row>
+                        <entry>{void} add( {Object} tab )</entry>
+                        <entry>添加标签。</entry>
+                    </row>
+					<row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} remove( {number} index )</entry>
+                        <entry>移除标签。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} select( {number} index )</entry>
+                        <entry>选择标签。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+        
+    <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{boolean} onchange: ( {number} index, {Object} tab )</entry>
+                        <entry>当切换标签时触发。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} onclose: ( {number} index, {Object} tab )</entry>
+                        <entry>当用户关闭标签时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+</book>

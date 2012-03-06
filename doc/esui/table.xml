@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - Table</title>
+    </bookinfo> 
+    
+	<section>   
+        <title>继承层级</title>
+		<para>Table - Control</para>
+	</section>
+	
+
+    <section>   
+        <title>说明</title>
+        <para>Table控件主要用于二维数据的展现。</para>
+        <para>Table控件要求的数据格式，请参考E-JSON中的数据场景：记录和二维表。</para>
+        <programlisting>[
+    {
+        id: 250,
+        name: "erik",
+        sex: 1,
+        age: 18
+    },
+    {
+        id: 251,
+        name: "欧阳先伟",
+        sex: 1,
+        age: 28
+    }
+]</programlisting>
+    </section>
+    
+    <section>   
+        <title>构造器静态参数配置</title>
+        <table frame="topbot" align="left">
+            <title>构造器静态参数配置</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{boolean} COLUMN_RESIZABLE</entry>
+                        <entry>表格是否允许拖拽改变列宽。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} FOLLOW_HEAD</entry>
+                        <entry>在滚动条纵向滚动时，是否表头跟随。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} NODATA_HTML</entry>
+                        <entry>没有数据时，表格体中显示的html内容。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} SORTABLE</entry>
+                        <entry>表格是否允许排序。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} bodyHeight</entry>
+                        <entry>设置表格体的高度，单位为px。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} breakLine</entry>
+                        <entry>表格内容是否允许断行。</entry>
+                    </row>
+                    <row>
+                        <entry>{Array} datasource</entry>
+                        <entry>表格要显示的数据。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件的不可用状态。处于不可用状态时，表格拖拽、编辑、排序等功能都将禁用。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} columnResizable</entry>
+                        <entry>表格是否允许拖拽改变列宽。</entry>
+                    </row>
+                    <row>
+                        <entry>{Array} fields</entry>
+                        <entry>表格的列配置。具体请参照后面的“表格列数据项”</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} followHead</entry>
+                        <entry>在滚动条纵向滚动时，是否表头跟随。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} noDataHtml</entry>
+                        <entry>没有数据时，表格体中显示的html内容。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} noHead</entry>
+                        <entry>表格是否显示标题。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} select</entry>
+                        <entry>设置表格的选择方式。single|multi</entry>
+                    </row>
+                    <row>
+                        <entry>{string} selectMode</entry>
+                        <entry>设置表格的选择模式。如果设置了值为line，则点击行时触发选择。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} sortable</entry>
+                        <entry>表格是否允许排序。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>表格列数据项</title>
+        <para>初始化的参数中，fields是一个数组，作为表格显示的列设置。其中每一列的可选属性如下：</para>
+        <table frame="topbot" align="left">
+            <title>表格列数据项</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{string} align</entry>
+                        <entry>列内容的排序方式。left | center | right。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} breakLine</entry>
+                        <entry>列是否允许断行。</entry>
+                    </row>
+                    <row>
+                        <entry>{string|Function} content</entry>
+                        <entry>每一行该列需要显示的内容。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} resizable</entry>
+                        <entry>该列是否允许拖拽改变列宽。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} field</entry>
+                        <entry>该列的字段名。主要用于可排序表格中的可排序字段。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} followHead</entry>
+                        <entry>在滚动条纵向滚动时，是否表头跟随。</entry>
+                    </row>
+                    <row>
+                        <entry>{number} minWidth</entry>
+                        <entry>该列的最小宽度。表格分配列宽时分配宽度不会小于设置的minWidth。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} stable</entry>
+                        <entry>是否固定列。表格分配列宽时不会影响到固定列。</entry>
+                    </row>
+                    <row>
+                        <entry>{string|Function} title</entry>
+                        <entry>该列标题需要显示的内容。</entry>
+                    </row>
+                    <row>
+                        <entry>{number} width</entry>
+                        <entry>设置该列的宽度。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+    <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} onselect: ( {Array|number} selected )</entry>
+                        <entry>当表格项被选中时触发。单选模式时selected为选中项的索引，多选模式时selected为选中项索引的数组。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} onsort: ( {Object} field, {string} order )</entry>
+                        <entry>当用户点击表格排序时触发。field为当前排序列。order为排序方式，asc | desc。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+</book>

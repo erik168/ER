@@ -1,0 +1,270 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - 基础部分</title>
+    </bookinfo> 
+    
+	<chapter>
+		<title>基础描述</title>
+
+	<section>   
+        <title>namespace</title>
+        <para>UI组件库归属于一个namespace：esui下。</para>
+	</section>
+
+	<section>   
+        <title>控件对象的初始化</title>
+        <para>控件对象可以通过new或通过工厂方法进行初始化。</para>
+        <para>控件构造函数只允许传入一个Object类型的参数：option，便于扩展。</para>
+	</section>
+	
+	<section>   
+        <title>渲染页面上存在的dom元素：控件主元素</title>
+		<para>页面上当前需要渲染的元素，我们称为“控件主元素”。</para>
+		<para>控件主元素应以特殊的attribute（如“ui”）进行标识，attribute的值应遵循"name:value[;name:value]"的语法。</para>
+		
+		<para>attribute中必须包含控件类型type属性，建议包含id属性。</para>
+		<para>通过构造函数传入的控件主元素，option用main字段。</para>
+    </section>
+
+    <section>   
+        <title>render与appendTo</title>
+        <para>控件应提供render方法，该方法不接受任何参数。控件主元素通过构造函数参数option的“main”成员传递。</para>
+        <para>控件可以提供appendTo方法，该方法接受一个HTMLElement类型的参数做为控件主元素的父元素。其行为是将append到这个HTMLElement中，然后执行render方法的动作。控件主元素的创建通过是否在构造函数中传入控件主元素判断。</para>
+	</section>
+
+	</chapter>
+
+	<chapter>
+		<title>顶层包下的静态方法</title>
+
+	<section>   
+        <title>静态方法</title>
+        <table frame="topbot" align="left">
+            <title>静态方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{Control} create( {string} type, {Object} options )</entry>
+                        <entry>创建控件。</entry>
+                    </row>
+					<row>
+                        <entry>{void} dispose( {Control} ctrl )</entry>
+                        <entry>销毁控件。</entry>
+                    </row>
+					<row>
+                        <entry>{Control} get( {string} id )</entry>
+                        <entry>获取控件。</entry>
+                    </row>
+					<row>
+                        <entry>{Object} init( {HTMLElement} wrap )</entry>
+                        <entry>从容器DOM元素初始化内部的控件渲染。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+	<chapter>
+		<title>控件基类 - Control</title>
+	
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件的不可用状态。</entry>
+                    </row>
+                    <row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+	<chapter>
+		<title>输入控件基类 - InputControl</title>
+
+	<section>   
+        <title>继承层级</title>
+		<para>InputControl - Control</para>
+	</section>
+
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件的不可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+					<row>
+                        <entry>{string|Object} rule</entry>
+                        <entry>验证规则。</entry>
+                    </row>
+					<row>
+                        <entry>{string} value</entry>
+                        <entry>输入框的值。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} checkValidity( {void} )</entry>
+                        <entry>验证控件，仅返回true/false。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置输入控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置输入控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{string} getValue( {void} )</entry>
+                        <entry>获取输入控件的值。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取输入控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+					<row>
+                        <entry>{void} setValue( {string} )</entry>
+                        <entry>设置输入控件的值。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} validate( {void} )</entry>
+                        <entry>验证控件，当值不合法时显示错误信息。</entry>
+                    </row>
+					
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} onbeforevalidate( {validator.Validity} )</entry>
+                        <entry>验证开始前触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onaftervalidate( {validator.Validity} )</entry>
+                        <entry>验证结束后触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} oninvalid( {validator.Validity} )</entry>
+                        <entry>验证控件值不合法时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+	</chapter>
+</book>

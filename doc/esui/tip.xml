@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - Tip</title>
+    </bookinfo> 
+    
+	<section>   
+        <title>继承层级</title>
+		<para>Tip - Control</para>
+	</section>
+
+    <section>   
+        <title>说明</title>
+        <para>Tip控件是信息的提示框。在页面中同时只能出现一个提示框，也就是说提示框是互斥的，显示一个提示框一定会关闭当前正在显示的提示框。</para>
+        <para>Tip提示框支持三种提示模式：over、click、auto。对于over或click模式的提示框，鼠标移入提示框区域时，提示框不会消失。</para>
+        <para>Tip提示框默认不带箭头。可以初始化时通过指定arrow属性为“1”开启箭头模式，也可以手工指定箭头方向：tr | rt | rb | br | bl | lb | lt | tl</para>
+        <graphic fileref="img/tip.png" format="PNG"/>
+    </section>
+    <section>   
+        <title>构造器静态参数配置</title>
+        <table frame="topbot" align="left">
+            <title>构造器静态参数配置</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{number} HIDE_DELAY</entry>
+                        <entry>提示框消失的延迟时间。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{boolean|string} arrow</entry>
+                        <entry>提示框的箭头参数。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} content</entry>
+                        <entry>提示的内容信息。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>提示框的不可用状态。处于不可用状态的提示框不会出现。</entry>
+                    </row>
+                    <row>
+                        <entry>{number} hideDelay</entry>
+                        <entry>提示框消失的延迟时间。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} mode</entry>
+                        <entry>提示的显示模式，over|click|auto。默认为over。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} title</entry>
+                        <entry>提示的标题信息。</entry>
+                    </row>
+					
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置Tip控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置Tip控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取Tip控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+</book>

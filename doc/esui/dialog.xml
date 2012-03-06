@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - Dialog</title>
+    </bookinfo> 
+
+    <section>   
+        <title>继承层级</title>
+		<para>Dialog - Control</para>
+	</section>
+
+
+    <section>   
+        <title>说明</title>
+        <para>对话框控件包括三个部分：标题、主体、腿部。</para>
+        <para>对话框控件内置两种模式：alert、confirm。可通过静态方法调用。</para>
+    </section>
+    
+    <section>   
+        <title>构造器静态参数配置</title>
+        <table frame="topbot" align="left">
+            <title>构造器静态参数配置</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{boolean} AUTO_POSITION</entry>
+                        <entry>是否自动定位居中。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} CANCEL_TEXT</entry>
+                        <entry>“取消”按钮的显示文字。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} CLOSE_BUTTON</entry>
+                        <entry>是否具有关闭按钮。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} DRAGGABLE</entry>
+                        <entry>是否可拖拽。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} OK_TEXT</entry>
+                        <entry>“确定”按钮的显示文字。</entry>
+                    </row>
+                    <row>
+                        <entry>{number} WIDTH</entry>
+                        <entry>对话框的宽度，单位为px。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{boolean} autoPosition</entry>
+                        <entry>是否自动定位居中。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} closeButton</entry>
+                        <entry>是否具有关闭按钮。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} content</entry>
+                        <entry>内容区域的显示内容。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件的不可用状态。当dialog处于不可用状态时，show/hide操作失效，关闭按钮行为失效，拖拽行为失效。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} draggable</entry>
+                        <entry>是否可拖拽。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean|Object} mask</entry>
+                        <entry>可以通过boolean指定对话框是否具有遮挡层。或者指定带有level和type属性的object，自定义遮挡层。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} title</entry>
+                        <entry>标题的显示文字。</entry>
+                    </row>
+                    <row>
+                        <entry>{number} width</entry>
+                        <entry>对话框的宽度，单位为px。</entry>
+                    </row>
+					<row>
+                        <entry>{number} height</entry>
+                        <entry>对话框的高度，单位为px。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+        
+    <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					
+                    <row>
+                        <entry>{HTMLElement} getBody( {void} )</entry>
+                        <entry>获取对话框主体的dom元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{HTMLElement} getFoot( {void} )</entry>
+                        <entry>获取对话框腿部的dom元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{HTMLElement} getHead( {void} )</entry>
+                        <entry>获取对话框头部的dom元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} hide( {void} )</entry>
+                        <entry>隐藏对话框。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setContent( {string} content )</entry>
+                        <entry>设置对话框主体的内容。</entry>
+                    </row>
+					<row>
+                        <entry>{void} setWidth( {number} width )</entry>
+                        <entry>设置对话框的宽度，单位为px。</entry>
+                    </row>
+					<row>
+                        <entry>{void} setHeight( {number} height )</entry>
+                        <entry>设置对话框的高度，单位为px。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setTitle( {string} title )</entry>
+                        <entry>设置对话框的标题。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} show( {void} )</entry>
+                        <entry>显示对话框。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>onhide: ( {void} )</entry>
+                        <entry>当对话框被隐藏时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>构造器静态方法</title>
+        <table frame="topbot" align="left">
+            <title>构造器静态方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} alert ( {Object} args )</entry>
+                        <entry>显示警告对话框。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} confirm ( {Object} args )</entry>
+                        <entry>显示询问对话框。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        <section>
+            <title>警告对话框显示参数</title>
+            <table frame="topbot" align="left">
+                <title>警告对话框显示参数</title>
+                <tgroup cols="2">
+                    <thead>
+                        <row>
+                            <entry>名称</entry>
+                            <entry>描述</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>{string} title</entry>
+                            <entry>标题文字。</entry>
+                        </row>
+                        <row>
+                            <entry>{string} type</entry>
+                            <entry>对话框类型。其决定了显示的icon。</entry>
+                        </row>
+                        <row>
+                            <entry>{string} content</entry>
+                            <entry>主体内容。</entry>
+                        </row>
+                        <row>
+                            <entry>{Function} onok</entry>
+                            <entry>点击确定按钮的行为。若返回值不为false则关闭对话框。</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section>
+            <title>询问对话框显示参数</title>
+            <table frame="topbot" align="left">
+                <title>询问对话框显示参数</title>
+                <tgroup cols="2">
+                    <thead>
+                        <row>
+                            <entry>名称</entry>
+                            <entry>描述</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>{string} title</entry>
+                            <entry>标题文字。</entry>
+                        </row>
+                        <row>
+                            <entry>{string} type</entry>
+                            <entry>对话框类型。其决定了显示的icon。</entry>
+                        </row>
+                        <row>
+                            <entry>{string} content</entry>
+                            <entry>主体内容。</entry>
+                        </row>
+                        <row>
+                            <entry>{Function} onok</entry>
+                            <entry>点击确定按钮的行为。若返回值不为false则关闭对话框。</entry>
+                        </row>
+                        <row>
+                            <entry>{Function} oncancel</entry>
+                            <entry>点击取消按钮的行为。若返回值不为false则关闭对话框。</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+    </section>
+</book>

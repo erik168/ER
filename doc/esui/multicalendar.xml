@@ -1,0 +1,197 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - MultiCalendar</title>
+    </bookinfo> 
+    
+	<section>   
+        <title>继承层级</title>
+		<para>MultiCalendar - InputControl - Control</para>
+	</section>
+	
+
+    <section>   
+        <title>说明</title>
+        <para>MultiCalendar用于选择日期区间。</para>
+        <para>MultiCalendar的value字符串格式为"yyyy-MM-dd,yyyy-MM-dd"，逗号分隔的前后分别代表开始和结束日期。</para>
+        <para>对于valueAsObject以及可选择日期区间的数据格式，都以一个Object表示。该Object拥有name为begin和end的属性，分别为Date类型。</para>
+        <programlisting>{
+    begin: new Date(1983, 8, 3),
+    end: new Date(2011, 10, 4)
+}</programlisting>
+    </section>
+    
+    <section>   
+        <title>构造器静态参数配置</title>
+        <table frame="topbot" align="left">
+            <title>构造器静态参数配置</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{string} DATE_FORMAT</entry>
+                        <entry>日期显示的格式化方式。</entry>
+                    </row>
+                    <row>
+                        <entry>{Object} RANGE</entry>
+                        <entry>可选中的日期区间。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    
+                    <row>
+                        <entry>{string} dateFormat</entry>
+                        <entry>日期显示的格式化方式。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件是否禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{Object} range</entry>
+                        <entry>可选中的日期区间。</entry>
+                    </row>
+					<row>
+                        <entry>{string|Object} rule</entry>
+                        <entry>验证规则。</entry>
+                    </row>
+					<row>
+                        <entry>{string} value</entry>
+                        <entry>当前选中的日期。</entry>
+                    </row>
+                    <row>
+                        <entry>{Object} valueAsObject</entry>
+                        <entry>当前选中的日期。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+     
+     <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} checkValidity( {void} )</entry>
+                        <entry>验证控件，仅返回true/false。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					
+					
+					<row>
+                        <entry>{string} getValue( {void} )</entry>
+                        <entry>获取当前选中的日期区间。</entry>
+                    </row>
+                    <row>
+                        <entry>{Object} getValueAsObject( {void} )</entry>
+                        <entry>获取当前选中的日期区间。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+					<row>
+                        <entry>{void} setRange( {Object} range )</entry>
+                        <entry>设置允许选中的日期区间。</entry>
+                    </row>
+					<row>
+                        <entry>{void} setValue( {string} value )</entry>
+                        <entry>设置当前选中的日期区间。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setValueAsObject( {Object} value )</entry>
+                        <entry>设置当前选中的日期区间。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} validate( {void} )</entry>
+                        <entry>验证控件，当值不合法时显示错误信息。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{boolean} onchange: ( {Object} value )</entry>
+                        <entry>当选择的日期区间发生改变时触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onbeforevalidate( {validator.Validity} )</entry>
+                        <entry>验证开始前触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onaftervalidate( {validator.Validity} )</entry>
+                        <entry>验证结束后触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} oninvalid( {validator.Validity} )</entry>
+                        <entry>验证控件值不合法时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+</book>

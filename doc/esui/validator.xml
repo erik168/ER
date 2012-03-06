@@ -1,0 +1,526 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - 验证</title>
+    </bookinfo> 
+    
+	<chapter>
+		<title>validator</title>
+
+	<section>   
+        <title>namespace</title>
+		<para>validator应置于顶层namespace下。如：ui.validator</para>
+	</section>
+
+	<section>   
+        <title>类</title>
+		<table frame="topbot" align="left">
+            <title>类</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+					<row>
+                        <entry>validator.Rule</entry>
+                        <entry>默认验证规则类。</entry>
+                    </row>
+					<row>
+                        <entry>validator.RequiredRule</entry>
+                        <entry>不能为空验证规则类。对应快捷string为“required”</entry>
+                    </row>
+					<row>
+                        <entry>validator.MaxLengthRule</entry>
+                        <entry>最大长度验证规则类。对应快捷string为“maxlength”</entry>
+                    </row>
+					<row>
+                        <entry>validator.MaxValueRule</entry>
+                        <entry>最大值验证规则类。对应快捷string为“max”</entry>
+                    </row>
+					<row>
+                        <entry>validator.MinValueRule</entry>
+                        <entry>最小值验证规则类。对应快捷string为“min”</entry>
+                    </row>
+					<row>
+                        <entry>validator.PatternRule</entry>
+                        <entry>正则表达式验证规则类。对应快捷string为“pattern”</entry>
+                    </row>
+					<row>
+                        <entry>validator.Validity</entry>
+                        <entry>验证信息类。</entry>
+                    </row>
+					<row>
+                        <entry>validator.ValidityState</entry>
+                        <entry>规则验证状态类。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+	</section>
+
+	</chapter>
+	
+
+    <chapter>
+		<title>验证规则类 - validator.Rule</title>
+	
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+					<row>
+                        <entry>{string} name</entry>
+                        <entry>规则名称。该名称不可重复。</entry>
+                    </row>
+					<row>
+                        <entry>{Function} {number} check( {Control} control )</entry>
+                        <entry>验证函数，返回验证的状态码。0为合法，其余为错误码。</entry>
+                    </row>
+                    <row>
+                        <entry>{string|Object} errorMessage</entry>
+                        <entry>错误信息。Object时通过错误码映射错误信息。支持${propName}语法取控件属性值。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{string} getName( {void} )</entry>
+                        <entry>获取验证器的名称。</entry>
+                    </row>
+                    <row>
+                        <entry>{validator.ValidityState} checkValidity( {Control} control )</entry>
+                        <entry>验证控件的验证状态。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+    
+	<chapter>
+		<title>不能为空验证规则类 - validator.RequiredRule</title>
+	
+	<section>   
+        <title>继承层级</title>
+		<para>validator.RequiredRule - validator.Rule</para>
+	</section>
+
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{string|Object} errorMessage</entry>
+                        <entry>错误信息。Object时通过错误码映射错误信息。支持${propName}语法取控件属性值。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{string} getName( {void} )</entry>
+                        <entry>获取验证器的名称。恒返回“required”</entry>
+                    </row>
+                    <row>
+                        <entry>{validator.ValidityState} checkValidity( {Control} control )</entry>
+                        <entry>验证控件的验证状态。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+	<chapter>
+		<title>最大长度验证规则类 - validator.MaxLengthRule</title>
+	
+	<section>   
+        <title>继承层级</title>
+		<para>validator.MaxLengthRule - validator.Rule</para>
+	</section>
+
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{string|Object} errorMessage</entry>
+                        <entry>错误信息。Object时通过错误码映射错误信息。支持${propName}语法取控件属性值。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{string} getName( {void} )</entry>
+                        <entry>获取验证器的名称。恒返回“maxlength”</entry>
+                    </row>
+                    <row>
+                        <entry>{validator.ValidityState} checkValidity( {Control} control )</entry>
+                        <entry>验证控件的验证状态。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+	<chapter>
+		<title>最大值验证规则类 - validator.MaxValueRule</title>
+	
+	<section>   
+        <title>继承层级</title>
+		<para>validator.MaxValueRule - validator.Rule</para>
+	</section>
+
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{string|Object} errorMessage</entry>
+                        <entry>错误信息。Object时通过错误码映射错误信息。支持${propName}语法取控件属性值。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{string} getName( {void} )</entry>
+                        <entry>获取验证器的名称。恒返回“max”</entry>
+                    </row>
+                    <row>
+                        <entry>{validator.ValidityState} checkValidity( {Control} control )</entry>
+                        <entry>验证控件的验证状态。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+	<chapter>
+		<title>最小值验证规则类 - validator.MinValueRule</title>
+	
+	<section>   
+        <title>继承层级</title>
+		<para>validator.MinValueRule - validator.Rule</para>
+	</section>
+
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{string|Object} errorMessage</entry>
+                        <entry>错误信息。Object时通过错误码映射错误信息。支持${propName}语法取控件属性值。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{string} getName( {void} )</entry>
+                        <entry>获取验证器的名称。恒返回“min”</entry>
+                    </row>
+                    <row>
+                        <entry>{validator.ValidityState} checkValidity( {Control} control )</entry>
+                        <entry>验证控件的验证状态。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+	<chapter>
+		<title>正则表达式验证规则类 - validator.PatternRule</title>
+	
+	<section>   
+        <title>继承层级</title>
+		<para>validator.PatternRule - validator.Rule</para>
+	</section>
+
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{string|Object} errorMessage</entry>
+                        <entry>错误信息。Object时通过错误码映射错误信息。支持${propName}语法取控件属性值。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{string} getName( {void} )</entry>
+                        <entry>获取验证器的名称。恒返回“pattern”</entry>
+                    </row>
+                    <row>
+                        <entry>{validator.ValidityState} checkValidity( {Control} control )</entry>
+                        <entry>验证控件的验证状态。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+	
+	<chapter>
+		<title>验证信息类 - validator.Validity</title>
+
+	<section>   
+        <title>初始化参数</title>
+        <para>无</para>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{void} addState( {string} name, {validator.ValidityState} state )</entry>
+                        <entry>添加验证状态。</entry>
+                    </row>
+					<row>
+                        <entry>{string} getCustomMessage( {void} )</entry>
+                        <entry>获取自定义验证信息。</entry>
+                    </row>
+					<row>
+                        <entry>{validator.ValidityState} getState( {string} name )</entry>
+                        <entry>获取验证状态。</entry>
+                    </row>
+					<row>
+                        <entry>{Array} getStateList( {void} )</entry>
+                        <entry>获取验证状态集合。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} isValid( {void} )</entry>
+                        <entry>获取整体是否验证通过。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setCustomMessage( {string} message )</entry>
+                        <entry>设置自定义验证信息。</entry>
+                    </row>
+					
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+	<chapter>
+		<title>规则验证状态类 - validator.ValidityState</title>
+
+	<section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{string} message</entry>
+                        <entry>验证信息。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} state</entry>
+                        <entry>验证状态。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{string} getMessage( {void} )</entry>
+                        <entry>获取验证信息。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} getState( {void} )</entry>
+                        <entry>获取验证状态，true为值合法，false为值非法。</entry>
+                    </row>
+
+                    <row>
+                        <entry>{void} setMessage( {string} message )</entry>
+                        <entry>设置验证信息。</entry>
+                    </row>
+					<row>
+                        <entry>{void} setState( {boolean} state )</entry>
+                        <entry>设置验证状态，true为值合法，false为值非法。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	</chapter>
+
+</book>

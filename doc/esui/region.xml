@@ -1,0 +1,267 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - Region</title>
+    </bookinfo> 
+    
+	<section>   
+        <title>继承层级</title>
+		<para>Region - InputControl - Control</para>
+	</section>
+	
+
+    <section>   
+        <title>说明</title>
+        <para>Region用于地域选择。</para>
+        <para>Region支持单选和多选两种选择模式。</para>
+		<para>多选模式下，value的字符串格式为逗号分割的地域列表。</para>
+        <para>地域列表可通过静态参数配置，也可初始化时传入。地域列表是一个Array，列表中的每一项是一个可具有id、text、children属性的多重结构的数据。具体数据形式参照E-JSON标准中的数据场景：树。</para>
+<programlisting>[
+    {
+        id: 'China',
+        text: '中国地区',
+        children: [
+            {
+                id: "North",
+                text: "华北地区",
+                children: [
+                    {id: "1", text: "北京"},
+                    {id: "3", text: "天津"},
+                    {id: "13", text: "河北"},
+                    {id: "26", text: "山西"},
+                    {id: "22", text: "内蒙古"}
+                ]
+            },
+            {
+                id: "NorthEast",
+                text: "东北地区",
+                children: [
+                    {id: "21", text: "辽宁"},
+                    {id: "18", text: "吉林"},
+                    {id: "15", text: "黑龙江"}
+                ]
+            },
+            {
+                id: "East",
+                text: "华东地区",
+                children: [
+                    {id: "2", text: "上海"},
+                    {id: "19", text: "江苏"},
+                    {id: "32", text: "浙江"},
+                    {id: "9", text: "安徽"},
+                    {id: "5", text: "福建"},
+                    {id: "20", text: "江西"},
+                    {id: "25", text: "山东"}
+                ]
+            },
+            {
+                id: "Middle",
+                text: "华中地区",
+                children: [
+                    {id: "14", text: "河南"},
+                    {id: "16", text: "湖北"},
+                    {id: "17", text: "湖南"}
+                ]
+            },
+            {
+                id: "South",
+                text: "华南地区",
+                children: [
+                    {id: "4", text: "广东"},
+                    {id: "8", text: "海南"},
+                    {id: "12", text: "广西"}
+                ]
+            },
+            {
+                id: "SouthWest",
+                text: "西南地区",
+                children: [
+                    {id: "33", text: "重庆"},
+                    {id: "28", text: "四川"},
+                    {id: "10", text: "贵州"},
+                    {id: "31", text: "云南"},
+                    {id: "29", text: "西藏"}
+                ]
+            },
+            {
+                id: "NorthWest",
+                text: "西北地区",
+                children: [
+                    {id: "27", text: "陕西"},
+                    {id: "11", text: "甘肃"},
+                    {id: "24", text: "青海"},
+                    {id: "23", text: "宁夏"},
+                    {id: "30", text: "新疆"}
+                ]
+            },
+            {
+                id: "Other",
+                text: "其他地区",
+                children: [
+                    {id: "34", text: "香港"},
+                    {id: "36", text: "澳门"},
+                    {id: "35", text: "台湾"}
+                ]
+            }
+        ]
+    },
+    {
+        id: 'Abroad',
+        text: '国外',
+        children: [
+            {id: '7', text: '日本'},
+            {id: '37', text: '其他国家'}
+        ]
+    }
+]</programlisting>
+    </section>
+    
+    <section>   
+        <title>构造器静态参数配置</title>
+        <table frame="topbot" align="left">
+            <title>构造器静态参数配置</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{Array} REGION_LIST</entry>
+                        <entry>地域列表。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    
+                    <row>
+                        <entry>{Array} datasource</entry>
+                        <entry>地域列表。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件的不可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} mode</entry>
+                        <entry>选择模式。multi|single。</entry>
+                    </row>
+					<row>
+                        <entry>{string|Object} rule</entry>
+                        <entry>验证规则。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} value</entry>
+                        <entry>当前选中的地域value。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+     
+     <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} checkValidity( {void} )</entry>
+                        <entry>验证控件，仅返回true/false。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{string} getValue( {void} )</entry>
+                        <entry>获取选中的地域。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} validate( {void} )</entry>
+                        <entry>验证控件，当值不合法时显示错误信息。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+	<section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{boolean} onchange: ( {string} value )</entry>
+                        <entry>当选中地域发生改变时触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onbeforevalidate( {validator.Validity} )</entry>
+                        <entry>验证开始前触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onaftervalidate( {validator.Validity} )</entry>
+                        <entry>验证结束后触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} oninvalid( {validator.Validity} )</entry>
+                        <entry>验证控件值不合法时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+</book>

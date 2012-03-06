@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - Link</title>
+    </bookinfo> 
+    
+	<section>   
+        <title>继承层级</title>
+		<para>Link - Control</para>
+	</section>
+
+    <section>   
+        <title>说明</title>
+        <para>Link用于显示简单的超级链接。</para>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{string} href</entry>
+                        <entry>链接地址。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} target</entry>
+                        <entry>链接的目标窗口。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} text</entry>
+                        <entry>要显示的内容。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+	<section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setHref( {string} href )</entry>
+                        <entry>设置链接地址。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setText( {string} text )</entry>
+                        <entry>设置显示的内容。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+     
+     <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{boolean} onclick: ( {void} )</entry>
+                        <entry>当链接被点击时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+</book>

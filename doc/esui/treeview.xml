@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - TreeView</title>
+    </bookinfo> 
+	
+	<section>   
+        <title>继承层级</title>
+		<para>TreeView - Control</para>
+	</section>
+    
+    <section>   
+        <title>说明</title>
+        <para>TreeView控件用于显示树状结构的数据。</para>
+        <para>TreeView接收的数据格式遵循E-JSON中的数据场景：树。</para>
+    </section>
+    
+    <section>   
+        <title>构造器静态参数配置</title>
+        <table frame="topbot" align="left">
+            <title>构造器静态参数配置</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{boolean} CLICK_EXPAND</entry>
+                        <entry>点击是否展开。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} EXPAND_SELECTED</entry>
+                        <entry>是否展开选中的节点。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{boolean} clickExpand</entry>
+                        <entry>点击是否展开。</entry>
+                    </row>
+                    <row>
+                        <entry>{Object} datasource</entry>
+                        <entry>树的节点数据。请参照E-JSON的数据场景：树。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件的不可用状态。不可用时树节点展开或选中的操作皆无效。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} expandSelected</entry>
+                        <entry>是否展开选中的节点。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+                    <row>
+                        <entry>{number} width</entry>
+                        <entry>TreeView的宽度。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					
+                    <row>
+                        <entry>{void} collapse( {string} id )</entry>
+                        <entry>收起节点。</entry>
+                    </row>
+					<row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} expand( {string} id )</entry>
+                        <entry>展开节点。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} select( {string} id )</entry>
+                        <entry>选中节点。</entry>
+                    </row>
+                    
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{boolean} onchange: ( {string} id, {Object} node )</entry>
+                        <entry>当选中的节点发生变化时触发。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} oncollapse: ( {string} id )</entry>
+                        <entry>当节点收起时触发。</entry>
+                    </row>
+                    <row>
+                        <entry>{boolean} onexpand: ( {string} id )</entry>
+                        <entry>当节点展开时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+</book>

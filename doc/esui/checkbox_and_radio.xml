@@ -1,0 +1,374 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="en">
+    
+    <bookinfo>
+        <title>ESUI - Checkbox and Radio</title>
+    </bookinfo> 
+    
+    <chapter>
+    <title>BoxGroup</title>
+    <section>   
+        <title>说明</title>
+        <para>BoxGroup用于处理CheckBox与Radio的分组行为。</para>
+		<para>分组行为描述：自动通过name属性来进行分组。如果控件位于某个form下，则在当前form范围内分组；否则在整个文档的范围内进行分组。</para>
+        <para>BoxGroup不具有具体的UI。BoxGroup不允许被直接创建。</para>
+    </section>
+    
+    <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>{Array} getBoxList( {void} )</entry>
+                        <entry>获取选项组下DOM元素列表。</entry>
+                    </row>
+                    <row>
+                        <entry>{Array} getValue( {void} )</entry>
+                        <entry>获取CheckBox组或Radio组当前被选中的值。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} selectAll( {void} )</entry>
+                        <entry>全选。仅对CheckBox组可用。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} selectInverse( {void} )</entry>
+                        <entry>反选。仅对CheckBox组可用。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    </chapter>
+    
+    <chapter>
+    <title>CheckBox</title>
+	<section>   
+        <title>继承层级</title>
+		<para>CheckBox - InputControl - Control</para>
+	</section>
+	
+
+    <section>   
+        <title>说明</title>
+        <para>CheckBox关联的点击label，由控件根据Input的title attribute自动生成。</para>
+        <para>CheckBox的name、checked和value可以直接写在input上，也可以通过初始化参数传入。</para>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+					<row>
+                        <entry>{boolean} checked</entry>
+                        <entry>当前CheckBox的选中状态。</entry>
+                    </row>
+                    <row>
+                        <entry>{Array} datasource</entry>
+                        <entry>选项数组。如果选项数组中包含该CheckBox的value，则会自动设置为checked。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件是否禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+					<row>
+                        <entry>{string} name</entry>
+                        <entry>当前CheckBox的表单名。</entry>
+                    </row>
+					<row>
+                        <entry>{string|Object} rule</entry>
+                        <entry>验证规则。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} value</entry>
+                        <entry>当前CheckBox的value。</entry>
+                    </row>
+					
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} checkValidity( {void} )</entry>
+                        <entry>验证控件，仅返回true/false。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{BoxGroup} getGroup( {void} )</entry>
+                        <entry>获取CheckBox对应的选项组对象。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} getValue( {void} )</entry>
+                        <entry>获取CheckBox的值。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isChecked( {void} )</entry>
+                        <entry>获取CheckBox的选中状态。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+                    
+                    <row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setChecked( {boolean} checked )</entry>
+                        <entry>设置CheckBox的选中状态。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setValue( {string} value )</entry>
+                        <entry>设置CheckBox的值。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} validate( {void} )</entry>
+                        <entry>验证控件，当值不合法时显示错误信息。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{void} onclick: ( {void} )</entry>
+                        <entry>当CheckBox被点击时触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onbeforevalidate( {validator.Validity} )</entry>
+                        <entry>验证开始前触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onaftervalidate( {validator.Validity} )</entry>
+                        <entry>验证结束后触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} oninvalid( {validator.Validity} )</entry>
+                        <entry>验证控件值不合法时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    </chapter>
+    
+    <chapter>
+    <title>Radio</title>
+	<section>   
+        <title>继承层级</title>
+		<para>Radio - InputControl - Control</para>
+	</section>
+
+    <section>   
+        <title>说明</title>
+        <para>Radio关联的点击label，由控件根据Input的title attribute自动生成。</para>
+        <para>Radio的name、checked和value可以直接写在input上，也可以通过初始化参数传入。</para>
+    </section>
+    
+    <section>   
+        <title>初始化参数</title>
+        <table frame="topbot" align="left">
+            <title>初始化参数</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+					<row>
+                        <entry>{boolean} checked</entry>
+                        <entry>当前CheckBox的选中状态。</entry>
+                    </row>
+                    <row>
+                        <entry>{Array} datasource</entry>
+                        <entry>选项数组。如果选项数组中包含该Radio的value，则会自动设置为checked。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} disabled</entry>
+                        <entry>控件是否禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{HTMLElement} main</entry>
+                        <entry>控件主元素。</entry>
+                    </row>
+					<row>
+                        <entry>{string} name</entry>
+                        <entry>当前CheckBox的表单名。</entry>
+                    </row>
+					<row>
+                        <entry>{string|Object} rule</entry>
+                        <entry>验证规则。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} value</entry>
+                        <entry>当前Radio的value。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>公共实例方法</title>
+        <table frame="topbot" align="left">
+            <title>公共实例方法</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					<row>
+                        <entry>{void} appendTo( {HTMLElement} wrap )</entry>
+                        <entry>将控件添加到页面的某个元素中。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} checkValidity( {void} )</entry>
+                        <entry>验证控件，仅返回true/false。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} disable( {void} )</entry>
+                        <entry>设置控件状态为禁用。</entry>
+                    </row>
+					<row>
+                        <entry>{void} enable( {void} )</entry>
+                        <entry>设置控件状态为启用。</entry>
+                    </row>
+					<row>
+                        <entry>{BoxGroup} getGroup( {void} )</entry>
+                        <entry>获取Radio对应的选项组对象。</entry>
+                    </row>
+                    <row>
+                        <entry>{string} getValue( {void} )</entry>
+                        <entry>获取Radio的值。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isChecked( {void} )</entry>
+                        <entry>获取Radio的选中状态。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} isDisabled( {void} )</entry>
+                        <entry>获取控件可用状态。</entry>
+                    </row>
+                    
+                    
+					<row>
+                        <entry>{void} render( {void} )</entry>
+                        <entry>绘制控件。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setChecked( {boolean} checked )</entry>
+                        <entry>设置Radio的选中状态。</entry>
+                    </row>
+                    <row>
+                        <entry>{void} setValue( {string} value )</entry>
+                        <entry>设置Radio的值。</entry>
+                    </row>
+					<row>
+                        <entry>{boolean} validate( {void} )</entry>
+                        <entry>验证控件，当值不合法时显示错误信息。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    
+    <section>   
+        <title>事件</title>
+        <table frame="topbot" align="left">
+            <title>事件</title>
+            <tgroup cols="2">
+                <thead>
+                    <row>
+                        <entry>名称</entry>
+                        <entry>描述</entry>
+                    </row>
+                </thead>
+                <tbody>
+					
+                    <row>
+                        <entry>{void} onclick: ( {void} )</entry>
+                        <entry>当Radio被点击时触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onbeforevalidate( {validator.Validity} )</entry>
+                        <entry>验证开始前触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} onaftervalidate( {validator.Validity} )</entry>
+                        <entry>验证结束后触发。</entry>
+                    </row>
+					<row>
+                        <entry>{void} oninvalid( {validator.Validity} )</entry>
+                        <entry>验证控件值不合法时触发。</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    </chapter>
+</book>
