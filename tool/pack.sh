@@ -71,9 +71,9 @@ handleDebug() {
 
     cat "$1" | 
         grep -v "__debug__" |
-            sed "s:\$\(\(esui\)\):${ESUI_FILE}:g" |
-                sed "s:\$\(\(er\)\):${ER_FILE}:g" | 
-                    sed "s:\$\(\(esuicss\)\):${ESUICSS_FILE}:g" > "$1.pack"
+            sed "s:\$((esui)):${ESUI_FILE}:g" |
+                sed "s:\$((er)):${ER_FILE}:g" | 
+                    sed "s:\$((esuicss)):${ESUICSS_FILE}:g" > "$1.pack"
 
     rm -f "$1"
     mv "$1.pack" "$1"
@@ -132,7 +132,10 @@ packCss() {
 echo "===== process: pack src"
 cp -r "${SOURCE_DIR}" "${TEMP_DIR}/src"
 cp -r "${SOURCE_DIR}/esui/css/img" "${TEMP_DIR}/release/img"
-rm -f "${TEMP_DIR}/release/img/*.psd"
+for psd in $(ls ${TEMP_DIR}/release/img/*.psd)
+do
+	rm -f "${psd}"
+done
 packJs "er-core"
 packJs "er"
 packJs "esui"
