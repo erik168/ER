@@ -71,9 +71,9 @@ handleDebug() {
 
     cat "$1" | 
         grep -v "__debug__" |
-            sed s/\$\(\(esui\)\)/${ESUI_FILE}/g |
-                sed s/\$\(\(er\)\)/${ER_FILE}/g | 
-                    sed s/\$\(\(esuicss\)\)/${ESUICSS_FILE}/g > "$1.pack"
+            sed "s/\$\(\(esui\)\)/${ESUI_FILE}/g" |
+                sed "s/\$\(\(er\)\)/${ER_FILE}/g" | 
+                    sed "s/\$\(\(esuicss\)\)/${ESUICSS_FILE}/g" > "$1.pack"
 
     rm -f "$1"
     mv "$1.pack" "$1"
@@ -171,7 +171,7 @@ done
 
 # pack
 cd "${TAR_DIR}"
-tar zfvc "${TAR_DIR}/${TAR_FILE}" "er-${VER}"
+tar zfvc "${TAR_FILE}" "er-${VER}"
 
 # remove temp dir
 echo "===== process: rm temp dir: ${TEMP_DIR}"
