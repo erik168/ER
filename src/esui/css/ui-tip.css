@@ -110,13 +110,13 @@
 }
 
 .ui-tip-entrance {
-	width:14px;
-	height:14px;
-	background:url(img/esui.png) -101px -89px;
-	overflow:hidden;
-	display:inline-block;
-	*display:inline;
-	zoom:1;
+    width:14px;
+    height:14px;
+    background:url(img/esui.png) -101px -89px;
+    overflow:hidden;
+    display:inline-block;
+    *display:inline;
+    zoom:1;
 }
 
 .skin-tip-entrance-info {
