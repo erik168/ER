@@ -88,7 +88,7 @@ esui.BoxGroup.prototype = {
             box;
 
         for ( ; i < len; i++ ) {
-            box = boxs[ i ];
+            var box = boxs[ i ];
             box.setChecked( !box.isChecked() );
         }
     },
