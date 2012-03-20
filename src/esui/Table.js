@@ -1381,7 +1381,8 @@ esui.Table.prototype = {
     _getSubrowHtml: function ( index ) {
         return '<div id="' + this._getSubrowId( index )
                     + '" class="' + this.__getClass( 'subrow' ) + '"'
-                    + ' style="display:none"></div>';
+                    + ' style="display:none; width:100%; overflow:hidden;"></div>';
+                    // 对subrow定义宽度，否则在resize时宽度不会改变
     },
     
     /**
