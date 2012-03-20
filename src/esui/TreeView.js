@@ -63,7 +63,7 @@ esui.TreeView.prototype = {
 
         me.main.innerHTML = me._getMainHtml();
     },
-	
+    
     /**
      * 获取主区域的html
      *
@@ -108,8 +108,8 @@ esui.TreeView.prototype = {
                 + 'level="{9}" onclick="{10}" onmouseover="{11}" onmouseout="{12}">'
                     + '<div class="{5}" onclick="{13}">&nbsp;</div>'
                     + '<div class="{6}">&nbsp;</div>'
-	                + '<div class="{7}">{3}'
-	            + '</div></div>',
+                    + '<div class="{7}">{3}'
+                + '</div></div>',
     
     /**
      * 获取节点的html
@@ -175,7 +175,7 @@ esui.TreeView.prototype = {
                 clazz,
                 nodeId,
                 itemHTML,
-				itemId,
+                itemId,
                 iconClass,
                 typeClass,
                 me.__getClass( 'node-text' ),
@@ -201,7 +201,7 @@ esui.TreeView.prototype = {
 
         return html;
     },
-	
+    
     /**
      * 获取节点的样式class
      *
@@ -402,30 +402,30 @@ esui.TreeView.prototype = {
             baidu.removeClass( node, this.__getClass( 'node-expanded' ) );
         }
     },
-	
+    
     /**
-	 * 重绘节点本身
+     * 重绘节点本身
      *
      * @public
-	 * @param {Object} dataItem
-	 */
-	repaintNodeText: function( dataItem ) {
-		var me          = this,
+     * @param {Object} dataItem
+     */
+    repaintNodeText: function( dataItem ) {
+        var me          = this,
             itemId      = me.getItemId( dataItem ),
-			itemHtml    = me.getItemHtml( dataItem ),
+            itemHtml    = me.getItemHtml( dataItem ),
             nodeEl      = baidu.g( me.__getId( 'node' + itemId ) );
         
         if ( itemHtml ){
-			nodeEl.lastChild.innerHTML = itemHtml;
-		}
-	},
+            nodeEl.lastChild.innerHTML = itemHtml;
+        }
+    },
 
     /**
-	 * 重绘节点及其子树
+     * 重绘节点及其子树
      *
      * @public
-	 * @param {Object} dataItem
-	 */	
+     * @param {Object} dataItem
+     */    
     repaintNode: function ( dataItem ) {
         var me          = this,
             itemId      = me.getItemId( dataItem ),
@@ -439,9 +439,9 @@ esui.TreeView.prototype = {
         
         // 刷新节点文字
         this.repaintNodeText( dataItem );
-		
+        
         // 绘制子节点
-		if ( children instanceof Array && children.length ) {
+        if ( children instanceof Array && children.length ) {
             // 创建子节点容器元素
             if ( !childrenEl ) {
                 childrenEl = document.createElement( 'ul' );
@@ -451,11 +451,11 @@ esui.TreeView.prototype = {
                 nodeEl.parentNode.insertBefore( childrenEl, nodeEl.nextSibling );
             }
 
-			childrenEl.innerHTML = me.getChildrenHtml( children, 1, level );
+            childrenEl.innerHTML = me.getChildrenHtml( children, 1, level );
             baidu.addClass( nodeEl, branchClass );
             baidu.removeClass( nodeEl, leafClass );
             nodeEl.setAttribute( 'type', 'branch' );
-		} else {
+        } else {
             baidu.removeClass( nodeEl, branchClass );
             baidu.addClass( nodeEl, leafClass );
             nodeEl.setAttribute( 'type', 'leaf' );
