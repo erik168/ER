@@ -26,7 +26,7 @@ esui.Tab = function ( options ) {
     
     this.activeIndex    = this.activeIndex || 0;
     this.allowEdit      = !!this.allowEdit;
-	this.maxCount       = this.maxCount || esui.Tab.MAX_COUNT || 5;
+    this.maxCount       = this.maxCount || esui.Tab.MAX_COUNT || 5;
 };
 
 esui.Tab.prototype = {
@@ -38,7 +38,7 @@ esui.Tab.prototype = {
     render: function () {
         var me = this;
         esui.Control.prototype.render.call( me );
-		
+        
         this.tabs = this.datasource || this.tabs || [];
 
         // 绘制内容部分
@@ -60,23 +60,23 @@ esui.Tab.prototype = {
             tabs      = me.tabs,
             len       = tabs.length,
             itemClass = me.__getClass( 'item' ),
-			html      = [],
+            html      = [],
             currClass,
             i,
-			tab,
+            tab,
             title,
-			closeHtml,
+            closeHtml,
             clickHandler;
-		
+        
         if ( len == 0 ) {
             main.innerHTML = '';
             return;
         } else if ( len <= me.activeIndex ) {
-			me.activeIndex = 0;
-		} else if ( me.activeIndex < 0 ) {
+            me.activeIndex = 0;
+        } else if ( me.activeIndex < 0 ) {
             me.activeIndex = 0;
         }
-		
+        
         for (i = 0; i < len; i++) {
             tab             = me.tabs[ i ];
             title           = tab.title;
@@ -88,7 +88,7 @@ esui.Tab.prototype = {
             if ( me.allowEdit && !tab.stable ) {
                 closeHtml = esui.util.format(
                     me.tplClose,
-					me.__getStrCall( '_close', i )
+                    me.__getStrCall( '_close', i )
                 );
             }
 
@@ -120,9 +120,9 @@ esui.Tab.prototype = {
                 ) );
         }
 
-		// 填充tab的html
+        // 填充tab的html
         main.innerHTML = '<ul>' + html.join('') + '</ul>';
-		me._resetPanel();
+        me._resetPanel();
     },
     
     /**
@@ -158,7 +158,7 @@ esui.Tab.prototype = {
             this.setActiveIndex( index );
         }
     },
-	
+    
     /**
      * 选择标签
      * 
@@ -170,8 +170,8 @@ esui.Tab.prototype = {
         this._renderTabs();
     },
 
-	onclose: new Function(),
-	
+    onclose: new Function(),
+    
     /**
      * 关闭标签
      * 
@@ -180,10 +180,10 @@ esui.Tab.prototype = {
      */
     _close: function ( index ) {
         if ( this.onclose( index, this.tabs[ index ] ) !== false ) {
-			this.remove( index );
+            this.remove( index );
         }
     },
-	
+    
     /**
      * 移除标签
      * 
@@ -204,7 +204,7 @@ esui.Tab.prototype = {
 
         this._renderTabs();
     },
-	
+    
     /**
      * 添加标签
      * 
