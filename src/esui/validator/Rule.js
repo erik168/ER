@@ -47,8 +47,8 @@ esui.validator.Rule = function () {
             var message = '';
 
             if ( !isValid ) {
-                message = this.errorMessage.replace( /\$\{([a-z0-9_-]+)\}/g, function ( $0, $1 ) {
-                    return control[ $1 ] || '';
+                message = this.errorMessage.replace( /\x24\{([a-z0-9_-]+)\}/g, function ( matcher, word ) {
+                    return control[ word ] || '';
                 } );
             }
             
