@@ -151,14 +151,14 @@ esui.MiniMultiCalendar.prototype = {
      * @return {boolean}
      */
     _isSameDate: function ( date1, date2 ) {
-		if ( date2 != "" && date1 != "" ) {
-			if ( date1.getFullYear() == date2.getFullYear()
+        if ( date2 != "" && date1 != "" ) {
+            if ( date1.getFullYear() == date2.getFullYear()
                  && date1.getMonth() == date2.getMonth()
                  && date1.getDate() == date2.getDate()
             ) {
-				return true;
-			}
-		}
+                return true;
+            }
+        }
 
         return false;
     },
@@ -181,7 +181,7 @@ esui.MiniMultiCalendar.prototype = {
             clazz, callStr,
             html = [];
 
-       	me._currentName = '';
+           me._currentName = '';
         if ( esui.util.hasValue( me.selectedIndex ) ) {
             me._currentName = opList[ me.selectedIndex ].name;
         } else {
@@ -220,7 +220,7 @@ esui.MiniMultiCalendar.prototype = {
                     callStr
                 )
             );
-        }	
+        }
 
         return html.join( '&nbsp;|&nbsp;' );
     },
@@ -234,7 +234,7 @@ esui.MiniMultiCalendar.prototype = {
      * @param {number} index 
      */
     _selectByIndex: function ( index ) {
-		var opList = this.options, 
+        var opList = this.options,
             item,
             value;
 
@@ -346,11 +346,11 @@ esui.MiniMultiCalendar.OPTIONS = [
                 begin.setDate( begin.getDate() - 14 + _wd - begin.getDay() );
             } else {
                 begin.setDate( begin.getDate() - 7 - begin.getDay() + _wd % 7 );
-            }				
-            begin.setHours( 0, 0, 0, 0 );		
+            }
+            begin.setHours( 0, 0, 0, 0 );
             end.setFullYear( begin.getFullYear(), begin.getMonth(), begin.getDate() + 6 );
             end.setHours( 0, 0, 0, 0 );
-                             
+            
             return {
                 begin   : begin,
                 end     : end
