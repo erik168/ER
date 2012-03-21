@@ -114,7 +114,7 @@ esui.Schedule.prototype = {
         bodyHead = baidu.g( this.__getId('BodyHead') );
         bodyHead.style.display = shortcut.style.display = disabled ? 'none' : '';
         
-        for (i = 0; i < 7; i++) {
+        for (var i = 0; i < 7; i++) {
             baidu.g( this.__getId('lineState' + i) ).disabled = disabled;
         }
     },
@@ -158,7 +158,7 @@ esui.Schedule.prototype = {
         var valueAsArray = this.valueAsArray;
 
         for ( i = 0; i < 7; i++ ) {
-            for ( j = 0; j < 24; j++ ) {
+            for ( var j = 0; j < 24; j++ ) {
                 value.push( valueAsArray[ i ][ j ] );
             }
         }

@@ -355,6 +355,7 @@ esui.Table.prototype = {
      */
     _initColsWidth: function () {
         var me          = this,
+            i,
             fields      = me._fields,
             len         = fields.length,
             canExpand   = [],
@@ -561,8 +562,10 @@ esui.Table.prototype = {
             tipClass    = me.__getClass( 'hhelp' ),
             i, field, title, canDragBegin, canDragEnd,
             contentHtml,
+            thClass,
             orderClass,
             alignClass,
+            currentSort,
             sortIconHtml,
             sortable,
             tipHtml;
@@ -736,9 +739,9 @@ esui.Table.prototype = {
      * @param {HTMLElement} cell 点击的单元格
      */
     _titleClickHandler: function ( cell ) {
+        var me = this;
         if ( this._sortReady ) { // 避免拖拽触发排序行为
-            var me      = this,
-                field   = me._fields[ cell.getAttribute( 'index' ) ],
+            var field   = me._fields[ cell.getAttribute( 'index' ) ],
                 orderBy = me.orderBy,
                 order   = me.order;
             
@@ -1146,6 +1149,7 @@ esui.Table.prototype = {
             tdCellClass     = me.__getClass( 'cell' ),
             tdBreakClass    = me.__getClass( 'cell-break' ),
             tdTextClass     = me.__getClass( 'cell-text' ),
+            field,
             fields          = me._fields,
             fieldLen        = fields.length,
             cellClass,
