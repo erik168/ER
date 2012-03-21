@@ -29,15 +29,15 @@ esui.Pager = function ( options ) {
     this._autoState = 0;
 
     esui.Control.call( this, options );
-	
-	// Add by junyi @2011-01-24
+    
+    // Add by junyi @2011-01-24
     // 起始页码数字，即传给后端计算当前页码的偏移量，大多数系统第一页数据的页码索引为0，少数系统为1，即可在此配置，默认：0。
-	this.startNumber = parseInt(this.startNumber, 10) || 0;
-	
-	this.__initOption('prevText', null, 'PREV_TEXT');
-	this.__initOption('nextText', null, 'NEXT_TEXT');
-	this.__initOption('omitText', null, 'OMIT_TEXT');
-	
+    this.startNumber = parseInt(this.startNumber, 10) || 0;
+    
+    this.__initOption('prevText', null, 'PREV_TEXT');
+    this.__initOption('nextText', null, 'NEXT_TEXT');
+    this.__initOption('omitText', null, 'OMIT_TEXT');
+    
     this.showCount = parseInt(this.showCount, 10) || esui.Pager.SHOW_COUNT;
 };
 
@@ -47,16 +47,16 @@ esui.Pager.NEXT_TEXT  = '<span class="ui-pager-pntext">下一页</span><span cla
 esui.Pager.PREV_TEXT  =  '<span class="ui-pager-icon"></span><span class="ui-pager-pntext">上一页</span>';
 
 esui.Pager.prototype = {
-	/**
-	 * 获取当前页码
-	 * 
-	 * @public
-	 * @return {string}
-	 */
-	getPage: function () {
-		return this.page;
-	},
-	
+    /**
+     * 获取当前页码
+     * 
+     * @public
+     * @return {string}
+     */
+    getPage: function () {
+        return this.page;
+    },
+    
     /**
      * 渲染控件
      * 
@@ -73,13 +73,13 @@ esui.Pager.prototype = {
         this._renderPages();
     },
     
-	/**
-	 * @ignore
-	 */
+    /**
+     * @ignore
+     */
     _tplMain: '<ul>{0}</ul>',
-	/**
-	 * @ignore
-	 */
+    /**
+     * @ignore
+     */
     _tplItem: '<li onclick="{2}" onmouseover="{3}" onmouseout="{4}" class="{1}">{0}</li>',
     
     /**
@@ -91,13 +91,13 @@ esui.Pager.prototype = {
         var me        = this,
             html      = [],
             total     = me.total,
-			startNumber = this.startNumber,
+            startNumber = this.startNumber,
             last      = total + startNumber - 1,
             page      = me.page + startNumber, // 恶心
             itemClass = me.__getClass( 'item' ),
             disClass  = me.__getClass( 'disabled' ),
-			prevClass = me.__getClass( 'prev' ),
-			nextClass = me.__getClass( 'next' ),
+            prevClass = me.__getClass( 'prev' ),
+            nextClass = me.__getClass( 'next' ),
             omitWord  = me._getInfoHtml( me.omitText, me.__getClass( 'omit' ) ),
             i, begin;
         
@@ -105,7 +105,7 @@ esui.Pager.prototype = {
             this.main.innerHTML = '';
             return;
         }
-       		 
+                
         // 计算起始页
         if ( page < me.showCount - 1 ) {
             begin = 0;
@@ -124,7 +124,7 @@ esui.Pager.prototype = {
             html.push( 
                 me._getItemHtml(
                     me.prevText,
-					prevClass,
+                    prevClass,
                     me.__getStrCall( '_setPage', page - 1 )
                 ) );
         } else {
@@ -136,7 +136,7 @@ esui.Pager.prototype = {
             html.push(
                 me._getItemHtml(
                     1,
-					itemClass,
+                    itemClass,
                     this.__getStrCall( '_setPage', 0 )
                 ),
                 omitWord );
@@ -148,7 +148,7 @@ esui.Pager.prototype = {
             html.push(
                 me._getItemHtml(
                     1 + begin + i,
-					itemClass,
+                    itemClass,
                     me.__getStrCall( '_setPage', begin + i )
                 ) );
             } else {
@@ -166,7 +166,7 @@ esui.Pager.prototype = {
                 omitWord,
                 me._getItemHtml(
                     total,
-				    itemClass,
+                    itemClass,
                     me.__getStrCall( '_setPage', last )
                 ) );
         }
@@ -187,22 +187,22 @@ esui.Pager.prototype = {
         this.main.innerHTML = esui.util.format( me._tplMain, html.join('') );
     },
     
-	/**
-	 * 生成单个页码元素的html内容
-	 * @private
-	 * 
-	 * @param {String} sText
-	 * @param {Strint} sClass
-	 * @param {String} sClick
-	 * 
-	 * @return {String}
-	 */
+    /**
+     * 生成单个页码元素的html内容
+     * @private
+     * 
+     * @param {String} sText
+     * @param {Strint} sClass
+     * @param {String} sClick
+     * 
+     * @return {String}
+     */
     _getItemHtml: function( sText, sClass, sClick ) {
-	    var me          = this,
-	        strRef      = me.__getStrRef(),
-	        itemOver    = strRef + '._itemOverHandler(this)',
-	        itemOut     = strRef + '._itemOutHandler(this)';
-	        
+        var me          = this,
+            strRef      = me.__getStrRef(),
+            itemOver    = strRef + '._itemOverHandler(this)',
+            itemOut     = strRef + '._itemOutHandler(this)';
+            
         return esui.util.format(
             me._tplItem,
             sText,
@@ -212,27 +212,27 @@ esui.Pager.prototype = {
             itemOut
         );
     },
-	
-	/**
-	 * 生成单个不可点击的页码元素的html内容
-	 * @private
-	 * 
-	 * @param {String} sText
-	 * @param {Strint} sClass
-	 * 
-	 * @return {String}
-	 */
-	_getInfoHtml: function ( sText, sClass ) {
-		return esui.util.format( this._tplItem, sText, sClass, '', '' ,'' );
-	},
     
-	/**
-	 * 点击页码的事件处理接口
-	 * 
-	 * @param {Number} page
-	 * 
-	 * @return {Boolean}
-	 */
+    /**
+     * 生成单个不可点击的页码元素的html内容
+     * @private
+     * 
+     * @param {String} sText
+     * @param {Strint} sClass
+     * 
+     * @return {String}
+     */
+    _getInfoHtml: function ( sText, sClass ) {
+        return esui.util.format( this._tplItem, sText, sClass, '', '' ,'' );
+    },
+    
+    /**
+     * 点击页码的事件处理接口
+     * 
+     * @param {Number} page
+     * 
+     * @return {Boolean}
+     */
     onchange: new Function(),
     
     /**
@@ -258,18 +258,18 @@ esui.Pager.prototype = {
         this._renderPages();
     },
     
-	/**
-	 * @ignore
-	 * @param {Object} item
-	 */
+    /**
+     * @ignore
+     * @param {Object} item
+     */
     _itemOverHandler: function( item ) {
         baidu.addClass( item, this.__getClass( 'hover' ) );
     },
 
-	/**
-	 * @ignore
-	 * @param {Object} item
-	 */
+    /**
+     * @ignore
+     * @param {Object} item
+     */
     _itemOutHandler: function( item ) {
         baidu.removeClass( item, this.__getClass( 'hover' ) );
     }

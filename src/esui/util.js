@@ -41,7 +41,7 @@ esui.util = function () {
             var uiAttr = esui.config.UI_ATTRIBUTE || 'ui';
             var realEls = [];
             var attrs, attrStr, attrArr, attrArrLen;
-            var attr, attrValue, attrItem, extraAttrMap;
+            var attrSegment, attr, attrValue, attrItem, extraAttrMap;
             var i, len, key, el, uis = {};
             
             // 把dom元素存储到临时数组中
