@@ -31,7 +31,7 @@ esui.Button.prototype = {
      *
      * @private
      */
-    _tplButton: '<div id="{2}" class="{1}">{0}</div>',
+    _tplButton: '{0}',
     
     /**
      * 默认的onclick事件执行函数
@@ -81,23 +81,17 @@ esui.Button.prototype = {
     render: function () {
         var me   = this;
         var main = me.main;
-        var father;
-        var temp;
+        var innerDiv;
         
         if ( !me._isRendered ) {
-            if ( !me.content ) {
+            innerDiv = main.firstChild;
+            if (!me.content 
+                && innerDiv 
+                && innerDiv.tagName != 'DIV'
+            ) {
                 me.content = main.innerHTML;
             }
             
-            // 如果是button的话，替换成一个DIV
-            if ( main.tagName == 'BUTTON' ) {
-                father = main.parentNode;
-                temp = document.createElement( 'div' );
-                father.insertBefore( temp, main );
-                father.removeChild( main );
-                main = me.main = temp;
-            }
-
             esui.Control.prototype.render.call( me );
             main.innerHTML = me._getMainHtml();
 
