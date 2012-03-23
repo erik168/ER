@@ -21,8 +21,8 @@
  */
 esui.MonthView = function ( options ) {
     // 类型声明，用于生成控件子dom的id和class
-	this._type = "month";
-	
+    this._type = "month";
+    
     // 标识鼠标事件触发自动状态转换
     this._autoState = 0;
 
@@ -30,22 +30,22 @@ esui.MonthView = function ( options ) {
 
     this.now = this.now || esui.config.NOW || new Date();
     var viewBase = this.valueAsDate || this.now;
-	this.year = parseInt( this.year, 10 ) || viewBase.getFullYear();
-	this.month = parseInt( this.month, 10 ) || viewBase.getMonth();
+    this.year = parseInt( this.year, 10 ) || viewBase.getFullYear();
+    this.month = parseInt( this.month, 10 ) || viewBase.getMonth();
 };
 
 esui.MonthView.prototype = {
     /**
-	 * 设置当前显示的月份日期
-	 * 
-	 * @public
-	 * @param {Date} view 当前显示的月份日期
-	 */
-	setView: function ( view ) {
+     * 设置当前显示的月份日期
+     * 
+     * @public
+     * @param {Date} view 当前显示的月份日期
+     */
+    setView: function ( view ) {
         this.month = view.getMonth();
         this.year = view.getFullYear();
         this.render();   
-	},
+    },
     
     /**
      * 获取当前选择的日期
@@ -72,13 +72,13 @@ esui.MonthView.prototype = {
             me._paintSelected();
         }
     },
-	
-	/**
-	 * 绘制控件
+    
+    /**
+     * 绘制控件
      *
      * @public
-	 */
-	render: function () {
+     */
+    render: function () {
         esui.Control.prototype.render.call( this );
         this.main.innerHTML = this._getHtml();
         this.setValueAsDate( this.valueAsDate );
@@ -89,17 +89,17 @@ esui.MonthView.prototype = {
      * @private
      */
     _tplItem: '<td year="{1}" month="{2}" date="{0}" class="{4}" style="{5}" id="{3}" onmouseover="{6}" onmouseout="{7}" onclick="{8}">{0}</td>',
-	
+    
     /**
      * 日期表格头的模板
      * @private
      */
     _tplHead: '<table border="0" cellpadding="0" cellspacing="0" class="{0}"><thead><tr>',
 
-	/**
-	 * 标题显示配置
-	 */
-	TITLE_WORDS: ['一', '二', '三', '四', '五', '六', '日'],
+    /**
+     * 标题显示配置
+     */
+    TITLE_WORDS: ['一', '二', '三', '四', '五', '六', '日'],
     
     /**
      * 获取控件的html

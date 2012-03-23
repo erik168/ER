@@ -145,13 +145,13 @@
 }
 
 .ui-table-body {
-	background:#FFF;
+    background:#FFF;
 }
 
 .ui-table-row {
     background:#FFF;
     border-bottom:1px solid #ddd;
-	zoom:1;
+    zoom:1;
 }
 
 
@@ -241,7 +241,7 @@
 .ui-table-subentry,
 .ui-table-subentry-opened,
 .ui-table-subentry-opened-hover {
-	overflow:hidden;
+    overflow:hidden;
     width:11px;
     height:11px;
     background-image: url(img/esui.png);
@@ -272,8 +272,8 @@
 
 
 .ui-table-subrow {
-	background:#FFF9EE;
-	border-color:#ddd;
+    background:#FFF9EE;
+    border-color:#ddd;
     border-style:solid;
     border-width:0 1px 1px;
     padding:1px 0 0 36px;

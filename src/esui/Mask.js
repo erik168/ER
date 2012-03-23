@@ -26,7 +26,7 @@ esui.Mask = (function() {
      */
     function init( level ) {
         var id = idPrefix + level,
-		    el = document.createElement( 'div' );
+            el = document.createElement( 'div' );
         
         el.id = id;
         document.body.appendChild( el );
@@ -61,7 +61,7 @@ esui.Mask = (function() {
      */
     function getResizeHandler( level ) {
         return function () {
-		    repaintMask( getMask( level ) );
+            repaintMask( getMask( level ) );
         };
     }
 
@@ -81,7 +81,7 @@ esui.Mask = (function() {
 
         return baidu.g( id );
     }
-	
+    
     var resizeHandlerMap = {};
     return {
         /**
@@ -94,7 +94,7 @@ esui.Mask = (function() {
             
             clazz.push( maskClass );
             clazz.push( maskClass + '-level-' + level );
-			if ( type ) {
+            if ( type ) {
                 clazz.push( maskClass + '-' + type );
             }
             
@@ -105,7 +105,7 @@ esui.Mask = (function() {
 
             var resizeHandler = getResizeHandler( level );
             resizeHandlerMap[ level ] = resizeHandler;
-			baidu.on( window, 'resize', resizeHandler );            
+            baidu.on( window, 'resize', resizeHandler );
         },
 
         /**
@@ -113,12 +113,12 @@ esui.Mask = (function() {
          */
         'hide': function ( level ) {
             level = level || '0';
-			var mask = getMask( level );
+            var mask = getMask( level );
             if ( 'undefined' != typeof mask ) {
                 mask.style.display = 'none';
 
                 var resizeHandler = resizeHandlerMap[ level ];
-				baidu.un( window, 'resize', resizeHandler );
+                baidu.un( window, 'resize', resizeHandler );
             }
         }
     };

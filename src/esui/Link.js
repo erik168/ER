@@ -60,7 +60,7 @@ esui.Link.prototype = {
      */
     setHref: function ( href ) {
         !href && ( href = '' );
-        me.main.href = href;
+        this.main.href = href;
     },
 
     /**
