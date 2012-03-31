@@ -365,7 +365,8 @@ esui.Table.prototype = {
             width,
             index,
             maxCanExpandIdx = 0,
-            minWidth;
+            minWidth,
+            i;
         
         me._colsWidth = [];
         
@@ -563,6 +564,8 @@ esui.Table.prototype = {
             contentHtml,
             orderClass,
             alignClass,
+            thClass,
+            currentSort,
             sortIconHtml,
             sortable,
             tipHtml;
@@ -1160,6 +1163,7 @@ esui.Table.prototype = {
             subentryHtml,
             contentHtml,
             editable,
+            field,
             i;
             
         html.push(
