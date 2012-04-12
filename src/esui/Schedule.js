@@ -101,6 +101,7 @@ esui.Schedule.prototype = {
         var stateName = 'disabled';
         var shortcut;
         var bodyHead;
+        var i;
         
         this.disabled = disabled;
         if ( disabled ) {
@@ -114,7 +115,7 @@ esui.Schedule.prototype = {
         bodyHead = baidu.g( this.__getId('BodyHead') );
         bodyHead.style.display = shortcut.style.display = disabled ? 'none' : '';
         
-        for (var i = 0; i < 7; i++) {
+        for ( i = 0; i < 7; i++ ) {
             baidu.g( this.__getId('lineState' + i) ).disabled = disabled;
         }
     },
@@ -156,9 +157,10 @@ esui.Schedule.prototype = {
     getValue: function () {
         var value = [];
         var valueAsArray = this.valueAsArray;
+        var i, j;
 
         for ( i = 0; i < 7; i++ ) {
-            for ( var j = 0; j < 24; j++ ) {
+            for ( j = 0; j < 24; j++ ) {
                 value.push( valueAsArray[ i ][ j ] );
             }
         }

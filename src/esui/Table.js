@@ -355,7 +355,6 @@ esui.Table.prototype = {
      */
     _initColsWidth: function () {
         var me          = this,
-            i,
             fields      = me._fields,
             len         = fields.length,
             canExpand   = [],
@@ -366,7 +365,8 @@ esui.Table.prototype = {
             width,
             index,
             maxCanExpandIdx = 0,
-            minWidth;
+            minWidth,
+            i;
         
         me._colsWidth = [];
         
@@ -562,9 +562,9 @@ esui.Table.prototype = {
             tipClass    = me.__getClass( 'hhelp' ),
             i, field, title, canDragBegin, canDragEnd,
             contentHtml,
-            thClass,
             orderClass,
             alignClass,
+            thClass,
             currentSort,
             sortIconHtml,
             sortable,
@@ -739,9 +739,9 @@ esui.Table.prototype = {
      * @param {HTMLElement} cell 点击的单元格
      */
     _titleClickHandler: function ( cell ) {
-        var me = this;
         if ( this._sortReady ) { // 避免拖拽触发排序行为
-            var field   = me._fields[ cell.getAttribute( 'index' ) ],
+            var me      = this,
+                field   = me._fields[ cell.getAttribute( 'index' ) ],
                 orderBy = me.orderBy,
                 order   = me.order;
             
@@ -1149,7 +1149,6 @@ esui.Table.prototype = {
             tdCellClass     = me.__getClass( 'cell' ),
             tdBreakClass    = me.__getClass( 'cell-break' ),
             tdTextClass     = me.__getClass( 'cell-text' ),
-            field,
             fields          = me._fields,
             fieldLen        = fields.length,
             cellClass,
@@ -1164,6 +1163,7 @@ esui.Table.prototype = {
             subentryHtml,
             contentHtml,
             editable,
+            field,
             i;
             
         html.push(
@@ -1385,8 +1385,7 @@ esui.Table.prototype = {
     _getSubrowHtml: function ( index ) {
         return '<div id="' + this._getSubrowId( index )
                     + '" class="' + this.__getClass( 'subrow' ) + '"'
-                    + ' style="display:none; width:100%; overflow:hidden;"></div>';
-                    // 对subrow定义宽度，否则在resize时宽度不会改变
+                    + ' style="display:none"></div>';
     },
     
     /**
