@@ -13,6 +13,17 @@
 </articleinfo> 
 
 <section>   
+    <title>2.0.4</title>
+
+    <orderedlist>
+        <listitem><para>ESUI - util：修复全局变量逃逸问题，涉及attrSegment。</para></listitem>
+        <listitem><para>ESUI - Link：修复对未声明的变量me的错误引用。</para></listitem>
+        <listitem><para>ESUI - Schedule：修复全局变量逃逸问题，涉及i/j。</para></listitem>
+        <listitem><para>ESUI - Table：修复全局变量逃逸问题，涉及i/thClass/currentSort/field。</para></listitem>
+    </orderedlist>
+</section>
+
+<section>   
     <title>2.0.3</title>
 
     <orderedlist>
