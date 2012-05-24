@@ -53,9 +53,12 @@ esui.Table = function ( options ) {
     // 表格的单元格不需要考虑边框宽度，直接加齐就行
     // 而且即使table-layout:fixed，单元格宽度也不会从前向后分配
     // 而会以未知策略将剩余宽度分配给单元格
-    if ( baidu.browser.isWebkit ) {
-        this.rowWidthOffset = 0;
-    }
+    //
+    // 但是在chrome19以上修复了此问题
+    // 并且在safari5.1.4上测试未发现问题
+    // if ( baidu.browser.isWebkit ) {
+    //     this.rowWidthOffset = 0;
+    // }
 
     this._followHeightArr = [0, 0];
     this._followWidthArr = [];
