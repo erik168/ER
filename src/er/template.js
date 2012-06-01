@@ -5,6 +5,28 @@
  * path:    er/template.js
  * desc:    简易的、基于html注释的模板支持
  * author:  erik, mytharcher
+ * example:
+ * <!-- target: targetName -->
+ * <div>html fragment</div>
+ * 
+ * <!-- target: targetName2( master = masterName ) -->
+ * <!-- content: header -->
+ * title
+ * <!-- content: content -->
+ * <ul>
+ *     <!-- for: list as item -->
+ *         <li>${item}         
+ *     <!-- /for -->
+ * </ul>
+ *
+ * <!-- master: masterName -->
+ * <div class="header">
+ *     <!-- contentplaceholder: header -->
+ * </div>
+ * <div class="content">
+ *     <!-- contentplaceholder: content -->
+ * </div>
+ * 
  */
 
 ///import er.config;
@@ -15,21 +37,339 @@
  * 简易的模板解析器
  */
 er.template = function () {
-    var masterContainer = {},
-        targetContainer = {},
-        targetCache = {},
+    /**
+     * 随手写了个栈
+     *
+     * @inner
+     */
+    function Stack() {
+        this.container = [];
+        this.index = -1;
+    }
 
-        // 过滤器
-        filterContainer = {
-            'html': function ( source ) {
-                return baidu.string.encodeHTML( source );
-            },
-            
-            'url': function ( source ) {
-                return encodeURIComponent( source );
-            }
+    Stack.prototype = {
+        /**
+         * 获取栈顶元素
+         *
+         * @return {Any}
+         */
+        current: function () {
+            return this.container[ this.index ];
         },
-        isLoaded;
+
+        /**
+         * 入栈
+         *
+         * @param {Any} elem
+         */
+        push: function ( elem ) {
+            this.container[ ++this.index ] = elem;
+        },
+
+        /**
+         * 出栈
+         *
+         * @return {Any}
+         */
+        pop: function () {
+            if ( this.index < 0 ) {
+                return null;
+            }
+
+            var elem = this.container[ this.index ];
+            this.container.length = this.index--;
+
+            return elem;
+        },
+
+        /**
+         * 获取栈底元素
+         *
+         * @return {Any}
+         */
+        bottom: function () {
+            return this.container[ 0 ];
+        }
+    };
+
+    /**
+     * 随手写了个数组作为buffer
+     *
+     * @inner
+     */
+    function ArrayBuffer() {
+        this.raw = [];
+        this.idx = 0;
+    }
+
+    ArrayBuffer.prototype = {
+        /**
+         * 添加元素到数组末端
+         *
+         * @param {Any} elem 添加项
+         */
+        push: function ( elem ) {
+            this.raw[ this.idx++ ] = elem;
+        },
+
+        /**
+         * 连接数组项
+         *
+         * @param {string} split 分隔串
+         * @return {string}
+         */
+        join: function ( split ) {
+            return this.raw.join( split );
+        },
+
+        /**
+         * 获取源数组
+         *
+         * @return {Array}
+         */
+        getRaw: function () {
+            return this.raw;
+        }
+    };
+
+    // 节点类型声明
+    var T_TEXT               = 0;
+    var T_TARGET             = 1;
+    var T_MASTER             = 2;
+    var T_IMPORT             = 3;
+    var T_CONTENT            = 4;
+    var T_CONTENTPLACEHOLDER = 5;
+    var T_FOR                = 6;
+    var T_IF                 = 7;
+    var T_ELIF               = 8;
+    var T_ELSE               = 9;
+
+    // 命令注释规则
+    var COMMENT_RULE = /^\s*(\/)?([a-z]+)(.*)$/i;
+    
+    // 属性规则
+    var PROP_RULE = /^\s*([0-9a-z_]+)\s*=\s*([0-9a-z_]+)\s*$/i;
+    
+    // FOR标签规则
+    var FOR_RULE = /^\s*:\s*([0-9a-z_]+)\s+as\s+([0-9a-z_]+)\s*$/i;
+    
+    // IF和ELIF标签规则
+    var IF_RULE = /^\s*:\s*([0-9a-z_]+)\s*([>=<]{1,2})\s*([a-z0-9_]+)\s*$/i
+
+    // 普通命令标签规则
+    var TAG_RULE = /^\s*:\s*([a-z0-9_]+)\s*(?:\(([^)]+)\))?\s*$/i;
+
+
+    var masterContainer = {};
+    var targetContainer = {};
+    var ilCache = {};
+    var compileCache = {};
+
+    // 过滤器
+    var filterContainer = {
+        'html': function ( source ) {
+            return baidu.string.encodeHTML( source );
+        },
+        
+        'url': function ( source ) {
+            return encodeURIComponent( source );
+        }
+    };
+    var isLoaded;
+
+    /**
+     * 构造单元分析，返回构造流
+     *
+     * @inner
+     * @return {Array}
+     */
+    function unitAnalyse( source ) {
+        var COMMENT_BEGIN = '<!--';
+        var COMMENT_END   = '-->';
+        
+        var i;
+        var len;
+        var str;
+        var strLen;
+        var commentText;
+        var unitType;
+        var unit;
+        var propList;
+        var propLen;
+
+        // text节点内容缓存
+        var textBuf = [];
+
+        // node结果流
+        var unitStream = new ArrayBuffer;    
+        
+        // 对source以 <!-- 进行split
+        var texts = source.split( COMMENT_BEGIN );
+        if ( texts[ 0 ] === '' ) {
+            texts.shift();
+        }
+
+        // 开始第一阶段解析，生成strStream
+        for ( i = 0, len = texts.length; i < len; i++ ) {
+            // 对 <!-- 进行split的结果
+            // 进行 --> split
+            // 如果split数组长度为2
+            // 则0项为注释内容，1项为正常html内容
+            str = texts[ i ].split( COMMENT_END );
+            strLen = str.length;
+
+            if ( strLen == 2 || i > 0 ) {
+                if ( strLen == 2 ) {
+                    commentText = str[ 0 ];
+                    if ( COMMENT_RULE.test( commentText ) ) {
+                        unitStream.push( {
+                            type: 'text',
+                            text: textBuf.join( '' )
+                        } );
+                        textBuf = [];
+                        
+                        unitType = RegExp.$2.toLowerCase();
+                        unit = { type: unitType, prop: {} };
+                        if ( RegExp.$1 ) {
+                            unit.endTag = 1;
+                            unitStream.push( unit );
+                        } else {
+                            switch ( unitType ) {
+                            case 'content':
+                            case 'contentplaceholder':
+                            case 'master':
+                            case 'import':
+                            case 'target':
+                                if ( TAG_RULE.test( RegExp.$3 ) ) {
+                                    // 初始化id
+                                    unit.id = RegExp.$1;
+                                
+                                    // 初始化属性
+                                    propList = RegExp.$2.split( /\s*,\s*/ );
+                                    propLen = propList.length;
+                                    while ( propLen-- ) {
+                                        if ( PROP_RULE.test( propList[ propLen ] ) ) {
+                                            unit.prop[ RegExp.$1 ] = RegExp.$2;
+                                        }
+                                    }
+                                } else {
+                                    debugger;
+                                    throw 'id is invalid';
+                                    //TODO: reset 2 text node?
+                                }
+                                unitStream.push( unit );
+                                break;
+                            case 'for':
+                                if ( FOR_RULE.test( RegExp.$3 ) ) {
+                                    unit.prop.list = RegExp.$1;
+                                    unit.prop.item = RegExp.$2;
+                                } else {
+                                    debugger;
+                                }
+
+                                unitStream.push( unit );
+                                break;
+                            case 'if':
+                            case 'elif':
+                                if ( IF_RULE.test( RegExp.$3 ) ) {
+                                    unit.prop.expr1 = RegExp.$1;
+                                    unit.prop.assign = RegExp.$2;
+                                    unit.prop.expr2 = RegExp.$3;
+                                } else {
+                                    debugger;
+                                }
+
+                                unitStream.push( unit );
+                                break;
+                            case 'else':
+                                unitStream.push( unit );
+                                break;
+                            default:
+
+                            }
+                        }
+                    } else {
+                        textBuf.push( COMMENT_BEGIN, commentText, COMMENT_END );
+                    }
+
+                    textBuf.push( str[ 1 ] );
+                } else {
+                    textBuf.push( str[ 0 ] );
+                }
+            }
+        }
+        
+        unitStream.push( {
+            type: 'text',
+            text: textBuf.join( '' )
+        } );
+        
+        return unitStream.getRaw();
+    }
+
+    /**
+     * 语法分析
+     *
+     * @inner
+     * @param {Array} 构造单元流
+     */
+    function syntaxAnalyse( stream ) {
+        var unit;
+        createUnitIterator( stream );
+        targetCache = {};
+        masterCache = {};
+        nodeStack   = new Stack;
+
+        while ( ( unit = currentUnit() ) ) {
+            switch ( unit.type ) {
+            case 'target':
+                astParser.target();
+                break;
+            case 'master':
+                astParser.master();
+                break;
+            default:
+                nextUnit();
+            }
+        }
+
+        // link target 2 master
+        for ( var key in masterCache ) {
+            // TODO: exist master
+            masterContainer[ key ] = masterCache[ key ];
+        }
+
+        for ( var key in targetCache ) {
+            var target = targetCache[ key ];
+            targetContainer[ key ] = target;
+            // TODO: exist target
+            if ( target.master ) {
+                var master = masterContainer[ target.master ];
+                target.block = [];
+
+                for ( var i = 0; i < master.block.length; i++ ) {
+                    var item = master.block[ i ];
+                    switch ( item.type ) {
+                        case 'contentplaceholder':
+                            var content = target.content[ item.id ];
+                            
+                            for ( j = 0; j < content.block.length; j++ ) {
+                                
+                                target.block.push( content.block[ j ] );
+                            }
+                            break;
+                        default:
+                            target.block.push( item );
+                    }
+                }
+            }
+        }
+
+
+
+        console.log( targetCache );
+        console.log( masterCache );
+    }
 
     /**
      * 解析模板变量的值
@@ -129,53 +469,6 @@ er.template = function () {
         return '';
     }
     
-    /**
-     * 获取节点对应的内容
-     *
-     * @inner
-     * @param {Object} node 节点对象
-     * @param {Object} target target节点对象，用于contentplaceholder替换
-     * @return {string}
-     */
-    function getContent( node, opt_target ) {
-        if ( node && typeof node == 'object' ) { 
-            var list = node.content.slice( 0 );
-            var len  = list instanceof Array && list.length;
-            var segment;
-            var temp;
-
-            if ( len ) {
-                while ( len-- ) {
-                    segment = list[ len ];
-                    
-                    // 解析非文本节点
-                    if ( typeof segment == 'object' ) {
-                        temp = '';
-
-                        switch ( segment.type ) {
-                        // 解析import
-                        case 'import':
-                            temp = getTargetContent( segment.id );
-                            break;
-
-                        // 解析contentplaceholder
-                        case 'contentplaceholder':
-                            if ( opt_target ) {
-                                temp = getContent( opt_target.contentMap[ segment.id ] );
-                            }
-                            break;
-                        }
-
-                        list[ len ] = temp;
-                    }
-                }
-            }
-
-            return list.join( '' );
-        }
-
-        return '';
-    }
     
     /**
      * 获取target的内容
@@ -185,227 +478,442 @@ er.template = function () {
      * @return {string}
      */
     function getTargetContent( name ) {
-        var targetStr = targetCache[ name ];
-        var target;
-        var len;
-        var segment;
-        var master;
-
-        if ( targetStr ) {
-            return targetStr;
-        }
-
-        target = targetContainer[ name ];
+        var target = targetContainer[ name ];
         if ( target ) {
-            if ( target.master ) { 
-                // target具有母版，以母版内容为解析源
-                master = masterContainer[ target.master ];
-                targetStr = getContent( master, target );
-            } else { 
-                // target不具有母版，则直接解析
-                targetStr = getContent( target );
-            }
-            
-            targetCache[ name ] = targetStr; // 缓存target内容结果
-            return targetStr;
+            return getContent( target );
         }
 
         return '';
     }
 
+    function getContent( node ) {
+        var block = node.block;
+        var i = 0;
+        var len = block.length;
+        var content = [];
+        var item;
+
+        for ( ; i < len; i++ ) {
+            item = block[ i ];
+            if ( item.block ) {
+                content.push( getContent( item ) );
+            } else if ( item.type == 'import' ) {
+                content.push( getTargetContent( item.id ) );
+            } else {
+                content.push( item.text || '' );
+            }
+        }
+
+        return content.join( '' );
+    }
+
+    /**
+     * 合并模板与数据
+     * 
+     * @inner
+     * @param {HTMLElement} output  要输出到的容器元素
+     * @param {string}      tplName 视图模板
+     * @param {string}      opt_privateContextId 私用context环境的id
+     */
+    function merge2( output, tplName, opt_privateContextId ) {
+        if ( output ) {
+            output.innerHTML = er.template.get( tplName ).replace(
+                /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
+                function ( $0, $1, $2 ) {
+                    return parseVariable( $1, $2, opt_privateContextId );
+                });
+        }
+    }
+
+    function merge( output, tplName, opt_privateContextId ) {
+        if ( output ) {
+            output.innerHTML = exec( tplName, opt_privateContextId );
+        }
+    }
+
+    function replaceVariable( text, opt_privateContextId ) {
+        return text.replace(
+                /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
+                function ( $0, $1, $2 ) {
+                    return parseVariable( $1, $2, opt_privateContextId );
+                });
+    }
+    function exec( target, opt_privateContextId ) {
+        target = targetContainer[ target ];
+        var block = target.block;
+        var i = 0;
+        var len = block.length;
+        var stat;
+        var result= [];
+        for ( ; i < len; i++ ) {
+            stat = block[ i ];
+            switch ( stat.type ) {
+            case 'text':
+                result.push( replaceVariable( stat.text, opt_privateContextId ) ) ;
+                break;
+            case 'import':
+                result.push( execImport( stat, opt_privateContextId ) );
+                break;
+            }
+        }
+
+        return result.join( '' );
+    }
+    
+    function execImport( importStat ) {
+        var name = importStat.id;
+        return exec( targetContainer[ name ] );
+    }
+
     /**
      * 解析模板
-     * 
+     *
      * @inner
      * @param {string} source 模板源
      */
     function parse( source ) {
-        if ( typeof source != 'string' ) {
-            return;
-        }
-        
-        /**
-         * 解析节点，如果是有含义的注释节点返回object
-         *
-         * @inner
-         * @param {string} src 源字符串
-         * @return {Object|string}
-         */
-        function parseNode( src ) {
-            // 注释节点规则
-            var rule = /^<!--\s*(\/)?(target|master|content|import|contentplaceholder)\s*(:\s*([a-z0-9_]+))?\s*(?:\(([^\)]+)\))?\s*-->$/i
-            
-            // 属性规则
-            var propRule = /^\s*([0-9a-z_]+)\s*=\s*([0-9a-z_]+)\s*$/i;
-            
-            var node;
-            var id;
-            var propList;
-            var propStr;
-            var i, len;
-            
-            
-            if ( rule.test( src ) ) {
-                node = {};
-                node.type = RegExp.$2.toLowerCase();
-                
-                if ( RegExp.$1 ) { 
-                    // 结束标签不解析内容
-                    node.endTag = 1;
-                } else {
-                    // 解析 ":id" 形式的id属性
-                    id = RegExp.$4;
-                    id && (node.id = id);
-                    
-                    // 解析 "(name=value,name2=value2)" 形式的其他属性
-                    propStr = RegExp.$5;
-                    if ( propStr ) {
-                        propList = propStr.split(',');
-                        for ( i = 0, len = propList.length; i < len; i++ ) {
-                            if ( propRule.test( propList[ i ] ) ) {
-                                node[ RegExp.$1.toLowerCase() ] = RegExp.$2;
-                            }
-                        }
-                    }
-                }
-
-                return node;
-            }
-            
-            // 无特殊含义字符串直接返回
-            return src;
-        } 
-
-        var COMMENT_BEGIN = '<!--';
-        var COMMENT_END = '-->';
-        
-        var len;
-
-        var currentNode;        // 二次解析阶段的当前节点，可能为target或master
-        var currentContent;     // 二次解析阶段的当前content节点
-
-        var i;
-        var str;
-        var strLen;
-        var node;
-
-        // 一次解析阶段的结果字符串流，数组每项是text片段或comment片段
-        var strStream = [];    
-        
-        // 一次解析阶段的结果指针，用于优化push的性能
-        var strStreamPoint = 0; 
-        
-        // 对source以 <!-- 进行split
-        var blocks = source.split( COMMENT_BEGIN );
-        if ( blocks[0] === '' ) {
-            blocks.shift();
-        }
-        len = blocks.length;
-        
-        // 开始第一阶段解析，生成strStream
-        for ( i = 0; i < len; i++ ) {
-            // 对 <!-- 进行split的结果
-            // 进行 --> split
-            // 如果split数组长度为2
-            // 则0项为注释内容，1项为正常html内容
-            str = blocks[ i ].split( COMMENT_END );
-            strLen = str.length;
-
-            if ( strLen == 2 || i > 0 ) {
-                if ( strLen == 2 ) {
-                    strStream[ strStreamPoint++ ] = COMMENT_BEGIN + str[ 0 ] + COMMENT_END;
-                    strStream[ strStreamPoint++ ] = str[ 1 ];
-                } else {
-                    strStream[ strStreamPoint++ ] = str[ 0 ];
-                }
-            }
-        }
-        
-        // 开始第二阶段解析
-        // 将master和target分别存入container
-        for ( i = 0; i < strStreamPoint; i++ ) {
-            str = strStream[ i ];
-            node = parseNode( str );
-
-            switch ( typeof node ) {
-            // 当parseNode结果为object时，针对node进行解析
-            case 'object':
-                switch ( node.type ) {
-                case 'master':
-                    currentNode = null;
-                    currentContent = null;
-                    if ( !node.endTag && node.id ) {
-                        node.content = [];
-                        currentNode = node;
-                        masterContainer[ node.id ] = node;
-                    }
-
-                    break;
-
-                case 'target':
-                    currentNode = null;
-                    currentContent = null;
-                    if ( !node.endTag && node.id ) {
-                        node.content = [];
-                        if ( node.master ) {
-                            node.contentMap = {};
-                        }
-                        currentNode = node;
-                        targetContainer[ node.id ] = node;
-                    }
-
-                    break;
-
-                case 'import':
-                    if ( currentContent ) {
-                        currentContent.content.push( node );
-                    } else if ( currentNode ) {
-                        currentNode.content.push( node );
-                    }
-
-                    break;
-
-                case 'content':
-                    currentContent = null;
-
-                    if ( 
-                        !node.endTag 
-                        && currentNode 
-                        && currentNode.type == 'target' 
-                    ) {
-                        currentNode.content.push( node );
-                        if ( node.id ) {
-                            currentNode.contentMap[ node.id ] = node;
-                        }
-                        
-                        node.content = [];
-                        currentContent = node;
-                    }
-                    break;
-
-                case 'contentplaceholder':
-                    if ( currentNode && currentNode.type == 'master' ) {
-                        currentNode.content.push( node );
-                    }
-
-                    break;
-                }
-
-                break;
-            
-            // 如果parseNode返回仍然为string
-            // 将其填入当前正在解析的content或master或target中
-            case 'string':
-                if ( currentContent ) {
-                    currentContent.content.push( str );
-                } else if ( currentNode ) {
-                    currentNode.content.push( str );
-                }
-
-                break;
-            }
-        }
+        var stream = unitAnalyse( source );
+        syntaxAnalyse( stream );
     }
+
+    function popNode( stopType ) {
+        var current;
+
+        while ( ( current = nodeStack.current() )
+                && current.type != stopType
+        ) {
+            nodeStack.pop();
+        }
+
+        return nodeStack.pop();
+    }
+
+    function pushNode( node ) {
+        nodeStack.push( node );
+    }
+
+    var targetCache;
+    var masterCache;
+    var nodeStack;
+    
+
+    var unitStream;
+    var streamIndex;
+
+    function createUnitIterator( stream ) {
+        streamIndex = 0;
+        unitStream = stream;
+    }
+
+    function nextUnit() {
+        return unitStream[ ++streamIndex ] || null;
+    }
+
+    function prevUnit() {
+        return unitStream[ --streamIndex ] || null;
+    }
+
+    function currentUnit() {
+        return unitStream[ streamIndex ] || null;
+    }
+
+    function getError() {
+        var node = nodeStack.bottom;
+        return '[er template]' + node.type + ' ' + node.id 
+            + ': unexpect ' + currentUnit().type 
+            + ' on ' + nodeStack.current().type;
+    }
+
+    var astParser = {
+        target: function () {
+            var unit = currentUnit();
+            var node;
+            var parser;
+
+            node = { 
+                type    : 'target', 
+                block   : [], 
+                id      : unit.id, 
+                content : {},
+                master  : unit.prop.master
+            };
+            pushNode( node );
+            targetCache[ unit.id ] = node;
+
+            while ( ( unit = nextUnit() ) )  {
+                switch ( unit.type ) {
+                case 'target':
+                case 'master':
+                    popNode();
+                    if ( !unit.endTag ) {
+                        prevUnit();
+                    }
+                    return;
+                case 'contentplaceholder':
+                case 'else':
+                case 'elif':
+                    throw getError();
+                default:
+                    parser = astParser[ unit.type ];
+                    parser && parser();
+                    break;
+                }
+            }
+        },
+
+        master: function () {
+            var unit = currentUnit();
+            var node;
+            var parser;
+
+            node = { type: 'master', block: [], id: unit.id };
+            pushNode( node );
+            masterCache[ unit.id ] = node;
+
+            while ( ( unit = nextUnit() ) )  {
+                switch ( unit.type ) {
+                case 'target':
+                case 'master':
+                    popNode();
+                    if ( !unit.endTag ) {
+                        prevUnit();
+                    }
+                    return;
+                case 'content':
+                case 'else':
+                case 'elif':
+                    throw getError();
+                default:
+                    parser = astParser[ unit.type ];
+                    parser && parser();
+                    break;
+                }
+            }
+        },
+
+        text: function () {try{
+            nodeStack.current().block.push( currentUnit() );
+        }catch(e){debugger;}
+        },
+
+        'import': function () {
+            nodeStack.current().block.push( currentUnit() );
+        },
+
+        contentplaceholder: function () {
+            nodeStack.current().block.push( currentUnit() );
+        },
+
+        content: function () {
+            var unit = currentUnit();
+            var node;
+            var parser;
+
+            node = { type: 'content', block: [], id: unit.id };
+            nodeStack.bottom().content[ unit.id ] = node;
+            pushNode( node );
+
+            while ( ( unit = nextUnit() ) )  {
+                if ( unit.endTag ) {
+                    if ( unit.type == 'content' ) {
+                        popNode( 'content' );
+                    } else {
+                        prevUnit();
+                    }
+                    return;
+                }
+
+                switch ( unit.type ) {
+                case 'target':
+                case 'master':
+                    popNode();
+                    prevUnit();
+                    return;
+                case 'contentplaceholder':
+                case 'else':
+                case 'elif':
+                    throw getError();
+                case 'content':
+                    popNode( 'content' );
+                    prevUnit();
+                    return;
+                default:
+                    parser = astParser[ unit.type ];
+                    parser && parser();
+                    break;
+                }
+            }
+        },
+
+        'for': function () {
+            var unit = currentUnit();
+            var node;
+            var parser;
+
+            node = { type: 'for', block: [], item: unit.item, list: unit.list };
+            nodeStack.current().block.push( node );
+            pushNode( node );
+
+            while ( ( unit = nextUnit() ) )  {
+                if ( unit.endTag ) {
+                    if ( unit.type == 'for' ) {
+                        popNode( 'for' );
+                    } else {
+                        prevUnit();
+                    }
+                    return;
+                }
+
+                switch ( unit.type ) {
+                case 'target':
+                case 'master':
+                    popNode();
+                    prevUnit();
+                    return;
+                case 'contentplaceholder':
+                case 'content':
+                case 'else':
+                case 'elif':
+                    throw getError();
+                default:
+                    parser = astParser[ unit.type ];
+                    parser && parser();
+                    break;
+                }
+            }
+        },
+
+        'if': function () {
+            var unit = currentUnit();
+            var node
+            var parser;
+
+            node = {
+                type  : 'if',
+                expr1 : unit.prop.expr1,
+                expr2 : unit.prop.expr2,
+                oper  : unit.prop.oper,
+                block : []
+
+            };
+            nodeStack.current().block.push( node );
+            pushNode( node );
+
+            while ( ( unit = nextUnit() ) ) {
+                if ( unit.endTag ) {
+                    if ( unit.type == 'if' ) {
+                        popNode( 'if' );
+                    } else {
+                        prevUnit();
+                    }
+                    return;
+                }
+
+                switch ( unit.type ) {
+                case 'target':
+                case 'master':
+                    popNode();
+                    prevUnit();
+                    return;
+                case 'contentplaceholder':
+                case 'content':
+                    throw getError();
+                default:
+                    parser = astParser[ unit.type ];
+                    parser && parser();
+                    break;
+                }
+            }
+        },
+
+        elif: function () {
+            var unit = currentUnit();
+            var node = {
+                type  : 'if',
+                expr1 : unit.prop.expr1,
+                expr2 : unit.prop.expr2,
+                oper  : unit.prop.oper,
+                block : []
+
+            };
+            var parser;
+
+            popNode( 'if' )[ 'else' ] = node;
+            pushNode( node );
+
+
+            while ( ( unit = nextUnit() ) ) {
+                if ( unit.endTag ) {
+                    prevUnit();
+                    return;
+                }
+
+                switch ( unit.type ) {
+                case 'target':
+                case 'master':
+                    popNode();
+                    prevUnit();
+                    return;
+                case 'contentplaceholder':
+                case 'content':
+                    throw getError();
+                case 'elif':
+                    prevUnit();
+                    return;
+                default:
+                    parser = astParser[ unit.type ];
+                    parser && parser();
+                    break;
+                }
+            }
+        },
+
+        'else': function () {
+            var unit = currentUnit();
+            var node = nodeStack.current();
+            var nodeType;
+            var parser;
+
+            while ( 1 ) {
+                nodeType = node.type;
+                if ( nodeType == 'if' || nodeType == 'elif' ) {
+                    node = {
+                        type  : 'else',
+                        block : []
+                    };
+                    nodeStack.current()[ 'else' ] = node;
+                    break;
+                }
+
+                node = nodeStack.pop();
+            }
+            pushNode( node );
+
+            while ( ( unit = nextUnit() ) ) {
+                if ( unit.endTag ) {
+                    prevUnit();
+                    return;
+                }
+
+                switch ( unit.type ) {
+                case 'target':
+                case 'master':
+                    popNode();
+                    prevUnit();
+                    return;
+                case 'contentplaceholder':
+                case 'content':
+                case 'else':
+                case 'elif':
+                    throw getError();
+                default:
+                    parser = astParser[ unit.type ];
+                    parser && parser();
+                    break;
+                }
+            }
+        }
+    };
     
     /**
      * 加载模板
@@ -447,7 +955,7 @@ er.template = function () {
             i++;
             
             if ( i >= len ) {
-                er.template.parse( tplBuf.join( '\n' ) );
+                //er.template.parse( tplBuf.join( '\n' ) );
                 er.init.start();
             } else {
                 loadTemplate();
@@ -508,14 +1016,6 @@ er.template = function () {
          * @param {string}      tplName 视图模板
          * @param {string}      opt_privateContextId 私用context环境的id
          */
-        merge: function ( output, tplName, opt_privateContextId ) {
-            if ( output ) {
-                output.innerHTML = er.template.get( tplName ).replace(
-                    /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
-                    function ( $0, $1, $2 ) {
-                        return parseVariable( $1, $2, opt_privateContextId );
-                    });
-            }
-        }
+        merge: merge
     };
 }();
