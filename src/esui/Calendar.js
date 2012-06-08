@@ -60,8 +60,12 @@ esui.Calendar = function (options) {
     }
    
     
-    this.month = parseInt( this.month, 10 ) || now.getMonth();
-    this.year  = parseInt( this.year, 10 )  || now.getFullYear();
+    valueAsDate = this.valueAsDate;
+    this.month = parseInt( this.month, 10 );
+    if ( isNaN( this.month ) ) {
+        this.month = valueAsDate.getMonth();
+    }
+    this.year  = parseInt( this.year, 10 ) || valueAsDate.getFullYear();
 };
 
 esui.Calendar.DATE_FORMAT = 'yyyy-MM-dd';
@@ -149,6 +153,9 @@ esui.Calendar.prototype = {
         me.valueAsDate = valueAsDate;
         
         me.getLayer()._controlMap.monthview.setValueAsDate( valueAsDate );
+        me.month = valueAsDate.getMonth();
+        me.year  = valueAsDate.getFullYear();
+        me._repaintMonthView();
         baidu.g( me.__getId('text') ).innerHTML = baidu.date.format( valueAsDate, me.dateFormat );
     },
     
