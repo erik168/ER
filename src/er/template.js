@@ -132,17 +132,79 @@ er.template = function () {
         }
     };
 
+    /**
+     * 随手写了个节点迭代器
+     *
+     * @inner
+     * @param {Array} stream 节点流
+     */
+    function NodeIterator( stream ) {
+        this.stream = stream;
+        this.index  = 0;
+    }
+
+    NodeIterator.prototype = {
+        /**
+         * 下一节点
+         *
+         * @return {Object}
+         */
+        next: function () {
+            return this.stream[ ++this.index ];
+        },
+
+        /**
+         * 上一节点
+         *
+         * @return {Object}
+         */
+        prev: function () {
+            return this.stream[ --this.index ];
+        },
+
+        /**
+         * 当前节点
+         *
+         * @return {Object}
+         */
+        current: function () {
+            return this.stream[ this.index ];
+        }
+    };
+
+    function Scope( parent ) {
+        this.context = {};
+        this.parent  = parent;
+    }
+
+    Scope.prototype = {
+        get: function ( name ) {debugger;
+            var value = this.context[ name ];
+            if ( !er._util.hasValue( value ) && this.parent ) {
+                return this.parent.get( name );
+            }
+
+            return value || null;
+        },
+
+        set: function ( name, value ) {
+            this.context[ name ] = value;
+        }
+    };
+
     // 节点类型声明
-    var T_TEXT               = 0;
-    var T_TARGET             = 1;
-    var T_MASTER             = 2;
-    var T_IMPORT             = 3;
-    var T_CONTENT            = 4;
-    var T_CONTENTPLACEHOLDER = 5;
-    var T_FOR                = 6;
-    var T_IF                 = 7;
-    var T_ELIF               = 8;
-    var T_ELSE               = 9;
+    var TYPE = {
+        TEXT               : 1,
+        TARGET             : 2,
+        MASTER             : 3,
+        IMPORT             : 4,
+        CONTENT            : 5,
+        CONTENTPLACEHOLDER : 6,
+        FOR                : 7,
+        IF                 : 8,
+        ELIF               : 9,
+        ELSE               : 10
+    };
 
     // 命令注释规则
     var COMMENT_RULE = /^\s*(\/)?([a-z]+)(.*)$/i;
@@ -151,13 +213,15 @@ er.template = function () {
     var PROP_RULE = /^\s*([0-9a-z_]+)\s*=\s*([0-9a-z_]+)\s*$/i;
     
     // FOR标签规则
-    var FOR_RULE = /^\s*:\s*([0-9a-z_]+)\s+as\s+([0-9a-z_]+)\s*$/i;
+    var FOR_RULE = /^\s*:\s*\$\{([0-9a-z_.\[\]]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*$/i;
     
     // IF和ELIF标签规则
     var IF_RULE = /^\s*:\s*([0-9a-z_]+)\s*([>=<]{1,2})\s*([a-z0-9_]+)\s*$/i
 
     // 普通命令标签规则
     var TAG_RULE = /^\s*:\s*([a-z0-9_]+)\s*(?:\(([^)]+)\))?\s*$/i;
+
+    var VAR_RULE = /^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*|\[[a-z0-9_]+\])*(\|[a-z]+)?$/i;
 
 
     var masterContainer = {};
@@ -178,12 +242,12 @@ er.template = function () {
     var isLoaded;
 
     /**
-     * 构造单元分析，返回构造流
+     * 节点分析，返回节点流
      *
      * @inner
      * @return {Array}
      */
-    function unitAnalyse( source ) {
+    function nodeAnalyse( source ) {
         var COMMENT_BEGIN = '<!--';
         var COMMENT_END   = '-->';
         
@@ -198,7 +262,7 @@ er.template = function () {
         var propLen;
 
         // text节点内容缓存
-        var textBuf = [];
+        var textBuf = new ArrayBuffer;
 
         // node结果流
         var unitStream = new ArrayBuffer;    
@@ -223,13 +287,13 @@ er.template = function () {
                     commentText = str[ 0 ];
                     if ( COMMENT_RULE.test( commentText ) ) {
                         unitStream.push( {
-                            type: 'text',
+                            type: TYPE.TEXT,
                             text: textBuf.join( '' )
                         } );
-                        textBuf = [];
+                        textBuf = new ArrayBuffer;
                         
                         unitType = RegExp.$2.toLowerCase();
-                        unit = { type: unitType, prop: {} };
+                        unit = { type: TYPE[ unitType.toUpperCase() ] };
                         if ( RegExp.$1 ) {
                             unit.endTag = 1;
                             unitStream.push( unit );
@@ -249,11 +313,10 @@ er.template = function () {
                                     propLen = propList.length;
                                     while ( propLen-- ) {
                                         if ( PROP_RULE.test( propList[ propLen ] ) ) {
-                                            unit.prop[ RegExp.$1 ] = RegExp.$2;
+                                            unit[ RegExp.$1 ] = RegExp.$2;
                                         }
                                     }
                                 } else {
-                                    debugger;
                                     throw 'id is invalid';
                                     //TODO: reset 2 text node?
                                 }
@@ -261,8 +324,8 @@ er.template = function () {
                                 break;
                             case 'for':
                                 if ( FOR_RULE.test( RegExp.$3 ) ) {
-                                    unit.prop.list = RegExp.$1;
-                                    unit.prop.item = RegExp.$2;
+                                    unit.list = RegExp.$1;
+                                    unit.item = RegExp.$2;
                                 } else {
                                     debugger;
                                 }
@@ -272,9 +335,9 @@ er.template = function () {
                             case 'if':
                             case 'elif':
                                 if ( IF_RULE.test( RegExp.$3 ) ) {
-                                    unit.prop.expr1 = RegExp.$1;
-                                    unit.prop.assign = RegExp.$2;
-                                    unit.prop.expr2 = RegExp.$3;
+                                    unit.expr1 = RegExp.$1;
+                                    unit.assign = RegExp.$2;
+                                    unit.expr2 = RegExp.$3;
                                 } else {
                                     debugger;
                                 }
@@ -284,8 +347,6 @@ er.template = function () {
                             case 'else':
                                 unitStream.push( unit );
                                 break;
-                            default:
-
                             }
                         }
                     } else {
@@ -299,13 +360,20 @@ er.template = function () {
             }
         }
         
-        unitStream.push( {
-            type: 'text',
-            text: textBuf.join( '' )
-        } );
-        
+        unitStream.push( 
+            {
+                type: TYPE.TEXT,
+                text: textBuf.join( '' )
+            }
+         );
+
         return unitStream.getRaw();
     }
+
+    var targetCache;
+    var masterCache;
+    var analyseStack;
+    var nodeStream;
 
     /**
      * 语法分析
@@ -315,61 +383,78 @@ er.template = function () {
      */
     function syntaxAnalyse( stream ) {
         var unit;
-        createUnitIterator( stream );
-        targetCache = {};
-        masterCache = {};
-        nodeStack   = new Stack;
+        var key;
+        var target;
+        var master;
+        var content;
+        var block;
+        var masterBlock;
+        var i, len, item;
 
-        while ( ( unit = currentUnit() ) ) {
+        targetCache  = {};
+        masterCache  = {};
+        analyseStack = new Stack;
+
+        while ( ( unit = nodeIterator.current() ) ) {
             switch ( unit.type ) {
-            case 'target':
-                astParser.target();
-                break;
-            case 'master':
-                astParser.master();
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                astParser[ unit.type ]();
                 break;
             default:
-                nextUnit();
+                nodeIterator.next();
             }
         }
+a.push( 'end ast:' + ((new Date) - now) )
+        // copy master to container
+        for ( key in masterCache ) {
+            if ( masterContainer[ key ] ) {
+                throw 'master "' + key + '" is exist!'
+            }
 
-        // link target 2 master
-        for ( var key in masterCache ) {
-            // TODO: exist master
             masterContainer[ key ] = masterCache[ key ];
         }
+a.push( 'end master cache' + ((new Date) - now) );
+        // link target's master and copy to container
+        for ( key in targetCache ) {
+            if ( targetContainer[ key ] ) {
+                throw 'target "' + key + '" is exist!'
+            }
 
-        for ( var key in targetCache ) {
-            var target = targetCache[ key ];
+            target = targetCache[ key ];
+            master = target.master;
             targetContainer[ key ] = target;
-            // TODO: exist target
-            if ( target.master ) {
-                var master = masterContainer[ target.master ];
-                target.block = [];
+            
+            if ( master ) {
+                block = [];
+                target.block = block;
 
-                for ( var i = 0; i < master.block.length; i++ ) {
-                    var item = master.block[ i ];
+                master = masterContainer[ master ];
+                if ( !master ) {
+                    continue;
+                }
+                masterBlock = master.block;
+                
+                for ( i = 0, len = masterBlock.length; i < len; i++ ) {
+                    item = masterBlock[ i ];
+
                     switch ( item.type ) {
-                        case 'contentplaceholder':
-                            var content = target.content[ item.id ];
-                            
-                            for ( j = 0; j < content.block.length; j++ ) {
-                                
-                                target.block.push( content.block[ j ] );
-                            }
-                            break;
-                        default:
-                            target.block.push( item );
+                    case TYPE.CONTENTPLACEHOLDER:
+                        content = target.content[ item.id ];
+                        if ( content ) {
+                            Array.prototype.push.apply( block, content.block );
+                        }
+                        break;
+                    default:
+                        block.push( item );
                     }
                 }
             }
         }
-
-
-
         console.log( targetCache );
         console.log( masterCache );
     }
+
 
     /**
      * 解析模板变量的值
@@ -377,18 +462,17 @@ er.template = function () {
      * @inner
      * @param {string} varName 变量名
      * @param {string} filterName 过滤器名
-     * @param {string} privateContextId 私用context环境的id
+     * @param {string} scope 
      * @return {string}
      */
-    function parseVariable( varName, filterName, privateContextId ) {
-        privateContextId = privateContextId || null;
+    function parseVariable( varName, filterName, scope ) {
         var match = varName.match( /:([a-z]+)$/ );
         var value = '';
 
         if ( match && match.length > 1 ) {
             value = parseVariableByType( varName.replace(/:[a-z]+$/i, ''), match[1] );
         } else {
-            var variable = er.context.get( varName, { contextId: privateContextId } );
+            var variable = scope.get( varName );
             if ( er._util.hasValue( variable ) ) {
                 value = variable;
             }
@@ -497,7 +581,7 @@ er.template = function () {
             item = block[ i ];
             if ( item.block ) {
                 content.push( getContent( item ) );
-            } else if ( item.type == 'import' ) {
+            } else if ( item.type == TYPE.IMPORT ) {
                 content.push( getTargetContent( item.id ) );
             } else {
                 content.push( item.text || '' );
@@ -507,52 +591,52 @@ er.template = function () {
         return content.join( '' );
     }
 
-    /**
-     * 合并模板与数据
-     * 
-     * @inner
-     * @param {HTMLElement} output  要输出到的容器元素
-     * @param {string}      tplName 视图模板
-     * @param {string}      opt_privateContextId 私用context环境的id
-     */
-    function merge2( output, tplName, opt_privateContextId ) {
-        if ( output ) {
-            output.innerHTML = er.template.get( tplName ).replace(
-                /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
-                function ( $0, $1, $2 ) {
-                    return parseVariable( $1, $2, opt_privateContextId );
-                });
-        }
-    }
-
     function merge( output, tplName, opt_privateContextId ) {
         if ( output ) {
-            output.innerHTML = exec( tplName, opt_privateContextId );
+            var scope = {
+                get: function ( name ) {
+                    return er.context.get( name, { 
+                        contextId: opt_privateContextId 
+                    } );
+                }
+            };
+            var target = targetContainer[ tplName ];
+            output.innerHTML = exec( target, scope );
         }
     }
 
-    function replaceVariable( text, opt_privateContextId ) {
+    function replaceVariable( text, scope ) {
         return text.replace(
                 /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
                 function ( $0, $1, $2 ) {
-                    return parseVariable( $1, $2, opt_privateContextId );
+                    return parseVariable( $1, $2, scope );
                 });
     }
-    function exec( target, opt_privateContextId ) {
-        target = targetContainer[ target ];
+    function exec( target, scope ) {
         var block = target.block;
         var i = 0;
         var len = block.length;
         var stat;
-        var result= [];
+        var result = [];
         for ( ; i < len; i++ ) {
             stat = block[ i ];
             switch ( stat.type ) {
-            case 'text':
-                result.push( replaceVariable( stat.text, opt_privateContextId ) ) ;
+            case TYPE.TEXT:
+                result.push( replaceVariable( stat.text, scope ) ) ;
                 break;
-            case 'import':
-                result.push( execImport( stat, opt_privateContextId ) );
+            case TYPE.IMPORT:
+                execImport( stat );
+                break;
+            case TYPE.FOR:
+                
+                var forScope = new Scope( scope );
+                var arr = scope.get( stat.list );
+                var j = 0;console.log(forScope)
+                var listLen = arr.length;
+                for ( ; j < listLen; j++ ) {
+                    forScope.set( stat.item, arr[ j ] );
+                    result.push( exec( stat, forScope ) );
+                }
                 break;
             }
         }
@@ -560,10 +644,41 @@ er.template = function () {
         return result.join( '' );
     }
     
+    function execFor( forStat, scope ) {
+        var block = forStat.block;
+        var i = 0;
+        var len = block.length;
+        var stat;
+        var result = [];
+
+        for ( ; i < len; i++ ) {
+            stat = block[ i ];
+            switch ( stat.type ) {
+            case TYPE.TEXT:
+                result.push( replaceVariable( stat.text, scope ) ) ;
+                break;
+            case TYPE.IMPORT:
+                var forScope = new Scope( scope );
+                result.push( execImport( stat, forScope ) );
+                break;
+            case TYPE.FOR:
+                break;
+                result.push( execFor( stat, scope ) );
+            }
+        }
+
+        return result.join( '' );
+    }
+
     function execImport( importStat ) {
         var name = importStat.id;
         return exec( targetContainer[ name ] );
     }
+
+    var a;
+    var now;
+
+    var nodeIterator;
 
     /**
      * 解析模板
@@ -572,345 +687,285 @@ er.template = function () {
      * @param {string} source 模板源
      */
     function parse( source ) {
-        var stream = unitAnalyse( source );
-        syntaxAnalyse( stream );
+        now = new Date;
+        a = []
+        nodeIterator = new NodeIterator( nodeAnalyse( source ) );
+        a.push( 'end nodeAnalyse:' + ((new Date) - now) )
+        syntaxAnalyse();
+        a.push( 'end parse:' + ((new Date) - now) )
+        //alert(a.join('\n'))
     }
 
     function popNode( stopType ) {
         var current;
 
-        while ( ( current = nodeStack.current() )
+        while ( ( current = analyseStack.current() )
                 && current.type != stopType
         ) {
-            nodeStack.pop();
+            analyseStack.pop();
         }
 
-        return nodeStack.pop();
+        return analyseStack.pop();
     }
 
     function pushNode( node ) {
-        nodeStack.push( node );
-    }
-
-    var targetCache;
-    var masterCache;
-    var nodeStack;
-    
-
-    var unitStream;
-    var streamIndex;
-
-    function createUnitIterator( stream ) {
-        streamIndex = 0;
-        unitStream = stream;
-    }
-
-    function nextUnit() {
-        return unitStream[ ++streamIndex ] || null;
-    }
-
-    function prevUnit() {
-        return unitStream[ --streamIndex ] || null;
-    }
-
-    function currentUnit() {
-        return unitStream[ streamIndex ] || null;
+        analyseStack.push( node );
     }
 
     function getError() {
-        var node = nodeStack.bottom;
+        var node = analyseStack.bottom;
         return '[er template]' + node.type + ' ' + node.id 
-            + ': unexpect ' + currentUnit().type 
-            + ' on ' + nodeStack.current().type;
+            + ': unexpect ' + nodeIterator.current().type 
+            + ' on ' + analyseStack.current().type;
     }
 
-    var astParser = {
-        target: function () {
-            var unit = currentUnit();
-            var node;
-            var parser;
+    function astParseByType( type ) {
+        var parser = astParser[ type ];
+        parser && parser();
+    }
 
-            node = { 
-                type    : 'target', 
-                block   : [], 
-                id      : unit.id, 
-                content : {},
-                master  : unit.prop.master
-            };
-            pushNode( node );
-            targetCache[ unit.id ] = node;
+    var astParser = {};
+    astParser[ TYPE.TARGET ] = function () {
+        var node = nodeIterator.current();
+        node.block   = [];
+        node.content = {};
+        
+        pushNode( node );
+        targetCache[ node.id ] = node;
 
-            while ( ( unit = nextUnit() ) )  {
-                switch ( unit.type ) {
-                case 'target':
-                case 'master':
-                    popNode();
-                    if ( !unit.endTag ) {
-                        prevUnit();
-                    }
-                    return;
-                case 'contentplaceholder':
-                case 'else':
-                case 'elif':
-                    throw getError();
-                default:
-                    parser = astParser[ unit.type ];
-                    parser && parser();
-                    break;
+        while ( ( node = nodeIterator.next() ) )  {
+            switch ( node.type ) {
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                popNode();
+                if ( !node.endTag ) {
+                    nodeIterator.prev();
                 }
+                return;
+            case TYPE.CONTENTPLACEHOLDER:
+            case TYPE.ELSE:
+            case TYPE.ELIF:
+                throw getError();
+            default:
+                astParseByType( node.type );
+                break;
             }
-        },
+        }
+    };
 
-        master: function () {
-            var unit = currentUnit();
-            var node;
-            var parser;
+    astParser[ TYPE.MASTER ] = function () {
+        var node = nodeIterator.current();
+        node.block = [];
 
-            node = { type: 'master', block: [], id: unit.id };
-            pushNode( node );
-            masterCache[ unit.id ] = node;
+        pushNode( node );
+        masterCache[ node.id ] = node;
 
-            while ( ( unit = nextUnit() ) )  {
-                switch ( unit.type ) {
-                case 'target':
-                case 'master':
-                    popNode();
-                    if ( !unit.endTag ) {
-                        prevUnit();
-                    }
-                    return;
-                case 'content':
-                case 'else':
-                case 'elif':
-                    throw getError();
-                default:
-                    parser = astParser[ unit.type ];
-                    parser && parser();
-                    break;
+        while ( ( node = nodeIterator.next() ) )  {
+            switch ( node.type ) {
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                popNode();
+                if ( !node.endTag ) {
+                    nodeIterator.prev();
                 }
+                return;
+            case TYPE.CONTENT:
+            case TYPE.ELSE:
+            case TYPE.ELIF:
+                throw getError();
+            default:
+                astParseByType( node.type );
+                break;
             }
-        },
+        }
+    };
 
-        text: function () {try{
-            nodeStack.current().block.push( currentUnit() );
-        }catch(e){debugger;}
-        },
+    astParser[ TYPE.TEXT ] = 
+    astParser[ TYPE.IMPORT ] = 
+    astParser[ TYPE.CONTENTPLACEHOLDER ] = function () {
+        analyseStack.current().block.push( nodeIterator.current() );
+    };
 
-        'import': function () {
-            nodeStack.current().block.push( currentUnit() );
-        },
+    astParser[ TYPE.CONTENT ] = function () {
+        var node = nodeIterator.current();
+        node.block = [];
 
-        contentplaceholder: function () {
-            nodeStack.current().block.push( currentUnit() );
-        },
+        analyseStack.bottom().content[ node.id ] = node;
+        pushNode( node );
 
-        content: function () {
-            var unit = currentUnit();
-            var node;
-            var parser;
-
-            node = { type: 'content', block: [], id: unit.id };
-            nodeStack.bottom().content[ unit.id ] = node;
-            pushNode( node );
-
-            while ( ( unit = nextUnit() ) )  {
-                if ( unit.endTag ) {
-                    if ( unit.type == 'content' ) {
-                        popNode( 'content' );
-                    } else {
-                        prevUnit();
-                    }
-                    return;
+        while ( ( node = nodeIterator.next() ) )  {
+            if ( node.endTag ) {
+                if ( node.type == TYPE.CONTENT ) {
+                    popNode( TYPE.CONTENT );
+                } else {
+                    nodeIterator.prev();
                 }
-
-                switch ( unit.type ) {
-                case 'target':
-                case 'master':
-                    popNode();
-                    prevUnit();
-                    return;
-                case 'contentplaceholder':
-                case 'else':
-                case 'elif':
-                    throw getError();
-                case 'content':
-                    popNode( 'content' );
-                    prevUnit();
-                    return;
-                default:
-                    parser = astParser[ unit.type ];
-                    parser && parser();
-                    break;
-                }
+                return;
             }
-        },
 
-        'for': function () {
-            var unit = currentUnit();
-            var node;
-            var parser;
-
-            node = { type: 'for', block: [], item: unit.item, list: unit.list };
-            nodeStack.current().block.push( node );
-            pushNode( node );
-
-            while ( ( unit = nextUnit() ) )  {
-                if ( unit.endTag ) {
-                    if ( unit.type == 'for' ) {
-                        popNode( 'for' );
-                    } else {
-                        prevUnit();
-                    }
-                    return;
-                }
-
-                switch ( unit.type ) {
-                case 'target':
-                case 'master':
-                    popNode();
-                    prevUnit();
-                    return;
-                case 'contentplaceholder':
-                case 'content':
-                case 'else':
-                case 'elif':
-                    throw getError();
-                default:
-                    parser = astParser[ unit.type ];
-                    parser && parser();
-                    break;
-                }
+            switch ( node.type ) {
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                popNode();
+                nodeIterator.prev();
+                return;
+            case TYPE.CONTENTPLACEHOLDER:
+            case TYPE.ELSE:
+            case TYPE.ELIF:
+                throw getError();
+            case TYPE.CONTENT:
+                popNode( TYPE.CONTENT );
+                nodeIterator.prev();
+                return;
+            default:
+                astParseByType( node.type );
+                break;
             }
-        },
+        }
+    };
 
-        'if': function () {
-            var unit = currentUnit();
-            var node
-            var parser;
+    astParser[ TYPE.FOR ] = function () {
+        var node = nodeIterator.current();
+        node.block = [];
 
-            node = {
-                type  : 'if',
-                expr1 : unit.prop.expr1,
-                expr2 : unit.prop.expr2,
-                oper  : unit.prop.oper,
-                block : []
+        analyseStack.current().block.push( node );
+        pushNode( node );
 
-            };
-            nodeStack.current().block.push( node );
-            pushNode( node );
-
-            while ( ( unit = nextUnit() ) ) {
-                if ( unit.endTag ) {
-                    if ( unit.type == 'if' ) {
-                        popNode( 'if' );
-                    } else {
-                        prevUnit();
-                    }
-                    return;
+        while ( ( node = nodeIterator.next() ) )  {
+            if ( node.endTag ) {
+                if ( node.type == TYPE.FOR ) {
+                    popNode( TYPE.FOR );
+                } else {
+                    nodeIterator.prev();
                 }
-
-                switch ( unit.type ) {
-                case 'target':
-                case 'master':
-                    popNode();
-                    prevUnit();
-                    return;
-                case 'contentplaceholder':
-                case 'content':
-                    throw getError();
-                default:
-                    parser = astParser[ unit.type ];
-                    parser && parser();
-                    break;
-                }
+                return;
             }
-        },
 
-        elif: function () {
-            var unit = currentUnit();
-            var node = {
-                type  : 'if',
-                expr1 : unit.prop.expr1,
-                expr2 : unit.prop.expr2,
-                oper  : unit.prop.oper,
-                block : []
-
-            };
-            var parser;
-
-            popNode( 'if' )[ 'else' ] = node;
-            pushNode( node );
-
-
-            while ( ( unit = nextUnit() ) ) {
-                if ( unit.endTag ) {
-                    prevUnit();
-                    return;
-                }
-
-                switch ( unit.type ) {
-                case 'target':
-                case 'master':
-                    popNode();
-                    prevUnit();
-                    return;
-                case 'contentplaceholder':
-                case 'content':
-                    throw getError();
-                case 'elif':
-                    prevUnit();
-                    return;
-                default:
-                    parser = astParser[ unit.type ];
-                    parser && parser();
-                    break;
-                }
+            switch ( node.type ) {
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                popNode();
+                nodeIterator.prev();
+                return;
+            case TYPE.CONTENTPLACEHOLDER:
+            case TYPE.CONTENT:
+            case TYPE.ELSE:
+            case TYPE.ELIF:
+                throw getError();
+            default:
+                astParseByType( node.type );
+                break;
             }
-        },
+        }
+    };
 
-        'else': function () {
-            var unit = currentUnit();
-            var node = nodeStack.current();
-            var nodeType;
-            var parser;
+    astParser[ TYPE.IF ] = function () {
+        var node = nodeIterator.current();
+        node.block = [];
 
-            while ( 1 ) {
-                nodeType = node.type;
-                if ( nodeType == 'if' || nodeType == 'elif' ) {
-                    node = {
-                        type  : 'else',
-                        block : []
-                    };
-                    nodeStack.current()[ 'else' ] = node;
-                    break;
+        analyseStack.current().block.push( node );
+        pushNode( node );
+
+        while ( ( node = nodeIterator.next() ) ) {
+            if ( node.endTag ) {
+                if ( node.type == TYPE.IF ) {
+                    popNode( TYPE.IF );
+                } else {
+                    nodeIterator.prev();
                 }
-
-                node = nodeStack.pop();
+                return;
             }
-            pushNode( node );
 
-            while ( ( unit = nextUnit() ) ) {
-                if ( unit.endTag ) {
-                    prevUnit();
-                    return;
-                }
+            switch ( node.type ) {
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                popNode();
+                nodeIterator.prev();
+                return;
+            case TYPE.CONTENTPLACEHOLDER:
+            case TYPE.CONTENT:
+                throw getError();
+            default:
+                astParseByType( node.type );
+                break;
+            }
+        }
+    };
 
-                switch ( unit.type ) {
-                case 'target':
-                case 'master':
-                    popNode();
-                    prevUnit();
-                    return;
-                case 'contentplaceholder':
-                case 'content':
-                case 'else':
-                case 'elif':
-                    throw getError();
-                default:
-                    parser = astParser[ unit.type ];
-                    parser && parser();
-                    break;
-                }
+    astParser[ TYPE.ELIF ] = function () {
+        var node = nodeIterator.current();
+        node.type  = TYPE.IF;
+        node.block = [];
+
+        popNode( TYPE.IF )[ 'else' ] = node;
+        pushNode( node );
+
+
+        while ( ( node = nodeIterator.next() ) ) {
+            if ( node.endTag ) {
+                nodeIterator.prev();
+                return;
+            }
+
+            switch ( node.type ) {
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                popNode();
+                nodeIterator.prev();
+                return;
+            case TYPE.CONTENTPLACEHOLDER:
+            case TYPE.CONTENT:
+                throw getError();
+            case TYPE.ELIF:
+                nodeIterator.prev();
+                return;
+            default:
+                astParseByType( node.type );
+                break;
+            }
+        }
+    };
+
+    astParser[ TYPE.ELSE ] = function () {
+        var unit = nodeIterator.current();
+        var node = analyseStack.current();
+        var nodeType;
+
+        while ( 1 ) {
+            nodeType = node.type;
+            if ( nodeType == TYPE.IF || nodeType == TYPE.ELIF ) {
+                node = {
+                    type  : TYPE.ELSE,
+                    block : []
+                };
+                analyseStack.current()[ 'else' ] = node;
+                break;
+            }
+
+            node = analyseStack.pop();
+        }
+        pushNode( node );
+
+        while ( ( unit = nodeIterator.next() ) ) {
+            if ( unit.endTag ) {
+                nodeIterator.prev();
+                return;
+            }
+
+            switch ( unit.type ) {
+            case TYPE.TARGET:
+            case TYPE.MASTER:
+                popNode();
+                nodeIterator.prev();
+                return;
+            case TYPE.CONTENTPLACEHOLDER:
+            case TYPE.CONTENT:
+            case TYPE.ELSE:
+            case TYPE.ELIF:
+                throw getError();
+            default:
+                astParseByType( unit.type );
+                break;
             }
         }
     };
