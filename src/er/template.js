@@ -643,32 +643,6 @@ a.push( 'end master cache' + ((new Date) - now) );
 
         return result.join( '' );
     }
-    
-    function execFor( forStat, scope ) {
-        var block = forStat.block;
-        var i = 0;
-        var len = block.length;
-        var stat;
-        var result = [];
-
-        for ( ; i < len; i++ ) {
-            stat = block[ i ];
-            switch ( stat.type ) {
-            case TYPE.TEXT:
-                result.push( replaceVariable( stat.text, scope ) ) ;
-                break;
-            case TYPE.IMPORT:
-                var forScope = new Scope( scope );
-                result.push( execImport( stat, forScope ) );
-                break;
-            case TYPE.FOR:
-                break;
-                result.push( execFor( stat, scope ) );
-            }
-        }
-
-        return result.join( '' );
-    }
 
     function execImport( importStat ) {
         var name = importStat.id;
