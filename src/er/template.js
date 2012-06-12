@@ -32,6 +32,7 @@
 ///import er.config;
 ///import er.init;
 ///import baidu.string.encodeHTML;
+///import baidu.string.trim;
 
 /**
  * 简易的模板解析器
@@ -216,12 +217,14 @@ er.template = function () {
     var FOR_RULE = /^\s*:\s*\$\{([0-9a-z_.\[\]]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*$/i;
     
     // IF和ELIF标签规则
-    var IF_RULE = /^\s*:\s*([0-9a-z_]+)\s*([>=<]{1,2})\s*([a-z0-9_]+)\s*$/i
+    var IF_RULE = /^\s*:([>=<!0-9a-z$\{\}\[\]\(\):\s'"_]+)\s*$/i
 
     // 普通命令标签规则
     var TAG_RULE = /^\s*:\s*([a-z0-9_]+)\s*(?:\(([^)]+)\))?\s*$/i;
 
     var VAR_RULE = /^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*|\[[a-z0-9_]+\])*(\|[a-z]+)?$/i;
+
+    var CONDEXPR_RULE = /\s*(\!=?=?|\|\||&&|>=?|<=?|===?|['"\(\)]|\$\{[^\}]+\}|\-?[0-9]+(\.[0-9]+)?)/;
 
 
     var masterContainer = {};
@@ -335,9 +338,7 @@ er.template = function () {
                             case 'if':
                             case 'elif':
                                 if ( IF_RULE.test( RegExp.$3 ) ) {
-                                    unit.expr1 = RegExp.$1;
-                                    unit.assign = RegExp.$2;
-                                    unit.expr2 = RegExp.$3;
+                                    unit.expr = parseConditionalExpr( RegExp.$1 );
                                 } else {
                                     debugger;
                                 }
@@ -452,10 +453,173 @@ a.push( 'end master cache' + ((new Date) - now) );
             }
         }
         console.log( targetCache );
-        console.log( masterCache );
+        //console.log( masterCache );
     }
 
 
+    function execConditionalExpr( expr, scope ) {
+        switch ( expr.type ) {
+        case 'or':
+            return execConditionalExpr( expr.expr1, scope ) || execConditionalExpr( expr.expr2, scope );
+        case 'and':
+            return execConditionalExpr( expr.expr1, scope ) && execConditionalExpr( expr.expr2, scope );;
+        case 'unary':
+            return !execConditionalExpr( expr.expr, scope );
+        case 'relation':
+            return execRelationExpr( expr, scope );
+        case 'string':
+            return eval( expr.content );
+        case 'number':
+            return eval( expr.content );
+        case 'variable':
+            return parseVariable( expr.content, null, scope )
+
+        }
+    }
+
+    function execRelationExpr( expr, scope ) {
+        var expr1 = execConditionalExpr( expr.expr1, scope );
+        var expr2 = execConditionalExpr( expr.expr2, scope );
+        switch( expr.oper.content ) {
+        case '==':
+            return expr1 == expr2;
+        case '===':
+            return expr1 === expr2;
+        case '>':
+            return expr1 > expr2;
+        case '<':
+            return expr1 < expr2;
+        case '>=':
+            return expr1 >= expr2;
+        case '<=':
+            return expr1 <= expr2;
+        case '!=':
+            return expr1 != expr2;
+        case '!==':
+            return expr1 !== expr2;
+        }
+    }
+
+    function parseConditionalExpr( source ) {
+        source = baidu.string.trim( source ); 
+        var arr;
+        var str;
+        var stream = [];
+        while ( source ) {
+            arr = CONDEXPR_RULE.exec( source );
+            if ( !arr ) {
+                
+                throw "fuck";
+            }
+
+            source = source.slice( arr[ 0 ].length );
+            str = arr[ 1 ];
+            if ( str.indexOf( '$' ) == 0 ) {
+                stream.push( {
+                    type: 'variable',
+                    content: str.slice( 2, str.length - 1 )
+                } );
+                continue;
+            } else if ( /^[0-9-]/.test( str ) ) {
+                stream.push( {
+                    type: 'number',
+                    content: str
+                } );
+                continue;
+            } 
+
+            switch ( str ) {
+            case "'":
+            case '"':
+                var strBuf = [str];
+                var cha;
+                var index = 0;
+
+                while ( 1 ) {
+                    cha = source.charAt( index++ );
+                    if ( cha == str ) {
+                        strBuf.push( str );
+                        source = source.slice( index );
+                        break;
+                    }
+
+                    strBuf.push( cha );
+                }
+                stream.push( { type: 'string', content: strBuf.join( '' ) } );
+                break;
+            default:
+                stream.push( {
+                    type: 'punc',
+                    content: str
+                } );
+                break;
+            }
+        }
+
+        var iterator = new NodeIterator( stream );
+        return orExpr( iterator );
+    }
+
+    function orExpr( iterator ) {
+        var expr = andExpr( iterator );
+        var oper;
+        if ( ( oper = iterator.next() ) && oper.content == '||' ) {
+            expr = {type: 'or', expr1: expr, expr2: opExpr( iterator ) };
+        }
+
+        return expr;
+    }
+
+    function andExpr( iterator ) {
+        var expr = relationExpr( iterator );
+        var oper;
+        if ( ( oper = iterator.next() ) && oper.content == '&&' ) {
+            expr = {type: 'and', expr1: expr, expr2: andExpr( iterator ) };
+        }
+
+        return expr;
+    }
+
+    function relationExpr( iterator ) {
+        var expr = unaryExpr( iterator );
+        var oper;
+        if ( ( oper = iterator.next() ) && /^[><=]+$/.test( oper.content ) ) {
+            iterator.next();
+            expr = {
+                type: 'relation', 
+                expr1: expr, 
+                expr2: unaryExpr( iterator ), 
+                oper: oper 
+            };
+        }
+
+        return expr;
+    }
+
+    function unaryExpr( iterator ) {
+        if ( iterator.current().content == '!' ) {
+            iterator.next();
+            return {
+                type: 'unary',
+                oper: '!',
+                expr: primaryExpr( iterator )
+            }
+        }
+        
+        return primaryExpr( iterator );
+    }
+
+    function primaryExpr( iterator ) {
+        var expr = iterator.current();
+        if ( expr.content == '(' ) {
+            iterator.next();
+            expr = orExpr( iterator );
+            iterator.next();
+        }
+
+        return expr;
+    }
+    
     /**
      * 解析模板变量的值
      * 
@@ -631,12 +795,22 @@ a.push( 'end master cache' + ((new Date) - now) );
                 
                 var forScope = new Scope( scope );
                 var arr = scope.get( stat.list );
-                var j = 0;console.log(forScope)
+                var j = 0;
                 var listLen = arr.length;
                 for ( ; j < listLen; j++ ) {
                     forScope.set( stat.item, arr[ j ] );
                     result.push( exec( stat, forScope ) );
                 }
+                break;
+            case TYPE.IF:
+                var valid = execConditionalExpr( stat.expr, scope );
+                while ( !valid ) {
+                    stat = stat[ 'else' ];
+                    if ( !stat ) break;
+                    valid = !stat.expr || execConditionalExpr( stat.expr, scope );
+                }
+
+                stat && result.push( exec( stat, scope ) );
                 break;
             }
         }
