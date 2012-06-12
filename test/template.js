@@ -82,6 +82,22 @@ test("merge", function() {
     er.template.merge( el, 'mergeTest5' );
     equals(el.innerHTML, 'hello &lt;b&gt;ER&lt;/b&gt; from myModule.lang.name!', 'merge，混合类型和过滤器替换${myModule.name:lang|html}。');
 
+    er.template.parse('<!-- target:mergeTest6 --><ul><!-- for: ${myList} as ${item} --><li>${item}</li><!-- /for --></ul>');
+    er.context.set( 'myList', [1,2,3,4,5] );
+    er.template.merge( el, 'mergeTest6' );
+    equals(el.innerHTML, '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', 'merge，解析for循环');
+
+    er.template.parse('<!-- target:mergeTest7 --><!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0-->zero<!--else-->invalid<!-- /if --></ul>');
+    er.context.set( 'num', 1 );
+    er.template.merge( el, 'mergeTest7' );
+    equals(el.innerHTML, '1', 'merge，进入if分支');
+    er.context.set( 'num', 0 );
+    er.template.merge( el, 'mergeTest7' );
+    equals(el.innerHTML, 'zero', 'merge，进入elif分支');
+    er.context.set( 'num', -1 );
+    er.template.merge( el, 'mergeTest7' );
+    equals(el.innerHTML, 'invalid', 'merge，进入else分支');
+
     el.innerHTML = '';
     document.body.removeChild( el );
     el = null;
