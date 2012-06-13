@@ -179,7 +179,7 @@ er.template = function () {
     }
 
     Scope.prototype = {
-        get: function ( name ) {debugger;
+        get: function ( name ) {
             var value = this.context[ name ];
             if ( !er._util.hasValue( value ) && this.parent ) {
                 return this.parent.get( name );
@@ -222,15 +222,12 @@ er.template = function () {
     // 普通命令标签规则
     var TAG_RULE = /^\s*:\s*([a-z0-9_]+)\s*(?:\(([^)]+)\))?\s*$/i;
 
-    var VAR_RULE = /^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*|\[[a-z0-9_]+\])*(\|[a-z]+)?$/i;
-
+    // 条件表达式规则
     var CONDEXPR_RULE = /\s*(\!=?=?|\|\||&&|>=?|<=?|===?|['"\(\)]|\$\{[^\}]+\}|\-?[0-9]+(\.[0-9]+)?)/;
 
 
     var masterContainer = {};
     var targetContainer = {};
-    var ilCache = {};
-    var compileCache = {};
 
     // 过滤器
     var filterContainer = {
@@ -242,6 +239,7 @@ er.template = function () {
             return encodeURIComponent( source );
         }
     };
+
     var isLoaded;
 
     /**
@@ -259,21 +257,53 @@ er.template = function () {
         var str;
         var strLen;
         var commentText;
-        var unitType;
-        var unit;
+        var nodeType;
+        var nodeContent;
+        var node;
         var propList;
         var propLen;
 
-        // text节点内容缓存
+        // text节点内容缓冲区，用于合并多text
         var textBuf = new ArrayBuffer;
 
         // node结果流
-        var unitStream = new ArrayBuffer;    
+        var nodeStream = new ArrayBuffer;    
         
         // 对source以 <!-- 进行split
         var texts = source.split( COMMENT_BEGIN );
         if ( texts[ 0 ] === '' ) {
             texts.shift();
+        }
+
+        /**
+         * 将缓冲区中的text节点内容写入
+         *
+         * @inner
+         */
+        function flushTextBuf() {
+            nodeStream.push( {
+                type: TYPE.TEXT,
+                text: textBuf.join( '' )
+            } );
+            textBuf = new ArrayBuffer;
+        }
+
+        /**
+         * 抛出标签不合法错误
+         *
+         * @inner
+         */
+        function throwInvalid( type, text ) {
+            throw type + ' is invalid: ' + text;
+        }
+
+        /**
+         * 注释作为普通注释文本写入流，不具有特殊含义
+         *
+         * @inner
+         */
+        function beCommentText( text ) {
+            textBuf.push( COMMENT_BEGIN, text, COMMENT_END );
         }
 
         // 开始第一阶段解析，生成strStream
@@ -282,76 +312,83 @@ er.template = function () {
             // 进行 --> split
             // 如果split数组长度为2
             // 则0项为注释内容，1项为正常html内容
-            str = texts[ i ].split( COMMENT_END );
+            str    = texts[ i ].split( COMMENT_END );
             strLen = str.length;
 
             if ( strLen == 2 || i > 0 ) {
                 if ( strLen == 2 ) {
                     commentText = str[ 0 ];
                     if ( COMMENT_RULE.test( commentText ) ) {
-                        unitStream.push( {
-                            type: TYPE.TEXT,
-                            text: textBuf.join( '' )
-                        } );
-                        textBuf = new ArrayBuffer;
+                        // 将缓冲区中的text节点内容写入
+                        flushTextBuf();
                         
-                        unitType = RegExp.$2.toLowerCase();
-                        unit = { type: TYPE[ unitType.toUpperCase() ] };
+                        // 节点类型分析
+                        nodeType = RegExp.$2.toLowerCase();
+                        nodeContent = RegExp.$3;
+                        node = { type: TYPE[ nodeType.toUpperCase() ] };
+
                         if ( RegExp.$1 ) {
-                            unit.endTag = 1;
-                            unitStream.push( unit );
+                            // 闭合节点解析
+                            node.endTag = 1;
+                            nodeStream.push( node );
                         } else {
-                            switch ( unitType ) {
+                            switch ( nodeType ) {
                             case 'content':
                             case 'contentplaceholder':
                             case 'master':
                             case 'import':
                             case 'target':
-                                if ( TAG_RULE.test( RegExp.$3 ) ) {
+                                if ( TAG_RULE.test( nodeContent ) ) {
                                     // 初始化id
-                                    unit.id = RegExp.$1;
+                                    node.id = RegExp.$1;
                                 
                                     // 初始化属性
                                     propList = RegExp.$2.split( /\s*,\s*/ );
                                     propLen = propList.length;
                                     while ( propLen-- ) {
                                         if ( PROP_RULE.test( propList[ propLen ] ) ) {
-                                            unit[ RegExp.$1 ] = RegExp.$2;
+                                            node[ RegExp.$1 ] = RegExp.$2;
                                         }
                                     }
                                 } else {
-                                    throw 'id is invalid';
-                                    //TODO: reset 2 text node?
-                                }
-                                unitStream.push( unit );
-                                break;
-                            case 'for':
-                                if ( FOR_RULE.test( RegExp.$3 ) ) {
-                                    unit.list = RegExp.$1;
-                                    unit.item = RegExp.$2;
-                                } else {
-                                    debugger;
+                                    throwInvalid( nodeType, commentText );
                                 }
 
-                                unitStream.push( unit );
                                 break;
+
+                            case 'for':
+                                if ( FOR_RULE.test( nodeContent ) ) {
+                                    node.list = RegExp.$1;
+                                    node.item = RegExp.$2;
+                                } else {
+                                    throwInvalid( nodeType, commentText );
+                                }
+
+                                break;
+
                             case 'if':
                             case 'elif':
                                 if ( IF_RULE.test( RegExp.$3 ) ) {
-                                    unit.expr = parseConditionalExpr( RegExp.$1 );
+                                    node.expr = parseConditionalExpr( RegExp.$1 );
                                 } else {
-                                    debugger;
+                                    throwInvalid( nodeType, commentText );
                                 }
 
-                                unitStream.push( unit );
                                 break;
+
                             case 'else':
-                                unitStream.push( unit );
                                 break;
+
+                            default:
+                                node = null;
+                                beCommentText( commentText );
                             }
+
+                            node && nodeStream.push( node );
                         }
                     } else {
-                        textBuf.push( COMMENT_BEGIN, commentText, COMMENT_END );
+                        // 不合规则的注释视为普通文本
+                        beCommentText( commentText );
                     }
 
                     textBuf.push( str[ 1 ] );
@@ -361,20 +398,10 @@ er.template = function () {
             }
         }
         
-        unitStream.push( 
-            {
-                type: TYPE.TEXT,
-                text: textBuf.join( '' )
-            }
-         );
-
-        return unitStream.getRaw();
+        
+        flushTextBuf(); // 将缓冲区中的text节点内容写入
+        return nodeStream.getRaw();
     }
-
-    var targetCache;
-    var masterCache;
-    var analyseStack;
-    var nodeStream;
 
     /**
      * 语法分析
@@ -382,80 +409,445 @@ er.template = function () {
      * @inner
      * @param {Array} 构造单元流
      */
-    function syntaxAnalyse( stream ) {
-        var unit;
-        var key;
-        var target;
-        var master;
-        var content;
-        var block;
-        var masterBlock;
-        var i, len, item;
+    var syntaxAnalyse = function () {
+        var astParser = {};
+        var targetCache;
+        var masterCache;
+        var analyseStack;
+        var nodeIterator;
 
-        targetCache  = {};
-        masterCache  = {};
-        analyseStack = new Stack;
+        /**
+         * 弹出node
+         *
+         * @inner
+         * @param {number} stopType 遇见则终止弹出的类型
+         */
+        function popNode( stopType ) {
+            var current;
 
-        while ( ( unit = nodeIterator.current() ) ) {
-            switch ( unit.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                astParser[ unit.type ]();
-                break;
-            default:
-                nodeIterator.next();
+            while ( ( current = analyseStack.current() )
+                    && current.type != stopType
+            ) {
+                analyseStack.pop();
             }
+
+            return analyseStack.pop();
         }
-a.push( 'end ast:' + ((new Date) - now) )
-        // copy master to container
-        for ( key in masterCache ) {
-            if ( masterContainer[ key ] ) {
-                throw 'master "' + key + '" is exist!'
-            }
 
-            masterContainer[ key ] = masterCache[ key ];
+        /**
+         * 压入node
+         *
+         * @inner
+         * @param {Object} node 节点
+         */
+        function pushNode( node ) {
+            analyseStack.push( node );
         }
-a.push( 'end master cache' + ((new Date) - now) );
-        // link target's master and copy to container
-        for ( key in targetCache ) {
-            if ( targetContainer[ key ] ) {
-                throw 'target "' + key + '" is exist!'
-            }
 
-            target = targetCache[ key ];
-            master = target.master;
-            targetContainer[ key ] = target;
+        /**
+         * 获取错误提示信息
+         *
+         * @inner
+         * @return {string}
+         */
+        function getError() {
+            var node = analyseStack.bottom;
+            return '[er template]' + node.type + ' ' + node.id 
+                + ': unexpect ' + nodeIterator.current().type 
+                + ' on ' + analyseStack.current().type;
+        }
+
+        /**
+         * 根据类型解析抽象树
+         *
+         * @inner
+         * @param {number} type 节点类型
+         */
+        function astParseByType( type ) {
+            var parser = astParser[ type ];
+            parser && parser();
+        }
+
+        /**
+         * target解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.TARGET ] = function () {
+            var node = nodeIterator.current();
+            node.block   = [];
+            node.content = {};
             
-            if ( master ) {
-                block = [];
-                target.block = block;
+            pushNode( node );
+            targetCache[ node.id ] = node;
 
-                master = masterContainer[ master ];
-                if ( !master ) {
-                    continue;
+            while ( ( node = nodeIterator.next() ) )  {
+                switch ( node.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    popNode();
+                    if ( !node.endTag ) {
+                        nodeIterator.prev();
+                    }
+                    return;
+                case TYPE.CONTENTPLACEHOLDER:
+                case TYPE.ELSE:
+                case TYPE.ELIF:
+                    throw getError();
+                default:
+                    astParseByType( node.type );
+                    break;
                 }
-                masterBlock = master.block;
-                
-                for ( i = 0, len = masterBlock.length; i < len; i++ ) {
-                    item = masterBlock[ i ];
+            }
+        };
 
-                    switch ( item.type ) {
-                    case TYPE.CONTENTPLACEHOLDER:
-                        content = target.content[ item.id ];
-                        if ( content ) {
-                            Array.prototype.push.apply( block, content.block );
+        /**
+         * master解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.MASTER ] = function () {
+            var node = nodeIterator.current();
+            node.block = [];
+
+            pushNode( node );
+            masterCache[ node.id ] = node;
+
+            while ( ( node = nodeIterator.next() ) )  {
+                switch ( node.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    popNode();
+                    if ( !node.endTag ) {
+                        nodeIterator.prev();
+                    }
+                    return;
+                case TYPE.CONTENT:
+                case TYPE.ELSE:
+                case TYPE.ELIF:
+                    throw getError();
+                default:
+                    astParseByType( node.type );
+                    break;
+                }
+            }
+        };
+
+        /**
+         * text解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.TEXT ] = 
+
+        /**
+         * import解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.IMPORT ] = 
+
+        /**
+         * contentplaceholder解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.CONTENTPLACEHOLDER ] = function () {
+            analyseStack.current().block.push( nodeIterator.current() );
+        };
+
+        /**
+         * content解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.CONTENT ] = function () {
+            var node = nodeIterator.current();
+            node.block = [];
+
+            analyseStack.bottom().content[ node.id ] = node;
+            pushNode( node );
+
+            while ( ( node = nodeIterator.next() ) )  {
+                if ( node.endTag ) {
+                    if ( node.type == TYPE.CONTENT ) {
+                        popNode( TYPE.CONTENT );
+                    } else {
+                        nodeIterator.prev();
+                    }
+                    return;
+                }
+
+                switch ( node.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    popNode();
+                    nodeIterator.prev();
+                    return;
+                case TYPE.CONTENTPLACEHOLDER:
+                case TYPE.ELSE:
+                case TYPE.ELIF:
+                    throw getError();
+                case TYPE.CONTENT:
+                    popNode( TYPE.CONTENT );
+                    nodeIterator.prev();
+                    return;
+                default:
+                    astParseByType( node.type );
+                    break;
+                }
+            }
+        };
+
+        /**
+         * for解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.FOR ] = function () {
+            var node = nodeIterator.current();
+            node.block = [];
+
+            analyseStack.current().block.push( node );
+            pushNode( node );
+
+            while ( ( node = nodeIterator.next() ) )  {
+                if ( node.endTag ) {
+                    if ( node.type == TYPE.FOR ) {
+                        popNode( TYPE.FOR );
+                    } else {
+                        nodeIterator.prev();
+                    }
+                    return;
+                }
+
+                switch ( node.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    popNode();
+                    nodeIterator.prev();
+                    return;
+                case TYPE.CONTENTPLACEHOLDER:
+                case TYPE.CONTENT:
+                case TYPE.ELSE:
+                case TYPE.ELIF:
+                    throw getError();
+                default:
+                    astParseByType( node.type );
+                    break;
+                }
+            }
+        };
+
+        /**
+         * if解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.IF ] = function () {
+            var node = nodeIterator.current();
+            node.block = [];
+
+            analyseStack.current().block.push( node );
+            pushNode( node );
+
+            while ( ( node = nodeIterator.next() ) ) {
+                if ( node.endTag ) {
+                    if ( node.type == TYPE.IF ) {
+                        popNode( TYPE.IF );
+                    } else {
+                        nodeIterator.prev();
+                    }
+                    return;
+                }
+
+                switch ( node.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    popNode();
+                    nodeIterator.prev();
+                    return;
+                case TYPE.CONTENTPLACEHOLDER:
+                case TYPE.CONTENT:
+                    throw getError();
+                default:
+                    astParseByType( node.type );
+                    break;
+                }
+            }
+        };
+
+        /**
+         * elif解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.ELIF ] = function () {
+            var node = nodeIterator.current();
+            node.type  = TYPE.IF;
+            node.block = [];
+
+            popNode( TYPE.IF )[ 'else' ] = node;
+            pushNode( node );
+
+
+            while ( ( node = nodeIterator.next() ) ) {
+                if ( node.endTag ) {
+                    nodeIterator.prev();
+                    return;
+                }
+
+                switch ( node.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    popNode();
+                    nodeIterator.prev();
+                    return;
+                case TYPE.CONTENTPLACEHOLDER:
+                case TYPE.CONTENT:
+                    throw getError();
+                case TYPE.ELIF:
+                    nodeIterator.prev();
+                    return;
+                default:
+                    astParseByType( node.type );
+                    break;
+                }
+            }
+        };
+
+        /**
+         * else解析
+         *
+         * @inner
+         */
+        astParser[ TYPE.ELSE ] = function () {
+            var unit = nodeIterator.current();
+            var node = analyseStack.current();
+            var nodeType;
+
+            while ( 1 ) {
+                nodeType = node.type;
+                if ( nodeType == TYPE.IF || nodeType == TYPE.ELIF ) {
+                    node = {
+                        type  : TYPE.ELSE,
+                        block : []
+                    };
+                    analyseStack.current()[ 'else' ] = node;
+                    break;
+                }
+
+                node = analyseStack.pop();
+            }
+            pushNode( node );
+
+            while ( ( unit = nodeIterator.next() ) ) {
+                if ( unit.endTag ) {
+                    nodeIterator.prev();
+                    return;
+                }
+
+                switch ( unit.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    popNode();
+                    nodeIterator.prev();
+                    return;
+                case TYPE.CONTENTPLACEHOLDER:
+                case TYPE.CONTENT:
+                case TYPE.ELSE:
+                case TYPE.ELIF:
+                    throw getError();
+                default:
+                    astParseByType( unit.type );
+                    break;
+                }
+            }
+        };
+
+        return function syntaxAnalyse( stream ) {
+            var unit;
+            var key;
+            var target;
+            var master;
+            var content;
+            var block;
+            var masterBlock;
+            var i, len, item;
+
+            // 初始化解析用到的环境
+            nodeIterator = new NodeIterator( stream );
+            targetCache  = {};
+            masterCache  = {};
+            analyseStack = new Stack;
+
+            // 解析node流成抽象树结构
+            while ( ( unit = nodeIterator.current() ) ) {
+                switch ( unit.type ) {
+                case TYPE.TARGET:
+                case TYPE.MASTER:
+                    astParser[ unit.type ]();
+                    break;
+                default:
+                    nodeIterator.next();
+                }
+            }
+
+            // 将master从临时结果转移到container
+            for ( key in masterCache ) {
+                if ( masterContainer[ key ] ) {
+                    throw 'master "' + key + '" is exist!'
+                }
+
+                masterContainer[ key ] = masterCache[ key ];
+            }
+
+            // 链接 target 和 master
+            // 将target从临时结果转移到container
+            for ( key in targetCache ) {
+                if ( targetContainer[ key ] ) {
+                    throw 'target "' + key + '" is exist!'
+                }
+
+                target = targetCache[ key ];
+                master = target.master;
+                targetContainer[ key ] = target;
+                
+                if ( master ) {
+                    block = [];
+                    target.block = block;
+
+                    master = masterContainer[ master ];
+                    if ( !master ) {
+                        continue;
+                    }
+                    masterBlock = master.block;
+                    
+                    for ( i = 0, len = masterBlock.length; i < len; i++ ) {
+                        item = masterBlock[ i ];
+
+                        switch ( item.type ) {
+                        case TYPE.CONTENTPLACEHOLDER:
+                            content = target.content[ item.id ];
+                            if ( content ) {
+                                Array.prototype.push.apply( block, content.block );
+                            }
+                            break;
+                        default:
+                            block.push( item );
                         }
-                        break;
-                    default:
-                        block.push( item );
                     }
                 }
             }
-        }
-        console.log( targetCache );
-        //console.log( masterCache );
-    }
 
+            // 释放解析所需的公共环境
+            targetCache = null;
+            masterCache = null;
+            nodeIterator = null;
+            analyseStack = null;  
+        };
+    }();
+    
 
     function execConditionalExpr( expr, scope ) {
         switch ( expr.type ) {
@@ -473,7 +865,6 @@ a.push( 'end master cache' + ((new Date) - now) );
             return eval( expr.content );
         case 'variable':
             return parseVariable( expr.content, null, scope )
-
         }
     }
 
@@ -630,13 +1021,33 @@ a.push( 'end master cache' + ((new Date) - now) );
      * @return {string}
      */
     function parseVariable( varName, filterName, scope ) {
-        var match = varName.match( /:([a-z]+)$/ );
+        var typeRule = /:([a-z]+)$/i;
+        var match = varName.match( typeRule );
         var value = '';
+        varName = varName.replace( typeRule, '' );
 
         if ( match && match.length > 1 ) {
-            value = parseVariableByType( varName.replace(/:[a-z]+$/i, ''), match[1] );
+            value = parseVariableByType( varName, match[1] );
         } else {
-            var variable = scope.get( varName );
+            varName = varName.split( /[\.\[]/ );
+
+            var variable = scope.get( varName[ 0 ] );
+            var propName, propLen;
+            varName.shift();
+            for ( var i = 0; i < varName.length; i++ ) {
+                if ( !er._util.hasValue( variable ) ) {
+                    break;
+                }
+
+                propName = varName[ i ].replace( /\]$/, '' );
+                propLen = propName.length;
+                if ( /^(['"])/.test( propName ) && propName.lastIndexOf( RegExp.$1 ) == propLen - 1 ) {
+                    propName = propName.slice( 1, propLen - 1 );
+                }
+
+                variable = variable[ propName ];
+            }
+
             if ( er._util.hasValue( variable ) ) {
                 value = variable;
             }
@@ -771,7 +1182,7 @@ a.push( 'end master cache' + ((new Date) - now) );
 
     function replaceVariable( text, scope ) {
         return text.replace(
-                /\$\{([.:a-z0-9_]+)\s*(\|[a-z]+)?\s*\}/ig,
+                /\$\{([.:a-z0-9\[\]'"_]+)\s*(\|[a-z]+)?\s*\}/ig,
                 function ( $0, $1, $2 ) {
                     return parseVariable( $1, $2, scope );
                 });
@@ -823,11 +1234,6 @@ a.push( 'end master cache' + ((new Date) - now) );
         return exec( targetContainer[ name ] );
     }
 
-    var a;
-    var now;
-
-    var nodeIterator;
-
     /**
      * 解析模板
      *
@@ -835,288 +1241,10 @@ a.push( 'end master cache' + ((new Date) - now) );
      * @param {string} source 模板源
      */
     function parse( source ) {
-        now = new Date;
-        a = []
-        nodeIterator = new NodeIterator( nodeAnalyse( source ) );
-        a.push( 'end nodeAnalyse:' + ((new Date) - now) )
-        syntaxAnalyse();
-        a.push( 'end parse:' + ((new Date) - now) )
-        //alert(a.join('\n'))
+        var stream = nodeAnalyse( source );
+        syntaxAnalyse( stream );
     }
-
-    function popNode( stopType ) {
-        var current;
-
-        while ( ( current = analyseStack.current() )
-                && current.type != stopType
-        ) {
-            analyseStack.pop();
-        }
-
-        return analyseStack.pop();
-    }
-
-    function pushNode( node ) {
-        analyseStack.push( node );
-    }
-
-    function getError() {
-        var node = analyseStack.bottom;
-        return '[er template]' + node.type + ' ' + node.id 
-            + ': unexpect ' + nodeIterator.current().type 
-            + ' on ' + analyseStack.current().type;
-    }
-
-    function astParseByType( type ) {
-        var parser = astParser[ type ];
-        parser && parser();
-    }
-
-    var astParser = {};
-    astParser[ TYPE.TARGET ] = function () {
-        var node = nodeIterator.current();
-        node.block   = [];
-        node.content = {};
-        
-        pushNode( node );
-        targetCache[ node.id ] = node;
-
-        while ( ( node = nodeIterator.next() ) )  {
-            switch ( node.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                popNode();
-                if ( !node.endTag ) {
-                    nodeIterator.prev();
-                }
-                return;
-            case TYPE.CONTENTPLACEHOLDER:
-            case TYPE.ELSE:
-            case TYPE.ELIF:
-                throw getError();
-            default:
-                astParseByType( node.type );
-                break;
-            }
-        }
-    };
-
-    astParser[ TYPE.MASTER ] = function () {
-        var node = nodeIterator.current();
-        node.block = [];
-
-        pushNode( node );
-        masterCache[ node.id ] = node;
-
-        while ( ( node = nodeIterator.next() ) )  {
-            switch ( node.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                popNode();
-                if ( !node.endTag ) {
-                    nodeIterator.prev();
-                }
-                return;
-            case TYPE.CONTENT:
-            case TYPE.ELSE:
-            case TYPE.ELIF:
-                throw getError();
-            default:
-                astParseByType( node.type );
-                break;
-            }
-        }
-    };
-
-    astParser[ TYPE.TEXT ] = 
-    astParser[ TYPE.IMPORT ] = 
-    astParser[ TYPE.CONTENTPLACEHOLDER ] = function () {
-        analyseStack.current().block.push( nodeIterator.current() );
-    };
-
-    astParser[ TYPE.CONTENT ] = function () {
-        var node = nodeIterator.current();
-        node.block = [];
-
-        analyseStack.bottom().content[ node.id ] = node;
-        pushNode( node );
-
-        while ( ( node = nodeIterator.next() ) )  {
-            if ( node.endTag ) {
-                if ( node.type == TYPE.CONTENT ) {
-                    popNode( TYPE.CONTENT );
-                } else {
-                    nodeIterator.prev();
-                }
-                return;
-            }
-
-            switch ( node.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                popNode();
-                nodeIterator.prev();
-                return;
-            case TYPE.CONTENTPLACEHOLDER:
-            case TYPE.ELSE:
-            case TYPE.ELIF:
-                throw getError();
-            case TYPE.CONTENT:
-                popNode( TYPE.CONTENT );
-                nodeIterator.prev();
-                return;
-            default:
-                astParseByType( node.type );
-                break;
-            }
-        }
-    };
-
-    astParser[ TYPE.FOR ] = function () {
-        var node = nodeIterator.current();
-        node.block = [];
-
-        analyseStack.current().block.push( node );
-        pushNode( node );
-
-        while ( ( node = nodeIterator.next() ) )  {
-            if ( node.endTag ) {
-                if ( node.type == TYPE.FOR ) {
-                    popNode( TYPE.FOR );
-                } else {
-                    nodeIterator.prev();
-                }
-                return;
-            }
-
-            switch ( node.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                popNode();
-                nodeIterator.prev();
-                return;
-            case TYPE.CONTENTPLACEHOLDER:
-            case TYPE.CONTENT:
-            case TYPE.ELSE:
-            case TYPE.ELIF:
-                throw getError();
-            default:
-                astParseByType( node.type );
-                break;
-            }
-        }
-    };
-
-    astParser[ TYPE.IF ] = function () {
-        var node = nodeIterator.current();
-        node.block = [];
-
-        analyseStack.current().block.push( node );
-        pushNode( node );
-
-        while ( ( node = nodeIterator.next() ) ) {
-            if ( node.endTag ) {
-                if ( node.type == TYPE.IF ) {
-                    popNode( TYPE.IF );
-                } else {
-                    nodeIterator.prev();
-                }
-                return;
-            }
-
-            switch ( node.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                popNode();
-                nodeIterator.prev();
-                return;
-            case TYPE.CONTENTPLACEHOLDER:
-            case TYPE.CONTENT:
-                throw getError();
-            default:
-                astParseByType( node.type );
-                break;
-            }
-        }
-    };
-
-    astParser[ TYPE.ELIF ] = function () {
-        var node = nodeIterator.current();
-        node.type  = TYPE.IF;
-        node.block = [];
-
-        popNode( TYPE.IF )[ 'else' ] = node;
-        pushNode( node );
-
-
-        while ( ( node = nodeIterator.next() ) ) {
-            if ( node.endTag ) {
-                nodeIterator.prev();
-                return;
-            }
-
-            switch ( node.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                popNode();
-                nodeIterator.prev();
-                return;
-            case TYPE.CONTENTPLACEHOLDER:
-            case TYPE.CONTENT:
-                throw getError();
-            case TYPE.ELIF:
-                nodeIterator.prev();
-                return;
-            default:
-                astParseByType( node.type );
-                break;
-            }
-        }
-    };
-
-    astParser[ TYPE.ELSE ] = function () {
-        var unit = nodeIterator.current();
-        var node = analyseStack.current();
-        var nodeType;
-
-        while ( 1 ) {
-            nodeType = node.type;
-            if ( nodeType == TYPE.IF || nodeType == TYPE.ELIF ) {
-                node = {
-                    type  : TYPE.ELSE,
-                    block : []
-                };
-                analyseStack.current()[ 'else' ] = node;
-                break;
-            }
-
-            node = analyseStack.pop();
-        }
-        pushNode( node );
-
-        while ( ( unit = nodeIterator.next() ) ) {
-            if ( unit.endTag ) {
-                nodeIterator.prev();
-                return;
-            }
-
-            switch ( unit.type ) {
-            case TYPE.TARGET:
-            case TYPE.MASTER:
-                popNode();
-                nodeIterator.prev();
-                return;
-            case TYPE.CONTENTPLACEHOLDER:
-            case TYPE.CONTENT:
-            case TYPE.ELSE:
-            case TYPE.ELIF:
-                throw getError();
-            default:
-                astParseByType( unit.type );
-                break;
-            }
-        }
-    };
+    
     
     /**
      * 加载模板
