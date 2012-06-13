@@ -55,6 +55,21 @@ test("merge", function() {
     er.template.merge( el, 'mergeTest' );
     equals(el.innerHTML, 'hello ER!', 'merge，简单的${name}替换。');
 
+    er.template.parse('<!-- target:mergeTest1_1 -->hello ${person.name}!');
+    er.context.set( 'person', {name:'ER'} );
+    er.template.merge( el, 'mergeTest1_1' );
+    equals(el.innerHTML, 'hello ER!', 'merge，嵌套${person.name}替换。');
+
+    er.template.parse('<!-- target:mergeTest1_2 -->hello ${person["name"]}!');
+    er.context.set( 'person', {name:'ER'} );
+    er.template.merge( el, 'mergeTest1_2' );
+    equals(el.innerHTML, 'hello ER!', 'merge，嵌套${person["name"]}替换。');
+
+    er.template.parse('<!-- target:mergeTest1_3 -->hello ${person["name"]}!');
+    er.context.set( 'car', {driver: {name:'ER'} });
+    er.template.merge( el, 'mergeTest1_3' );
+    equals(el.innerHTML, 'hello ER!', 'merge，多级嵌套${car.driver["name"]}替换。');
+
     er.template.parse('<!-- target:mergeTest2 -->hello ${myName|html}!');
     er.context.set( 'myName', '<b>ER</b>' );
     er.template.merge( el, 'mergeTest2' );
