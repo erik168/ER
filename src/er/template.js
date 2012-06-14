@@ -369,7 +369,7 @@ er.template = function () {
                             case 'if':
                             case 'elif':
                                 if ( IF_RULE.test( RegExp.$3 ) ) {
-                                    node.expr = parseConditionalExpr( RegExp.$1 );
+                                    node.expr = condExpr.parse( RegExp.$1 );
                                 } else {
                                     throwInvalid( nodeType, commentText );
                                 }
@@ -407,7 +407,7 @@ er.template = function () {
      * 语法分析
      *
      * @inner
-     * @param {Array} 构造单元流
+     * @param {Array} stream 构造单元流
      */
     var syntaxAnalyse = function () {
         var astParser = {};
@@ -765,7 +765,7 @@ er.template = function () {
             }
         };
 
-        return function syntaxAnalyse( stream ) {
+        return function ( stream ) {
             var unit;
             var key;
             var target;
@@ -848,186 +848,306 @@ er.template = function () {
         };
     }();
     
+    /**
+     * 条件表达式解析和执行
+     *
+     * @inner
+     */
+    var condExpr = function () {
+        // 表达式类型
+        var EXPR_T = {
+            or       : 1,
+            and      : 2,
+            relation : 3,
+            unary    : 4,
+            string   : 5,
+            number   : 6,
+            variable : 7,
+            punc     : 8
+        };
 
-    function execConditionalExpr( expr, scope ) {
-        switch ( expr.type ) {
-        case 'or':
-            return execConditionalExpr( expr.expr1, scope ) || execConditionalExpr( expr.expr2, scope );
-        case 'and':
-            return execConditionalExpr( expr.expr1, scope ) && execConditionalExpr( expr.expr2, scope );;
-        case 'unary':
-            return !execConditionalExpr( expr.expr, scope );
-        case 'relation':
-            return execRelationExpr( expr, scope );
-        case 'string':
-            return eval( expr.content );
-        case 'number':
-            return eval( expr.content );
-        case 'variable':
-            return parseVariable( expr.content, null, scope )
-        }
-    }
+        return {
+            /**
+             * 解析条件表达式
+             *
+             * @inner
+             * @param {string} source 表达式源
+             */
+            parse: function ( source ) {
+                source = baidu.string.trim( source );
+                var arr;
+                var str;
+                var src = source;
+                var stream = [];
 
-    function execRelationExpr( expr, scope ) {
-        var expr1 = execConditionalExpr( expr.expr1, scope );
-        var expr2 = execConditionalExpr( expr.expr2, scope );
-        switch( expr.oper.content ) {
-        case '==':
-            return expr1 == expr2;
-        case '===':
-            return expr1 === expr2;
-        case '>':
-            return expr1 > expr2;
-        case '<':
-            return expr1 < expr2;
-        case '>=':
-            return expr1 >= expr2;
-        case '<=':
-            return expr1 <= expr2;
-        case '!=':
-            return expr1 != expr2;
-        case '!==':
-            return expr1 !== expr2;
-        }
-    }
-
-    function parseConditionalExpr( source ) {
-        source = baidu.string.trim( source ); 
-        var arr;
-        var str;
-        var stream = [];
-        while ( source ) {
-            arr = CONDEXPR_RULE.exec( source );
-            if ( !arr ) {
-                
-                throw "fuck";
-            }
-
-            source = source.slice( arr[ 0 ].length );
-            str = arr[ 1 ];
-            if ( str.indexOf( '$' ) == 0 ) {
-                stream.push( {
-                    type: 'variable',
-                    content: str.slice( 2, str.length - 1 )
-                } );
-                continue;
-            } else if ( /^[0-9-]/.test( str ) ) {
-                stream.push( {
-                    type: 'number',
-                    content: str
-                } );
-                continue;
-            } 
-
-            switch ( str ) {
-            case "'":
-            case '"':
-                var strBuf = [str];
-                var cha;
-                var index = 0;
-
-                while ( 1 ) {
-                    cha = source.charAt( index++ );
-                    if ( cha == str ) {
-                        strBuf.push( str );
-                        source = source.slice( index );
-                        break;
+                // 分析表达式token流
+                while ( source ) {
+                    // 匹配一个含义块
+                    arr = CONDEXPR_RULE.exec( source );
+                    if ( !arr ) {
+                        throw "conditional expression invalid: " + src;
                     }
 
-                    strBuf.push( cha );
+                    // 更新未解析的源
+                    source = source.slice( arr[ 0 ].length );
+                    str    = arr[ 1 ];
+
+                    if ( str.indexOf( '$' ) == 0 ) {
+                        stream.push( {
+                            type : EXPR_T.variable,
+                            text : str.slice( 2, str.length - 1 )
+                        } );
+                    } else if ( /^[0-9-]/.test( str ) ) {
+                        stream.push( {
+                            type : EXPR_T.number,
+                            text : str
+                        } );
+                    } else {
+
+                        switch ( str ) {
+                        case "'":
+                        case '"':
+                            var strBuf = [str];
+                            var cha;
+                            var index = 0;
+
+                            while ( 1 ) {
+                                cha = source.charAt( index++ );
+                                if ( cha == str ) {
+                                    strBuf.push( str );
+                                    source = source.slice( index );
+                                    break;
+                                }
+
+                                strBuf.push( cha );
+                            }
+                            stream.push( { 
+                                type : EXPR_T.string, 
+                                text : strBuf.join( '' ) 
+                            } );
+                            break;
+                        default:
+                            stream.push( {
+                                type : EXPR_T.punc,
+                                text : str
+                            } );
+                            break;
+                        }
+                    }
                 }
-                stream.push( { type: 'string', content: strBuf.join( '' ) } );
-                break;
-            default:
-                stream.push( {
-                    type: 'punc',
-                    content: str
-                } );
-                break;
+
+                // 分析表达式结构
+                return orExpr( new NodeIterator( stream ) );
+            },
+
+            /**
+             * 运行条件表达式
+             *
+             * @inner
+             * @param {Object} expr 条件表达式
+             * @param {Scope} scope scope
+             * @return {boolean}
+             */
+            exec: execCondExpr
+        };
+
+        /**
+         * 解析or表达式
+         *
+         * @inner
+         * @param {NodeIterator} iterator token迭代器
+         * @description
+         * orExpression:
+         *     andExpression
+         *     andExpression || orExpression
+         */
+        function orExpr( iterator ) {
+            var expr = andExpr( iterator );
+            var oper;
+            if ( ( oper = iterator.next() ) && oper.text == '||' ) {
+                expr = {
+                    type  : EXPR_T.or, 
+                    expr1 : expr, 
+                    expr2 : opExpr( iterator ) 
+                };
+            }
+
+            return expr;
+        }
+
+        /**
+         * 解析and表达式
+         *
+         * @inner
+         * @param {NodeIterator} iterator token迭代器
+         * @description
+         * andExpression:
+         *     relationalExpression
+         *     relationalExpression || andExpression
+         */
+        function andExpr( iterator ) {
+            var expr = relationExpr( iterator );
+            var oper;
+            if ( ( oper = iterator.next() ) && oper.text == '&&' ) {
+                expr = {
+                    type  : EXPR_T.and, 
+                    expr1 : expr, 
+                    expr2 : andExpr( iterator ) 
+                };
+            }
+
+            return expr;
+        }
+
+        /**
+         * 解析relational表达式
+         *
+         * @inner
+         * @param {NodeIterator} iterator token迭代器
+         * @description
+         * relationalExpression:
+         *     unaryExpression
+         *     unaryExpression > unaryExpression
+         *     unaryExpression >= unaryExpression
+         *     unaryExpression < unaryExpression
+         *     unaryExpression <= unaryExpression
+         *     unaryExpression == unaryExpression
+         *     unaryExpression != unaryExpression
+         *     unaryExpression === unaryExpression
+         *     unaryExpression !== unaryExpression
+         */
+        function relationExpr( iterator ) {
+            var expr = unaryExpr( iterator );
+            var oper;
+            if ( ( oper = iterator.next() ) && /^[><=]+$/.test( oper.text ) ) {
+                iterator.next();
+                expr = {
+                    type  : EXPR_T.relation, 
+                    expr1 : expr, 
+                    expr2 : unaryExpr( iterator ), 
+                    oper  : oper.text 
+                };
+            }
+
+            return expr;
+        }
+
+        /**
+         * 解析unary表达式
+         *
+         * @inner
+         * @param {NodeIterator} iterator token迭代器
+         * @description
+         * unaryExpression:
+         *     primaryExpr
+         *     !primaryExpr
+         */
+        function unaryExpr( iterator ) {
+            if ( iterator.current().text == '!' ) {
+                iterator.next();
+                return {
+                    type : EXPR_T.unary,
+                    oper : '!',
+                    expr : primaryExpr( iterator )
+                }
+            }
+            
+            return primaryExpr( iterator );
+        }
+
+        /**
+         * 解析primary表达式
+         *
+         * @inner
+         * @param {NodeIterator} iterator token迭代器
+         * @description
+         * primaryExpression:
+         *     string
+         *     number
+         *     ( orExpression )
+         */
+        function primaryExpr( iterator ) {
+            var expr = iterator.current();
+            if ( expr.text == '(' ) {
+                iterator.next();
+                expr = orExpr( iterator );
+                iterator.next();
+            }
+
+            return expr;
+        }
+
+        /**
+         * 运行relational表达式
+         *
+         * @inner
+         * @param {Object} expr relational表达式
+         * @param {Scope} scope scope
+         * @return {boolean}
+         */
+        function execRelationExpr( expr, scope ) {
+            var result1 = execCondExpr( expr.expr1, scope );
+            var result2 = execCondExpr( expr.expr2, scope );
+
+            switch( expr.oper ) {
+            case '=='  : return result1 == result2;
+            case '===' : return result1 === result2;
+            case '>'   : return result1 > result2;
+            case '<'   : return result1 < result2;
+            case '>='  : return result1 >= result2;
+            case '<='  : return result1 <= result2;
+            case '!='  : return result1 != result2;
+            case '!==' : return result1 !== result2;
             }
         }
 
-        var iterator = new NodeIterator( stream );
-        return orExpr( iterator );
-    }
-
-    function orExpr( iterator ) {
-        var expr = andExpr( iterator );
-        var oper;
-        if ( ( oper = iterator.next() ) && oper.content == '||' ) {
-            expr = {type: 'or', expr1: expr, expr2: opExpr( iterator ) };
-        }
-
-        return expr;
-    }
-
-    function andExpr( iterator ) {
-        var expr = relationExpr( iterator );
-        var oper;
-        if ( ( oper = iterator.next() ) && oper.content == '&&' ) {
-            expr = {type: 'and', expr1: expr, expr2: andExpr( iterator ) };
-        }
-
-        return expr;
-    }
-
-    function relationExpr( iterator ) {
-        var expr = unaryExpr( iterator );
-        var oper;
-        if ( ( oper = iterator.next() ) && /^[><=]+$/.test( oper.content ) ) {
-            iterator.next();
-            expr = {
-                type: 'relation', 
-                expr1: expr, 
-                expr2: unaryExpr( iterator ), 
-                oper: oper 
-            };
-        }
-
-        return expr;
-    }
-
-    function unaryExpr( iterator ) {
-        if ( iterator.current().content == '!' ) {
-            iterator.next();
-            return {
-                type: 'unary',
-                oper: '!',
-                expr: primaryExpr( iterator )
+        /**
+         * 运行条件表达式
+         *
+         * @inner
+         * @param {Object} expr 条件表达式
+         * @param {Scope} scope scope
+         * @return {Any}
+         */
+        function execCondExpr( expr, scope ) {
+            switch ( expr.type ) {
+            case EXPR_T.or:
+                return execCondExpr( expr.expr1, scope ) 
+                       || execCondExpr( expr.expr2, scope );
+            case EXPR_T.and:
+                return execCondExpr( expr.expr1, scope ) 
+                       && execCondExpr( expr.expr2, scope );
+            case EXPR_T.unary:
+                return !execCondExpr( expr.expr, scope );
+            case EXPR_T.relation:
+                return execRelationExpr( expr, scope );
+            case EXPR_T.string:
+            case EXPR_T.number:
+                return eval( expr.text );
+            case EXPR_T.variable:
+                return getVariableValue( scope, expr.text );
             }
         }
-        
-        return primaryExpr( iterator );
-    }
+    }();
 
-    function primaryExpr( iterator ) {
-        var expr = iterator.current();
-        if ( expr.content == '(' ) {
-            iterator.next();
-            expr = orExpr( iterator );
-            iterator.next();
-        }
-
-        return expr;
-    }
-    
+ 
     /**
      * 解析模板变量的值
      * 
      * @inner
-     * @param {string} varName 变量名
-     * @param {string} filterName 过滤器名
      * @param {string} scope 
+     * @param {string} varName 变量名
+     * @param {string} opt_filterName 过滤器名
      * @return {string}
      */
-    function parseVariable( varName, filterName, scope ) {
+    function getVariableValue( scope, varName, opt_filterName ) {
         var typeRule = /:([a-z]+)$/i;
         var match = varName.match( typeRule );
         var value = '';
         varName = varName.replace( typeRule, '' );
 
         if ( match && match.length > 1 ) {
-            value = parseVariableByType( varName, match[1] );
+            value = getVariableValueByType( varName, match[1] );
         } else {
             varName = varName.split( /[\.\[]/ );
 
@@ -1054,9 +1174,9 @@ er.template = function () {
         }
         
         // 过滤处理
-        if ( filterName ) {
-            filterName = filterContainer[ filterName.substr( 1 ) ];
-            filterName && ( value = filterName( value ) );
+        if ( opt_filterName ) {
+            opt_filterName = filterContainer[ opt_filterName.substr( 1 ) ];
+            opt_filterName && ( value = opt_filterName( value ) );
         }
 
         return value;
@@ -1070,7 +1190,7 @@ er.template = function () {
      * @param {string} type 变量类型，暂时为lang|config
      * @return {string}
      */
-    function parseVariableByType( varName, type ) {
+    function getVariableValueByType( varName, type ) {
         var packs           = varName.split('.'),
             len             = packs.length - 1,
             topPackageName  = packs.shift(),
@@ -1145,15 +1265,21 @@ er.template = function () {
         return '';
     }
 
+    /**
+     * 获取节点的内容
+     *
+     * @inner
+     * @param {Object} node 节点
+     * @return {string}
+     */
     function getContent( node ) {
-        var block = node.block;
-        var i = 0;
-        var len = block.length;
+        var block   = node.block;
         var content = [];
-        var item;
+        var item, i, len;
 
-        for ( ; i < len; i++ ) {
+        for ( i = 0, len = block.length; i < len; i++ ) {
             item = block[ i ];
+
             if ( item.block ) {
                 content.push( getContent( item ) );
             } else if ( item.type == TYPE.IMPORT ) {
@@ -1166,59 +1292,67 @@ er.template = function () {
         return content.join( '' );
     }
 
-    function merge( output, tplName, opt_privateContextId ) {
-        if ( output ) {
-            var scope = {
-                get: function ( name ) {
-                    return er.context.get( name, { 
-                        contextId: opt_privateContextId 
-                    } );
-                }
-            };
-            var target = targetContainer[ tplName ];
-            output.innerHTML = exec( target, scope );
-        }
-    }
-
+    /**
+     * 替换模板变量的值
+     * 
+     * @inner
+     * @param {string} text 替换文本源
+     * @param {Scope} scope 
+     * @return {string}
+     */
     function replaceVariable( text, scope ) {
         return text.replace(
                 /\$\{([.:a-z0-9\[\]'"_]+)\s*(\|[a-z]+)?\s*\}/ig,
                 function ( $0, $1, $2 ) {
-                    return parseVariable( $1, $2, scope );
+                    return getVariableValue( scope, $1, $2  );
                 });
     }
+
+    /**
+     * 执行target
+     * 
+     * @inner
+     * @param {Object} target 要执行的target
+     * @param {Scope} scope
+     */
     function exec( target, scope ) {
-        var block = target.block;
-        var i = 0;
-        var len = block.length;
-        var stat;
         var result = [];
-        for ( ; i < len; i++ ) {
+        var block = target.block;
+        
+        var stat, i, len;
+        var forScope, forList, forI, forLen;
+        var ifValid;
+
+        
+        for ( i = 0, len = block.length; i < len; i++ ) {
             stat = block[ i ];
+
             switch ( stat.type ) {
             case TYPE.TEXT:
                 result.push( replaceVariable( stat.text, scope ) ) ;
                 break;
+
             case TYPE.IMPORT:
                 execImport( stat );
                 break;
+
             case TYPE.FOR:
-                
-                var forScope = new Scope( scope );
-                var arr = scope.get( stat.list );
-                var j = 0;
-                var listLen = arr.length;
-                for ( ; j < listLen; j++ ) {
-                    forScope.set( stat.item, arr[ j ] );
+                forScope = new Scope( scope );
+                forList = scope.get( stat.list );
+                for ( forI = 0, forLen = forList.length; forI < forLen; forI++ ) {
+                    forScope.set( stat.item, forList[ forI ] );
                     result.push( exec( stat, forScope ) );
                 }
                 break;
+
             case TYPE.IF:
-                var valid = execConditionalExpr( stat.expr, scope );
-                while ( !valid ) {
+                ifValid = condExpr.exec( stat.expr, scope );
+                while ( !ifValid ) {
                     stat = stat[ 'else' ];
-                    if ( !stat ) break;
-                    valid = !stat.expr || execConditionalExpr( stat.expr, scope );
+                    if ( !stat ) {
+                        break;
+                    }
+                    ifValid = !stat.expr || condExpr.exec( stat.expr, scope );
                 }
 
                 stat && result.push( exec( stat, scope ) );
@@ -1229,6 +1363,12 @@ er.template = function () {
         return result.join( '' );
     }
 
+    /**
+     * 执行import
+     * 
+     * @inner
+     * @param {Object} importStat import对象
+     */
     function execImport( importStat ) {
         var name = importStat.id;
         return exec( targetContainer[ name ] );
@@ -1245,7 +1385,28 @@ er.template = function () {
         syntaxAnalyse( stream );
     }
     
-    
+    /**
+     * 合并模板与数据
+     * 
+     * @inner
+     * @param {HTMLElement} output  要输出到的容器元素
+     * @param {string}      tplName 模板名
+     * @param {string}      opt_privateContextId 私用context环境的id
+     */
+    function merge( output, tplName, opt_privateContextId ) {
+        if ( output ) {
+            var scope = {
+                get: function ( name ) {
+                    return er.context.get( name, { 
+                        contextId: opt_privateContextId 
+                    } );
+                }
+            };
+            var target = targetContainer[ tplName ];
+            output.innerHTML = exec( target, scope );
+        }
+    }
+
     /**
      * 加载模板
      *
