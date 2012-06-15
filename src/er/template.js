@@ -185,7 +185,11 @@ er.template = function () {
                 return this.parent.get( name );
             }
 
-            return value || null;
+            if ( er._util.hasValue( value ) ) {
+                return value;
+            }
+
+            return null;
         },
 
         set: function ( name, value ) {
@@ -214,10 +218,10 @@ er.template = function () {
     var PROP_RULE = /^\s*([0-9a-z_]+)\s*=\s*([0-9a-z_]+)\s*$/i;
     
     // FOR标签规则
-    var FOR_RULE = /^\s*:\s*\$\{([0-9a-z_.\[\]]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*$/i;
+    var FOR_RULE = /^\s*:\s*\$\{([0-9a-z_.\[\]]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i;
     
     // IF和ELIF标签规则
-    var IF_RULE = /^\s*:([>=<!0-9a-z$\{\}\[\]\(\):\s'"_]+)\s*$/i
+    var IF_RULE = /^\s*:([>=<!0-9a-z$\{\}\[\]\(\):\s'"\.\|&_]+)\s*$/i;
 
     // 普通命令标签规则
     var TAG_RULE = /^\s*:\s*([a-z0-9_]+)\s*(?:\(([^)]+)\))?\s*$/i;
@@ -225,7 +229,7 @@ er.template = function () {
     // 条件表达式规则
     var CONDEXPR_RULE = /\s*(\!=?=?|\|\||&&|>=?|<=?|===?|['"\(\)]|\$\{[^\}]+\}|\-?[0-9]+(\.[0-9]+)?)/;
 
-
+    // target和master存储容器
     var masterContainer = {};
     var targetContainer = {};
 
@@ -240,6 +244,7 @@ er.template = function () {
         }
     };
 
+    // 自动加载状态位
     var isLoaded;
 
     /**
@@ -358,8 +363,9 @@ er.template = function () {
 
                             case 'for':
                                 if ( FOR_RULE.test( nodeContent ) ) {
-                                    node.list = RegExp.$1;
-                                    node.item = RegExp.$2;
+                                    node.list  = RegExp.$1;
+                                    node.item  = RegExp.$2;
+                                    node.index = RegExp.$4;
                                 } else {
                                     throwInvalid( nodeType, commentText );
                                 }
@@ -877,6 +883,7 @@ er.template = function () {
                 source = baidu.string.trim( source );
                 var arr;
                 var str;
+                var expr;
                 var src = source;
                 var stream = [];
 
@@ -937,7 +944,8 @@ er.template = function () {
                 }
 
                 // 分析表达式结构
-                return orExpr( new NodeIterator( stream ) );
+                expr = orExpr( new NodeIterator( stream ) );
+                return expr;
             },
 
             /**
@@ -964,11 +972,12 @@ er.template = function () {
         function orExpr( iterator ) {
             var expr = andExpr( iterator );
             var oper;
-            if ( ( oper = iterator.next() ) && oper.text == '||' ) {
+            if ( ( oper = iterator.current() ) && oper.text == '||' ) {
+                iterator.next();
                 expr = {
                     type  : EXPR_T.or, 
                     expr1 : expr, 
-                    expr2 : opExpr( iterator ) 
+                    expr2 : orExpr( iterator ) 
                 };
             }
 
@@ -988,11 +997,12 @@ er.template = function () {
         function andExpr( iterator ) {
             var expr = relationExpr( iterator );
             var oper;
-            if ( ( oper = iterator.next() ) && oper.text == '&&' ) {
+            if ( ( oper = iterator.current() ) && oper.text == '&&' ) {
+                iterator.next();
                 expr = {
                     type  : EXPR_T.and, 
                     expr1 : expr, 
-                    expr2 : andExpr( iterator ) 
+                    expr2 : andExpr( iterator )
                 };
             }
 
@@ -1019,13 +1029,13 @@ er.template = function () {
         function relationExpr( iterator ) {
             var expr = unaryExpr( iterator );
             var oper;
-            if ( ( oper = iterator.next() ) && /^[><=]+$/.test( oper.text ) ) {
+            if ( ( oper = iterator.current() ) && /^[><=]+$/.test( oper.text ) ) {
                 iterator.next();
                 expr = {
                     type  : EXPR_T.relation, 
                     expr1 : expr, 
                     expr2 : unaryExpr( iterator ), 
-                    oper  : oper.text 
+                    oper  : oper.text
                 };
             }
 
@@ -1049,7 +1059,7 @@ er.template = function () {
                     type : EXPR_T.unary,
                     oper : '!',
                     expr : primaryExpr( iterator )
-                }
+                };
             }
             
             return primaryExpr( iterator );
@@ -1071,9 +1081,9 @@ er.template = function () {
             if ( expr.text == '(' ) {
                 iterator.next();
                 expr = orExpr( iterator );
-                iterator.next();
             }
-
+            
+            iterator.next();
             return expr;
         }
 
@@ -1142,27 +1152,30 @@ er.template = function () {
      */
     function getVariableValue( scope, varName, opt_filterName ) {
         var typeRule = /:([a-z]+)$/i;
-        var match = varName.match( typeRule );
-        var value = '';
-        varName = varName.replace( typeRule, '' );
+        var match    = varName.match( typeRule );
+        var value    = '';
+        var i, len;
+        var variable, propName, propLen;
 
+        varName = varName.replace( typeRule, '' );
         if ( match && match.length > 1 ) {
             value = getVariableValueByType( varName, match[1] );
         } else {
-            varName = varName.split( /[\.\[]/ );
-
-            var variable = scope.get( varName[ 0 ] );
-            var propName, propLen;
+            varName  = varName.split( /[\.\[]/ );
+            variable = scope.get( varName[ 0 ] );
             varName.shift();
-            for ( var i = 0; i < varName.length; i++ ) {
+
+            for ( i = 0, len = varName.length; i < len; i++ ) {
                 if ( !er._util.hasValue( variable ) ) {
                     break;
                 }
 
                 propName = varName[ i ].replace( /\]$/, '' );
-                propLen = propName.length;
-                if ( /^(['"])/.test( propName ) && propName.lastIndexOf( RegExp.$1 ) == propLen - 1 ) {
-                    propName = propName.slice( 1, propLen - 1 );
+                propLen  = propName.length;
+                if ( /^(['"])/.test( propName ) 
+                     && propName.lastIndexOf( RegExp.$1 ) == --propLen
+                ) {
+                    propName = propName.slice( 1, propLen );
                 }
 
                 variable = variable[ propName ];
@@ -1191,11 +1204,11 @@ er.template = function () {
      * @return {string}
      */
     function getVariableValueByType( varName, type ) {
-        var packs           = varName.split('.'),
+        var packs           = varName.split( '.' ),
             len             = packs.length - 1,
             topPackageName  = packs.shift(),
             win             = window,
-            objOnDef        = er._util.getConfig('DEFAULT_PACKAGE'),
+            objOnDef        = er._util.getConfig( 'DEFAULT_PACKAGE' ),
             variable,
             objOnSelf,
             objOnBase;
@@ -1320,7 +1333,7 @@ er.template = function () {
         var block = target.block;
         
         var stat, i, len;
-        var forScope, forList, forI, forLen;
+        var forScope, forList, forI, forLen, forItem, forIndex;
         var ifValid;
 
         
@@ -1338,9 +1351,13 @@ er.template = function () {
 
             case TYPE.FOR:
                 forScope = new Scope( scope );
-                forList = scope.get( stat.list );
+                forList  = scope.get( stat.list );
+                forItem  = stat.item;
+                forIndex = stat.index;
                 for ( forI = 0, forLen = forList.length; forI < forLen; forI++ ) {
-                    forScope.set( stat.item, forList[ forI ] );
+                    forScope.set( forItem, forList[ forI ] );
+                    debugger;
+                    forIndex && forScope.set( forIndex, forI );
                     result.push( exec( stat, forScope ) );
                 }
                 break;
