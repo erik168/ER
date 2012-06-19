@@ -1356,7 +1356,6 @@ er.template = function () {
                 forIndex = stat.index;
                 for ( forI = 0, forLen = forList.length; forI < forLen; forI++ ) {
                     forScope.set( forItem, forList[ forI ] );
-                    debugger;
                     forIndex && forScope.set( forIndex, forI );
                     result.push( exec( stat, forScope ) );
                 }
