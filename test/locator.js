@@ -29,7 +29,7 @@ asyncTest("back and forward", function() {
         } else {
             same( location.hash, '#/hello~name=er%E6%A1%86%E6%9E%B6', "后退一次，location为/hello~name=er%E6%A1%86%E6%9E%B6" );
         }
-        
+
         history.back();
 
         setTimeout(function() {
@@ -47,10 +47,10 @@ asyncTest("back and forward", function() {
                 setTimeout(function() {
                     same( location.hash, '#/', "前进两次，location为/" );
                     start();
-                }, 200);
-            }, 200);
-        }, 200);
-    }, 200);
+                }, 400);
+            }, 400);
+        }, 400);
+    }, 400);
 
 });
 
