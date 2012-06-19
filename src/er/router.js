@@ -29,7 +29,7 @@ er.router = function () {
             } else if ( typeof rule == 'string' 
                         && rule == loc
             ) {
-                func.apply( this, loc );
+                func.call( this, loc );
                 break;
 
             }
