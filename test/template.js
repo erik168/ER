@@ -102,17 +102,17 @@ test("merge", function() {
     er.template.merge( el, 'mergeTest5' );
     equals(el.innerHTML, 'hello &lt;b&gt;ER&lt;/b&gt; from myModule.lang.name!', 'merge，混合类型和过滤器替换${myModule.name:lang|html}。');
 
-    er.template.parse('<!-- target:mergeTest6 --><ul><!-- for: ${myList} as ${item} --><li>${item}</li><!-- /for --></ul>');
+    er.template.parse('<!-- target:mergeTest6 --><!-- for: ${myList} as ${item} -->${item}|<!-- /for -->');
     er.context.set( 'myList', [1,2,3,4,5] );
     er.template.merge( el, 'mergeTest6' );
-    equals(el.innerHTML, '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', 'merge，for遍历数组');
+    equals(el.innerHTML, '1|2|3|4|5|', 'merge，for遍历数组');
 
-    er.template.parse('<!-- target:mergeTest6_2 --><ul><!-- for: ${myList} as ${item}, ${idx} --><li>${item},${idx}</li><!-- /for --></ul>');
+    er.template.parse('<!-- target:mergeTest6_2 --><!-- for: ${myList} as ${item}, ${idx} --><!--if:${idx}>0-->|<!--/if-->${item},${idx}<!-- /for -->');
     er.context.set( 'myList', [1,2,3,4,5] );
     er.template.merge( el, 'mergeTest6_2' );
-    equals(el.innerHTML, '<ul><li>1,0</li><li>2,1</li><li>3,2</li><li>4,3</li><li>5,4</li></ul>', 'merge，for遍历数组，带数组索引');
+    equals(el.innerHTML, '1,0|2,1|3,2|4,3|5,4', 'merge，for遍历数组，带数组索引');
 
-    er.template.parse('<!-- target:mergeTest7 --><!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0-->zero<!--else-->invalid<!-- /if --></ul>');
+    er.template.parse('<!-- target:mergeTest7 --><!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0-->zero<!--else-->invalid<!-- /if -->');
     er.context.set( 'num', 1 );
     er.template.merge( el, 'mergeTest7' );
     equals(el.innerHTML, '1', 'merge，进入if分支');
