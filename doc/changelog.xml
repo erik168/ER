@@ -13,6 +13,21 @@
 </articleinfo> 
 
 <section>   
+    <title>2.1.0</title>
+
+    <orderedlist>
+        <listitem><para>template：增加对if-elif-else和for as的支持；增加变量替换的中括号访问对象属性支持。</para></listitem>
+        <listitem><para>extend/action_enhance：增加reload方法，允许对Action进行重新加载。</para></listitem>
+        <listitem><para>修复载入文件顺序不同时初始化步骤混乱导致DEFAULT_INDEX可能route不正常的问题。</para></listitem>
+        <listitem><para>locator：修复currentLocation在非ie浏览器下记录缺失问题。</para></listitem>
+        <listitem><para>router：修复规则为string时路由失败问题。</para></listitem>
+        <listitem><para>ESUI - Calendar：修复弹出层打开时显示月份可能和选中值不同的问题。</para></listitem>
+        <listitem><para>ESUI - Select：修复emptyText名称错误的问题。</para></listitem>
+        <listitem><para>ESUI - Table：修复在chrome19+中宽度计算的问题。</para></listitem>
+    </orderedlist>
+</section>
+
+<section>   
     <title>2.0.4</title>
 
     <orderedlist>
