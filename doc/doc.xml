@@ -511,6 +511,34 @@ qchar    = char | "&" | "="]]></programlisting>
 <!-- content:foot -->
 copyright &copy; erik
 ]]></programlisting></example>
+
+                <para>模板支持简单的if-elif-else逻辑分支，语法为if: ConditionalExpression或elif: ConditionalExpression，ConditionalExpression支持||、&&、relational(>|>=|<|<=|==|!=|===|!==)、!、${variable}、number、string和()括号表达式。下面是一个简单的示例。</para>
+                <example><title>模板中的逻辑分支</title>
+                <programlisting><![CDATA[<!-- target: page1 -->
+<!-- if: ${name} -->
+hello ${name}
+<!-- else -->
+nobody
+<!-- /if -->
+
+<!-- if: ${number} > 0 -->
+larger than zero
+<!-- elif: ${number} == 0 -->
+zero
+<!-- else -->
+invalid
+<!-- /if -->
+]]></programlisting></example>
+
+                <para>模板支持for as对数组中的每一项进行遍历，语法为for: ${list} as ${item},${index}，其中${index}可选。下面是一个简单的示例。</para>
+                <example><title>模板中的循环</title>
+                <programlisting><![CDATA[<!-- target: page1 -->
+<ul>
+<!-- for: ${persons} as ${person}, ${index} -->
+<li>${index}: ${person.name}
+<!-- /for -->
+</ul>
+]]></programlisting></example>
             </section>
 
             <section>
