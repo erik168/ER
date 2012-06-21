@@ -20,6 +20,8 @@ var testModule2 = new er.Module( {
 var testStateName;
 var testStateAddress;
 var testModelQueryString;
+var leaved;
+var entered;
 testModule2.action = new er.Action( {
     view: 'sea',
 
@@ -28,6 +30,10 @@ testModule2.action = new er.Action( {
         address: 'hainan'
     },
     
+    onenter: function () {
+        entered = 1;
+    },
+
     ontracename: function () {
         testStateName = this.model.get( 'name' );
         testStateAddress = this.model.get( 'address' );
@@ -62,6 +68,14 @@ testModule2.action = new er.Action( {
 
     onsetaddress: function ( address ) {
         this.model.set( 'address', address );
+    },
+
+    onleave: function () {
+        leaved = 1;
+    },
+
+    onoverdue: function () {console.log(this)
+        this.reload();
     }
 } );
 
@@ -108,6 +122,18 @@ test("状态保持与刷新", function() {
     er.controller.fireMain('tracename');
     same( testStateName, "erik", "状态被保持" );
     same( testStateAddress, "haikou", "状态被保持" );
+});
+
+test("reload", function() {
+    er.locator.redirect('/');
+    er.locator.redirect('/e~name=reload');
+    leaved = 0;
+    entered = 0;
+    document.getElementById('Main').innerHTML = '';
+    er.controller.fireMain( 'overdue' );
+    same( leaved, 1, "当前action被卸载过" );
+    same( entered, 1, "当前action被重新装载" );
+    same( document.getElementById('Main').innerHTML, 'just test 4 reload', "视图被重新绘制" );
 });
 
 test("back", function() {
