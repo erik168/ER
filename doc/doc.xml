@@ -512,7 +512,7 @@ qchar    = char | "&" | "="]]></programlisting>
 copyright &copy; erik
 ]]></programlisting></example>
 
-                <para>模板支持简单的if-elif-else逻辑分支，语法为if: ConditionalExpression或elif: ConditionalExpression，ConditionalExpression支持||、&&、relational(>|>=|<|<=|==|!=|===|!==)、!、${variable}、number、string和()括号表达式。下面是一个简单的示例。</para>
+                <para><![CDATA[模板支持简单的if-elif-else逻辑分支，语法为if: ConditionalExpression或elif: ConditionalExpression，ConditionalExpression支持||、&&、relational(>|>=|<|<=|==|!=|===|!==)、!、${variable}、number、string和()括号表达式。下面是一个简单的示例。]]></para>
                 <example><title>模板中的逻辑分支</title>
                 <programlisting><![CDATA[<!-- target: page1 -->
 <!-- if: ${name} -->
