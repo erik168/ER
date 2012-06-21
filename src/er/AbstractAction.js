@@ -161,12 +161,13 @@ er.AbstractAction = function () {
          * @protected
          */
         dispose: function () {
-            // 释放context
-            this.model = null;
+            // 释放model
+            this.model.dispose();
+            delete this.model;
             
             // 清空视图
             this.view.clear();
-            this.view = null;
+            delete this.view;
         }
     };
 
