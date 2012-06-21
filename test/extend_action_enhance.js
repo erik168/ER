@@ -74,7 +74,7 @@ testModule2.action = new er.Action( {
         leaved = 1;
     },
 
-    onoverdue: function () {console.log(this)
+    onoverdue: function () {
         this.reload();
     }
 } );
