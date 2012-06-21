@@ -102,6 +102,16 @@ er.extend.actionEnhance = (function () {
         },
 
         /**
+         * 重新载入action
+         *
+         * @protected
+         */
+        reload: function () {
+            this.leave();
+            this.enter( this.arg );
+        },
+
+        /**
          * 重置状态值
          * 
          * @protected
