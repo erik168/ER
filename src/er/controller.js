@@ -62,9 +62,9 @@ er.controller = function () {
      * 跳转视图
      * 
      * @public
+     * @param {string} loc 定位器
      * @param {Object} path 路径
      * @param {Object} query 查询条件
-     * @param {string} loc 定位器
      */
     function forward( loc, path, query ) {
         if ( !_isEnable ) { 
@@ -78,6 +78,12 @@ er.controller = function () {
         }
         */
         
+        if ( !path ) {
+            locationRule.test( loc );
+            path = RegExp.$1;
+            query = RegExp.$2;
+        }
+
         var arg = {  // 组合所需的argument对象
                 type     : 'main',
                 referer  : currentLocation,
@@ -112,7 +118,7 @@ er.controller = function () {
             
             // 加载action
             actionName = actionConfig.action;
-            action = findAction( actionName );
+            action     = findAction( actionName );
             actionPath = getActionPath( actionName );
             if ( action || !actionPath ) {
                 _loadAction( action, arg );
@@ -425,13 +431,13 @@ er.controller = function () {
     er.init.addIniter( init, 1 );
 
     return {
-        forward                 : forward,
-        _enable                 : enable,
-        loadSub                 : loadSub,
-        loadSubByPath           : loadSubByPath,
-        unloadSub               : unloadAction,
-        fireEvent               : fireActionEvent,
-        fireMain                : function (type, eventArg) {fireActionEvent(type, eventArg);}
+        forward         : forward,
+        _enable         : enable,
+        loadSub         : loadSub,
+        loadSubByPath   : loadSubByPath,
+        unloadSub       : unloadAction,
+        fireEvent       : fireActionEvent,
+        fireMain        : function (type, eventArg) {fireActionEvent(type, eventArg);}
     };
 }();
     
