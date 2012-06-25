@@ -14,7 +14,7 @@
  * title
  * <!-- content: content -->
  * <ul>
- *     <!-- for: list as item -->
+ *     <!-- for: ${list} as ${item} -->
  *         <li>${item}         
  *     <!-- /for -->
  * </ul>
