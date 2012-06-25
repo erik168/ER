@@ -1463,7 +1463,7 @@ er.template = function () {
             i++;
             
             if ( i >= len ) {
-                //er.template.parse( tplBuf.join( '\n' ) );
+                er.template.parse( tplBuf.join( '\n' ) );
                 er.init.start();
             } else {
                 loadTemplate();
