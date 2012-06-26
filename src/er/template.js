@@ -1270,12 +1270,32 @@ er.template = function () {
      * @return {string}
      */
     function getTargetContent( name ) {
+        try {
+            var target = getTarget( name );
+            return getContent( target ) || '';
+        } catch ( ex ) {
+            return '';
+        }
+    }
+
+    /**
+     * 获取target
+     *
+     * @inner
+     * @param {string} name target的名称
+     * @return {Object}
+     */
+    function getTarget( name ) {
         var target = targetContainer[ name ];
-        if ( target ) {
-            return getContent( target );
+        if ( !target ) {
+            throw 'target "' + name + '" is not exist!';
         }
 
-        return '';
+        if ( target.type != TYPE.TARGET ) {
+            throw 'target "' + name + '" is invalid!';
+        }
+
+        return target;
     }
 
     /**
@@ -1386,8 +1406,8 @@ er.template = function () {
      * @param {Object} importStat import对象
      */
     function execImport( importStat ) {
-        var name = importStat.id;
-        return exec( targetContainer[ name ] );
+        var target = getTarget( importStat.id );
+        return exec( target );
     }
 
     /**
@@ -1410,16 +1430,23 @@ er.template = function () {
      * @param {string}      opt_privateContextId 私用context环境的id
      */
     function merge( output, tplName, opt_privateContextId ) {
+        var html = '';
+        var target;
+        var scope = {
+            get: function ( name ) {
+                return er.context.get( name, { 
+                    contextId: opt_privateContextId 
+                } );
+            }
+        };
+
         if ( output ) {
-            var scope = {
-                get: function ( name ) {
-                    return er.context.get( name, { 
-                        contextId: opt_privateContextId 
-                    } );
-                }
-            };
-            var target = targetContainer[ tplName ];
-            output.innerHTML = exec( target, scope );
+            try {
+                target = getTarget( tplName );
+                html = exec( target, scope );
+            } catch ( ex ) { }
+
+            output.innerHTML = html;
         }
     }
 
