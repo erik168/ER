@@ -1366,7 +1366,7 @@ er.template = function () {
                 break;
 
             case TYPE.IMPORT:
-                execImport( stat );
+                execImport( stat, scope );
                 break;
 
             case TYPE.FOR:
@@ -1404,10 +1404,11 @@ er.template = function () {
      * 
      * @inner
      * @param {Object} importStat import对象
+     * @param {Scope} scope
      */
-    function execImport( importStat ) {
+    function execImport( importStat, scope ) {
         var target = getTarget( importStat.id );
-        return exec( target );
+        return exec( target, scope );
     }
 
     /**
