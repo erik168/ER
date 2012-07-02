@@ -1366,7 +1366,7 @@ er.template = function () {
                 break;
 
             case TYPE.IMPORT:
-                execImport( stat, scope );
+                result.push( execImport( stat, scope ) );
                 break;
 
             case TYPE.FOR:
