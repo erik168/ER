@@ -112,6 +112,11 @@ test("merge", function() {
     er.template.merge( el, 'mergeTest6_2' );
     equals(el.innerHTML, '1,0|2,1|3,2|4,3|5,4', 'merge，for遍历数组，带数组索引');
 
+    er.template.parse('<!-- target:mergeTest6_3 --><!-- import: mergeTest6_2-->');
+    er.context.set( 'myList', [1,2,3,4,5] );
+    er.template.merge( el, 'mergeTest6_3' );
+    equals(el.innerHTML, '1,0|2,1|3,2|4,3|5,4', 'merge，for遍历数组，带数组索引');
+
     er.template.parse('<!-- target:mergeTest7 --><!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0-->zero<!--else-->invalid<!-- /if -->');
     er.context.set( 'num', 1 );
     er.template.merge( el, 'mergeTest7' );
