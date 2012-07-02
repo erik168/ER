@@ -43,6 +43,19 @@ include( 'esui.Button' );// __debug__
 			<td>button 标签</td>
 			<td><button ui="type:Button;id:myBtn5;">请按我</button></td>
 		</tr>
+        <tr>
+			<td>button 标签</td>
+			<td><button ui="type:Button;id:myBtn6;">请按我</button></td>
+		</tr>
+        <tr>
+			<td>submit button</td>
+      <td>
+        <form>
+          <input type="submit" ui="type:Button;id:myBtn7;" value="请按我"/>
+        </form>
+      </td>
+		</tr>
+	</table>
 	</table>
 </div>
 
@@ -55,6 +68,10 @@ esui.get( 'myBtn4' ).onclick =
 esui.get( 'myBtn5' ).onclick = function () {
 	alert( '我是按钮：' + this.id );
 };
+esui.get( 'myBtn6' ).setDisabled(true);
+esui.get( 'myBtn7' ).onclick = function() {
+  return false;
+}
 </script>
 </body>
 </html>

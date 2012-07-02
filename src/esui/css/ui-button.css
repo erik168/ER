@@ -75,6 +75,9 @@
     border-color:#cfcfcf;
     color:#999;
 }
+.ui-button-disabled .ui-button-label {
+    cursor: default;
+}
 
 /* 高亮按钮 */
 .skin-button-em-label {
