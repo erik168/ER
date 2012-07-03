@@ -157,6 +157,8 @@ esui.BoxControl.prototype = {
 
             baidu.dom.insertAfter( label, main );
             me._label = label;
+        } else {
+            label = me._label;
         }
 
         // 初始化label的内容

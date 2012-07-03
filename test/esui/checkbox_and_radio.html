@@ -41,6 +41,11 @@ include( 'esui.Button' );// __debug__
 			<td><input type="radio" value="3" ui="type:Radio;id:r3" title="three" name="num2"/></td>
 			<td colspan="3"><div ui="type:Button;id:currRadio">当前选中</div></td>
 		</tr>
+		<tr>
+			<td><input type="radio" value="1" ui="type:Radio;id:x1" title="one"/></td>
+			<td><input type="checkbox" value="3" ui="type:CheckBox;id:x3" title="three"/></td>
+			<td colspan="3"><div ui="type:Button;id:xRender">Call Render Again</div></td>
+		</tr>
 	</table>
 </div>
 
@@ -67,6 +72,11 @@ esui.get('currRadio').onclick = function () {
 	alert( 'checked three:' + esui.get('r3').isChecked() );
 	alert( 'group value:' + esui.get('r3').getGroup().getValue() );
 };
+
+esui.get('xRender').onclick = function() {
+  esui.get('x1').render();
+  esui.get('x3').render();
+}
 </script>
 </body>
 </html>
