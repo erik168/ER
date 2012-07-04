@@ -114,6 +114,15 @@ er.template = function () {
         },
 
         /**
+         * 添加多个元素到数组末端
+         */
+        pushMore: function () {
+            for ( var i = 0, l = arguments.length; i < l; i++ ) {
+                this.push( arguments[ i ] );
+            }
+        },
+
+        /**
          * 连接数组项
          *
          * @param {string} split 分隔串
@@ -308,7 +317,7 @@ er.template = function () {
          * @inner
          */
         function beCommentText( text ) {
-            textBuf.push( COMMENT_BEGIN, text, COMMENT_END );
+            textBuf.pushMore( COMMENT_BEGIN, text, COMMENT_END );
         }
 
         // 开始第一阶段解析，生成strStream
