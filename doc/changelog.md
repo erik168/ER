@@ -4,7 +4,9 @@ ER Change Log
 2.1.2
 ---------
 
-+ template: 修复模板自动载入时未解析的问题。
++ template: 修复merge时import的scope丢失和结果丢失问题；修复模板内容中包含普通html注释时的片段丢失问题；为merge时target找不到增加错误抛出。
++ ESUI - Button: 修复onclick事件return false时无法停止默认行为的问题；修复disabled状态时鼠标仍为手形的问题。 
++ ESUI - Radio&Checkbox: 修复重复渲染时label同步问题。
 
 2.1.1
 ---------
