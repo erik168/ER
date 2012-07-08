@@ -1,7 +1,10 @@
-er.template.parse( '<!-- target: uiview --><div ui="type:Button;id:myButton"></div><div ui="type:Select;id:mySelect;datasource:*users"></div>' );
+er.template.parse( '<!-- target: uiview -->'
+    + '<div ui="type:Button;id:myButton"></div>'
+    + '<div ui="type:Select;id:mySelect;datasource:*users"></div>'
+    + '<div ui="type:Select;id:mySelect2;datasource:*user.list"></div>' );
 er.template.parse( '<!-- target: uiviewsimple --><div ui="type:Button;id:myButton"></div><div ui="type:Select;id:mySelect;"></div>' );
 er.template.parse( '<!-- target: uiinputview --><div ui="type:Button;id:myButton"></div>' 
-    + '<div ui="type:Select;id:mySelect;"></div>' 
+    + '<div ui="type:Select;id:mySelect;"></div>'
     + '<input type="text" ui="type:TextInput;id:myText;value:*textValue"/>'
     + '<span ui="type:Label;id:myLabel"></span>');
 er.template.parse( '<!-- target: uiclear -->just test' );
@@ -42,7 +45,6 @@ var testModule = new er.Module( {
                 path   : '/inputnosilence',
                 action : 'testModule.actionii'  
             }
-
         ]
     }
 } );
@@ -52,6 +54,7 @@ var testUserModel = new er.Model( {
 
     loadUser: new er.Model.Loader( function () {
         this.set( 'users', testUserData );
+        this.set( 'user', { list: testUserData } );
     } )
 } ) ;
 
@@ -149,6 +152,8 @@ test("render repaint & clear", function() {
     same( esui.get('myButton') instanceof esui.Button, true, "button控件被渲染" );
     same( esui.get('mySelect') instanceof esui.Select, true, "select控件被渲染" );
     same( esui.get('mySelect').datasource.length, 3, "*var的方法引用到数据模型" );
+
+    same( esui.get('mySelect2').datasource.length, 3, "使用*引用context变量时可以使用多级命名空间的数据结构。" );
 
     var isRepainted = 0;
     var renderFunc = esui.get('mySelect').render;
