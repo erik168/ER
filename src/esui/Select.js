@@ -488,7 +488,7 @@ esui.Select.prototype = {
      * @param {HTMLElement} item 选项
      */
     _itemClickHandler: function ( item ) {
-        var index = item.getAttribute( 'index' );
+        var index = parseInt( item.getAttribute( 'index' ), 10 );
         var disabled = item.getAttribute( 'dis' );
 
         if ( disabled == 1 ) {
@@ -496,7 +496,7 @@ esui.Select.prototype = {
         }
 
         this.hideLayer();
-        this.setSelectedIndex( parseInt( index, 10 ), true );
+        this.setSelectedIndex( index, index != this.selectedIndex );
     },
 
     /**
