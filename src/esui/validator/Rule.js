@@ -21,7 +21,7 @@ esui.validator.Rule = function () {
         this.name           = options.name;
         this.check          = options.check;
         this.errorMessage   = options.errorMessage;
-    };
+    }
 
     Rule.prototype = {
         /**
