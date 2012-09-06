@@ -235,7 +235,7 @@ esui.Table.prototype = {
 
             function getStyleNum( dom, styleName ) {
                 var result = baidu.dom.getStyle( dom, styleName );
-                return ( result == '' ? 0 : +( result.replace( 'px','' ) ) );
+                return parseInt( result, 10 ) || 0;
             }
 
             // 读取height和width的值缓存
