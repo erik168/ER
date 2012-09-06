@@ -71,6 +71,33 @@ esui.BoxGroup.prototype = {
     },
     
     /**
+     * 对选项组下所有选项进行按值选中
+     * 
+     * @public
+     * @param {Array} values
+     */
+    selectByValues: function(values) {
+        var boxes   = this.getBoxList(),
+            len     = boxes.length,
+            i       = 0,
+            box,
+            v       = 0,
+            vLen    = values.length;
+        
+        for ( i = 0 ; i < len; i++ ) {
+            box = boxes[i];
+            box.setChecked(false);
+            value = box.getValue();
+            for ( v = 0 ; v < vLen; v++) {
+                if (value == values[v]) {
+                    box.setChecked(true);
+                    break;
+                }
+            }
+        }
+    },
+    
+    /**
      * 对选项组下所有选项进行反选
      * 
      * @public
