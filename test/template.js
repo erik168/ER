@@ -133,6 +133,14 @@ test("merge", function() {
     er.template.merge( el, 'mergeTest7' );
     equals(el.innerHTML, 'invalid', 'merge，进入else分支');
     
+    er.template.parse('<!-- target:mergeTest9 --><!-- if: ${num} != 3 -->${num}<!-- /if -->');
+    er.context.set( 'num', 0 );
+    er.template.merge( el, 'mergeTest9' );
+    equals(el.innerHTML, '0', '不等于比较，不相等时');
+    er.context.set( 'num', 3 );
+    er.template.merge( el, 'mergeTest9' );
+    equals(el.innerHTML, '', '不等于比较，相等时');
+    
     er.template.parse('<!-- target:mergeTest7_2 --><!-- if: ${num} == -1 -->${num}<!-- /if -->');
     er.context.set( 'num', -1 );
     er.template.merge( el, 'mergeTest7_2' );
