@@ -116,6 +116,11 @@ test("merge", function() {
     er.context.set( 'myList', [1,2,3,4,5] );
     er.template.merge( el, 'mergeTest6_3' );
     equals(el.innerHTML, '1,0|2,1|3,2|4,3|5,4', 'merge，for遍历数组，带数组索引');
+    
+    er.template.parse('<!-- target:mergeTest6_4 --><!-- for: ${myObject.myList} as ${item} -->${item}<!-- /for -->');
+    er.context.set( 'myObject', {myList: [1,2,3,4,5]} );
+    er.template.merge( el, 'mergeTest6_4' );
+    equals(el.innerHTML, '12345', 'for遍历多级对象数组');
 
     er.template.parse('<!-- target:mergeTest7 --><!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0-->zero<!--else-->invalid<!-- /if -->');
     er.context.set( 'num', 1 );
@@ -127,6 +132,19 @@ test("merge", function() {
     er.context.set( 'num', -1 );
     er.template.merge( el, 'mergeTest7' );
     equals(el.innerHTML, 'invalid', 'merge，进入else分支');
+    
+    er.template.parse('<!-- target:mergeTest9 --><!-- if: ${num} != 3 -->${num}<!-- /if -->');
+    er.context.set( 'num', 0 );
+    er.template.merge( el, 'mergeTest9' );
+    equals(el.innerHTML, '0', '不等于比较，不相等时');
+    er.context.set( 'num', 3 );
+    er.template.merge( el, 'mergeTest9' );
+    equals(el.innerHTML, '', '不等于比较，相等时');
+    
+    er.template.parse('<!-- target:mergeTest7_2 --><!-- if: ${num} == -1 -->${num}<!-- /if -->');
+    er.context.set( 'num', -1 );
+    er.template.merge( el, 'mergeTest7_2' );
+    equals(el.innerHTML, '-1', '负数也可以比较');
 
     er.template.parse('<!-- target:mergeTest8 --><!-- if: ${num} || 1 -->1<!--/if-->');
     er.context.set( 'num', 0 );
