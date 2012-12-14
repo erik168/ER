@@ -424,17 +424,16 @@ esui.Select.prototype = {
             value = selected.value;
         }
         
-
-        this.selectedIndex = index;
-        this.value = value;
-        
         if (
             opt_isDispatch === true 
             && this.onchange( value, selected ) === false
         ) {
             return;
         }
-        
+
+        this.selectedIndex = index;
+        this.value = value;
+                
         this._repaint();
     },
     
