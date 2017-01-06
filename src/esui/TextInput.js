@@ -29,7 +29,7 @@ esui.TextInput = function ( options ) {
     this.value = this.value || '';
 
     // 初始化mode
-    if ( this.mode && this.mode != 'textarea' && this.mode != 'password' ) {
+    if ( this.mode && this.mode != 'textarea' && this.mode != 'password' && this.mode != 'hidden') {
         this.mode = 'text';
     }
 };
@@ -131,28 +131,23 @@ esui.TextInput.prototype = {
      * @param {string} value
      */
     setValue: function ( value ) { 
-        value = value || '';
+        value = (value !== null && typeof value != 'undefined') ? (value + '') : '';
 
         var main        = this.main;
-        var virClass    = this.__getClass( 'virtual' );
         var placeholder = this.placeholder;
         
         // 移除输入事件的处理，设置后再重新挂载
         // ie下setValue会触发propertychange事件
         this._removeInputListener();
-
-        main.value = value;
-        if ( value ) {
-            this._placing = 0;
-            baidu.removeClass( main, virClass );
-        } else if ( placeholder ) {
-            this._placing = 1;
-            main.value = placeholder;
-            baidu.addClass( main, virClass );
-        }
-
+        this._removeBlurChangeListener();
+        
+        var needPlacing = !value && this.needPlacing();
+        this.setPlacing(needPlacing);
+        main.value = needPlacing ? placeholder : value;
+        
         // 重新挂载输入事件的处理
         this._addInputListener();
+        this._addBlurChangeListener();
     },
 
     
@@ -180,6 +175,8 @@ esui.TextInput.prototype = {
             // 挂载获焦和失焦事件处理
             main.onfocus = me._getFocusHandler();
             main.onblur = me._getBlurHandler();
+            
+            me._addBlurChangeListener();
 
             me._isRendered = 1;
         }
@@ -194,6 +191,27 @@ esui.TextInput.prototype = {
 
         // 刷新输入框的value
         me.setValue( me.value );
+    },
+    
+    /**
+     * 设置是否使用替代提示文本
+     * @param {Boolean} place
+     */
+    setPlacing: function (place) {
+        var virClass    = this.__getClass( 'virtual' );
+        this._placing = place | 0;
+        baidu[place ? 'addClass' : 'removeClass']( this.main, virClass );
+    },
+    
+    
+    /**
+     * 判断是否需要替代文本
+     * @return {Boolean}
+     */
+    needPlacing: function () {
+        var placeholder = this.placeholder,
+            value = this.main.value;
+        return placeholder && (!value || value == placeholder);
     },
     
     /**
@@ -233,6 +251,29 @@ esui.TextInput.prototype = {
         }
     },
     
+    /**
+     * 添加控件onchange事件的监听器
+     * 
+     * @private
+     */
+    _addBlurChangeListener: function () {
+        var blurChanger = this._blurChangeHandler;
+        if (!blurChanger) {
+            blurChanger = this._blurChangeHandler = this._getBlurChangeHandler();
+        }
+        
+        this.main.onchange = blurChanger;
+    },
+    
+    /**
+     * 移除控件onchange事件的监听器
+     * 
+     * @private
+     */
+    _removeBlurChangeListener: function () {
+        this.main.onchange = null;
+    },
+    
     onfocus: new Function(),
 
     /**
@@ -249,6 +290,7 @@ esui.TextInput.prototype = {
             
             baidu.removeClass( main, me.__getClass( 'virtual' ) );
             if ( me._placing ) {
+                me._placing = 1;
                 main.value = '';
             }
 
@@ -272,7 +314,7 @@ esui.TextInput.prototype = {
         var me = this;
             
         return function () {
-            me.setValue( me.main.value );
+            me.setPlacing(me.needPlacing());
             me.onblur();
         };
     },
@@ -302,6 +344,7 @@ esui.TextInput.prototype = {
     },
     
     onchange: new Function(),
+    oninput: new Function(),
     
     /**
      * 获取输入框value发生改变的事件handler
@@ -312,13 +355,16 @@ esui.TextInput.prototype = {
     _getChangeHandler: function() {
         var me = this;
         return function ( e ) {
-            if ( baidu.ie ) {
-                if ( window.event.propertyName == 'value' ) {
-                    me.onchange();
-                }
-            } else {       
-                me.onchange();
-            } 
+            if ( baidu.ie && window.event.propertyName == 'value' || !baidu.ie) {
+                me.oninput();
+            }
+        };
+    },
+    
+    _getBlurChangeHandler: function () {
+        var me = this;
+        return function (ev) {
+            me.onchange();
         };
     },
     
@@ -345,6 +391,7 @@ esui.TextInput.prototype = {
             switch ( tagType ) {
             case 'text':
             case 'password':
+            case 'hidden':
                 mode = tagType;
                 break;
             }
